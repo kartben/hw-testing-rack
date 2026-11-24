@@ -8,6 +8,7 @@
   what the step takes (parts and hardware, named as tools/notice/notice.yaml names them).
 * ``status``: how far a feature or a part has been tested, said the same way on every page.
 * ``tool-help``: a command-line tool's own ``--help`` text, run when the site is built.
+* ``{led}`red```: a dot of a light's colour; classes on the stills of the 3D model and on the KiCad renders.
 """
 
 from __future__ import annotations
@@ -109,7 +110,12 @@ def _notice(app: Sphinx) -> dict:
     if cached is None:
         path = (Path(app.srcdir) / app.config.bitbunk_notice).resolve()
         data = yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else {}
-        cached = {"parts": data.get("parts") or {}, "hardware": data.get("hardware") or {}}
+        alts = {}
+        for page in data.get("pages") or []:
+            for st in page.get("steps") or []:
+                if st.get("drawing") and st.get("alt"):
+                    alts.setdefault(st["drawing"], st["alt"])
+        cached = {"parts": data.get("parts") or {}, "hardware": data.get("hardware") or {}, "alts": alts}
         app._bitbunk_notice = cached
     return cached
 
@@ -207,7 +213,9 @@ class Step(SphinxDirective):
 
         if self.options.get("drawing") or self.options.get("image"):
             fig = nodes.container(classes=["bb-step-fig"])
-            alt = self.options.get("alt", f"Step {number}")
+            # what the drawing shows, in the notice's own words, unless the page says it otherwise
+            key = (self.options.get("drawing") or "").strip()
+            alt = self.options.get("alt") or _notice(self.env.app)["alts"].get(key) or f"Step {number}"
             if self.options.get("image"):
                 # any picture of the site (a render, a photo), its path as in a Markdown image
                 img = nodes.image(uri=self.options["image"].strip(), alt=alt, classes=["bb-step-drawing"])
@@ -216,7 +224,7 @@ class Step(SphinxDirective):
             if img is not None:
                 fig += img
             if self.options.get("detail"):
-                det = self._image(self.options["detail"].strip(), "Detail", "bb-step-detail")
+                det = self._image(self.options["detail"].strip(), f"Detail of step {number}", "bb-step-detail")
                 if det is not None:
                     fig += det
             if "click" in self.options:
@@ -288,7 +296,7 @@ class ToolHelp(SphinxDirective):
         script, *args = self.arguments[0].split()
         flag = self.options.get("flag", "--help")
         self.env.note_dependency(str(repo / script))
-        env = dict(os.environ, COLUMNS="96", LINES="50", NO_COLOR="1", PYTHONIOENCODING="utf-8")
+        env = dict(os.environ, COLUMNS="76", LINES="50", NO_COLOR="1", PYTHONIOENCODING="utf-8")
         shown = f"python {script} {' '.join(args + [flag])}".replace("  ", " ")
         try:
             done = subprocess.run([sys.executable, str(repo / script), *args, flag], cwd=repo, env=env,
@@ -309,6 +317,40 @@ class ToolHelp(SphinxDirective):
         return [wrapper]
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# Small marks
+
+
+LED_COLOURS = ("red", "orange", "yellow", "green", "blue", "magenta", "white", "off")
+
+
+def led_role(name, rawtext, text, lineno, inliner, options=None, content=None):
+    """{led}`red`: a dot of that colour before the words that name a light's colour (the tables of what the
+    LEDs say).  `{led}`red blink`` makes it blink."""
+    words = text.lower().split()
+    colour = words[0] if words else ""
+    if colour not in LED_COLOURS:
+        msg = inliner.reporter.warning(f"led: unknown colour {text!r} (one of {', '.join(LED_COLOURS)})", line=lineno)
+        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+    classes = ["bb-led", f"bb-led-{colour}"] + (["bb-led-blink"] if "blink" in words[1:] else [])
+    return [nodes.inline("", "", classes=classes)], []
+
+
+class PictureKinds(SphinxTransform):
+    """A still of the 3D model (docs/img/viewer) and a KiCad render (docs/img/pcbs) each get a class, so that the
+    theme can treat them in the dark: both are pictures on a light ground."""
+
+    default_priority = 400
+
+    def apply(self, **kwargs) -> None:
+        for node in self.document.findall(nodes.image):
+            uri = node.get("uri", "")
+            if "img/viewer/" in uri:
+                node["classes"].append("bb-still")
+            elif "img/pcbs/" in uri:
+                node["classes"].append("bb-pcb-render")
+
+
 def setup(app: Sphinx) -> dict:
     app.add_config_value("bitbunk_repo_url", "", "env")
     app.add_config_value("bitbunk_repo_branch", "main", "env")
@@ -316,6 +358,8 @@ def setup(app: Sphinx) -> dict:
     app.add_config_value("bitbunk_notice_images", "img/notice", "env")
     app.add_config_value("bitbunk_site_extras", ["viewer", "analyzer", "downloads"], "env")
     app.add_transform(RepoLinks)
+    app.add_transform(PictureKinds)
+    app.add_role("led", led_role)
     app.add_directive("build-step", Step)
     app.add_directive("tool-help", ToolHelp)
     app.add_directive("status", Status)

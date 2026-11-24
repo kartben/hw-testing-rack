@@ -1,9 +1,9 @@
 {#- The left-hand menu: the pages of the current section, under their captions (docs/_toc.yml).
-    A page's own pages show when it, or one of them, is open. -#}
+    A page's own pages show when it, or one of them, is open; closed, it carries a mark. -#}
 {%- macro entry(p, level) %}
-<li class="bb-nav-l{{ level }}{% if p.current %} bb-here{% endif %}{% if p.open %} bb-open{% endif %}">
+<li class="bb-nav-l{{ level }}{% if p.current %} bb-here{% endif %}{% if p.open %} bb-open{% endif %}{% if p.groups %} bb-parent{% endif %}">
   <a href="{{ p.url }}"{% if p.current %} aria-current="page"{% endif %}>{{ p.title }}</a>
-  {%- if p.groups and (p.open or level == 1 and p.groups|length == 1 and not p.groups[0].caption) %}
+  {%- if p.groups and p.open %}
   {%- for g in p.groups %}
   {%- if g.caption %}<p class="bb-nav-subcaption">{{ g.caption }}</p>{% endif %}
   <ul>

@@ -3,13 +3,13 @@
 <div class="sy-breadcrumbs" role="navigation">
   <div class="sy-breadcrumbs-inner flex items-center">
     <div class="md:hidden mr-3">
-      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
-        <i class="i-lucide menu"></i>
+      <button class="js-menu bb-crumb-menu" aria-label="The pages of this section" type="button" aria-controls="lside" aria-expanded="false">
+        <span>{{ bb_nav.title if bb_nav else 'Sections' }}</span><i class="i-lucide chevron-down"></i>
       </button>
     </div>
     <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList">
       {%- for c in bb_crumbs %}
-      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+      <li{% if loop.first %} class="bb-crumb-section"{% endif %} itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
         <a itemprop="item" href="{{ c.url }}"><span itemprop="name">{{ c.title }}</span></a>
         <span>/</span>
         <meta itemprop="position" content="{{ loop.index }}" />
@@ -21,10 +21,7 @@
       </li>
     </ol>
     <div class="xl:hidden ml-1">
-      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
-        aria-expanded="false">
-        <i class="i-lucide outdent"></i>
-      </button>
+      <button class="js-menu bb-crumb-toc" type="button" aria-controls="rside" aria-expanded="false">On this page</button>
     </div>
   </div>
 </div>

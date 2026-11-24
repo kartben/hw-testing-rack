@@ -1,10 +1,10 @@
-{#- The top bar: the logo (a mask over _static/bitbunk-logo.svg, so it follows the colour mode), the
-    sections of conf.py's bitbunk_sections, the search box and the links out. -#}
+{#- The top bar: the logo (electronics/tools/bitbunk-logo.svg, put into the page so that it takes the text's
+    colour in both themes), the sections of docs/_toc.yml, the search box and the links out. -#}
 <div class="sy-head">
   <div class="sy-head-blur"></div>
   <div class="sy-head-inner sy-container mx-auto">
     <a class="sy-head-brand" href="{{ pathto(root_doc) }}" aria-label="{{ project }} documentation, home">
-      <span class="bb-logo" role="img" aria-label="{{ project }}"></span>
+      <span class="bb-logo" role="img" aria-label="{{ project }}">{{ bitbunk_logo_svg }}</span>
       <span class="bb-logo-tag">Docs</span>
     </a>
     <div class="sy-head-nav" id="head-nav">

@@ -87,14 +87,8 @@ body {
 .sy-head-blur { box-shadow: 0 1px 0 var(--bb-rule); backdrop-filter: blur(10px); }
 .sy-head-brand { display: flex; align-items: center; margin-right: 2.2rem; }
 .sy-head-brand strong { display: none; }
-.bb-logo {
-  display: block;
-  width: 118px;
-  height: 38px;
-  background-color: var(--bb-ink-strong);
-  -webkit-mask: url("bitbunk-logo.svg") no-repeat left center / contain;
-  mask: url("bitbunk-logo.svg") no-repeat left center / contain;
-}
+.bb-logo { display: block; width: 118px; height: 38px; color: var(--bb-ink-strong); }
+.bb-logo svg { display: block; width: 100%; height: 100%; }
 .bb-logo-tag {
   font: 500 0.68rem/1 var(--sy-f-mono);
   letter-spacing: 0.08em;
@@ -138,7 +132,12 @@ body {
 
 /* --- Left column: the section you are in, under its captions (components/section-nav.html) -------------- */
 
-.sy-lside .sy-scrollbar { padding-top: 1.75rem; }
+.sy-lside .sy-scrollbar {
+  padding-top: 1.75rem;
+  padding-bottom: 3rem;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 2.6rem), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 2.6rem), transparent);
+}
 .bb-nav ul { list-style: none; margin: 0; padding: 0; }
 .bb-nav li { margin: 0; }
 .bb-nav a {
@@ -173,6 +172,7 @@ body {
 .bb-nav li ul { margin: 0.1rem 0 0.35rem 0.85rem; border-left: 1px solid var(--bb-rule); }
 .bb-nav li li > a { font-size: 0.88rem; color: var(--bb-muted); padding-top: 0.18rem; padding-bottom: 0.18rem; }
 .bb-nav li li.bb-here > a { color: var(--bb-ink-strong); }
+.bb-nav li.bb-parent:not(.bb-open) > a::after { content: "\203A"; margin-left: 0.4rem; color: var(--bb-muted); }
 
 /* --- Right column ---------------------------------------------------------------------------------------- */
 
@@ -191,6 +191,12 @@ body {
 .edit-this-page a:hover { color: var(--bb-link); }
 
 .sy-breadcrumbs ol { font-size: 0.82rem; }
+.sy-breadcrumbs .bb-crumb-menu, .sy-breadcrumbs .bb-crumb-toc {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  font: 600 0.82rem/1.2 var(--sy-f-text); color: var(--bb-ink-strong); white-space: nowrap;
+}
+.sy-breadcrumbs .bb-crumb-toc { font-weight: 500; color: var(--bb-muted); }
+@media (max-width: 767px) { .sy-breadcrumbs li.bb-crumb-section { display: none; } }
 .sy-breadcrumbs ol a, .sy-breadcrumbs ol li { color: var(--bb-muted); }
 
 /* --- Text ------------------------------------------------------------------------------------------------ */
@@ -261,7 +267,12 @@ body {
   padding: 0.06em 0.32em;
   white-space: break-spaces;
 }
-.yue a > code { color: inherit; }
+.yue a > code, .yue a > code.literal {
+  color: var(--bb-link);
+  border-color: color-mix(in srgb, var(--bb-link) 28%, var(--bb-rule));
+}
+.yue a:hover > code { text-decoration: underline; text-underline-offset: 0.16em; }
+.yue table :not(pre) > code, .yue table code.literal { background: none; border: 0; padding: 0; }
 .yue :not(pre) > code::before, .yue :not(pre) > code::after { content: none; }
 .highlight, .literal-block-wrapper { --radius: var(--bb-radius); --margin: 0.9rem; }
 .highlight > pre {
@@ -289,7 +300,14 @@ html.light .yue .highlight .go, html.dark .yue .highlight .go { color: var(--bb-
 .yue .bb-tool-help-wrapper .code-block-caption { color: var(--bb-ink-strong); }
 
 /* Tables: rules, no boxes */
-.yue .table-wrapper { border: 0; border-radius: 0; margin: 1.3rem 0 1.7rem; overflow-x: auto; }
+.yue .table-wrapper {
+  border: 0; border-radius: 0; margin: 1.3rem 0 1.7rem; overflow-x: auto;
+  background:
+    linear-gradient(to right, var(--bb-paper) 30%, transparent) left / 2rem 100% no-repeat local,
+    linear-gradient(to left, var(--bb-paper) 30%, transparent) right / 2rem 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, color-mix(in srgb, var(--bb-ink-strong) 22%, transparent), transparent) left / 0.7rem 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, color-mix(in srgb, var(--bb-ink-strong) 22%, transparent), transparent) right / 0.7rem 100% no-repeat scroll;
+}
 .yue table { font-size: 0.9rem; line-height: 1.5; margin: 1.3rem 0 1.7rem; border: 0; }
 .yue .table-wrapper table { margin: 0; }
 .yue thead tr, .yue .table-wrapper thead tr { border: 0; border-bottom: 1.5px solid var(--bb-rule-strong); }
@@ -311,7 +329,7 @@ html.light .yue .highlight .go, html.dark .yue .highlight .go { color: var(--bb-
 .yue .table-wrapper tbody tr.row-odd { background: transparent; }
 .yue .table-wrapper tbody tr:hover { background: color-mix(in srgb, var(--bb-surface) 65%, transparent); }
 .yue table td > p, .yue table th > p { margin: 0; }
-.yue table td > code:only-child, .yue table td:first-child > code { white-space: nowrap; }
+.yue table td > code:only-child, .yue table td > a:only-child > code, .yue table td:first-child > code { white-space: nowrap; }
 .yue table th.text-right, .yue table td.text-right { text-align: right; }
 
 /* Figures */
@@ -457,7 +475,7 @@ html.dark .admonition.danger p.admonition-title, html.dark .admonition.error p.a
 
 .bb-step {
   display: grid;
-  grid-template-columns: 3.4rem minmax(0, 1fr) minmax(0, 1.15fr);
+  grid-template-columns: 3.4rem minmax(0, 1.4fr) minmax(12rem, 1fr);
   column-gap: 1.2rem;
   align-items: start;
   margin: 0;
@@ -475,7 +493,7 @@ html.dark .admonition.danger p.admonition-title, html.dark .admonition.error p.a
 }
 .bb-step-body > :first-child { margin-top: 0.15rem; }
 .bb-step-body p { margin-top: 0.5rem; margin-bottom: 0.6rem; }
-.bb-step-fig { position: relative; text-align: center; }
+.bb-step-fig { position: relative; text-align: center; justify-self: center; width: min(100%, 20rem); }
 .bb-step-fig img.bb-step-drawing { width: 100%; max-height: 23rem; object-fit: contain; display: block; }
 .yue .bb-step-fig img.bb-step-detail.bb-lineart {
   position: absolute;
@@ -492,8 +510,8 @@ html.dark .admonition.danger p.admonition-title, html.dark .admonition.error p.a
 html.dark .yue .bb-step-fig img.bb-step-detail.bb-lineart { background: #e8e6e1; border-color: #14120e; }
 .bb-step-fig .bb-step-click {
   position: absolute;
-  left: 0.2rem;
-  bottom: 0.2rem;
+  left: 0.1rem;
+  bottom: -0.3rem;
   margin: 0;
   font: italic 700 0.95rem/1 var(--sy-f-heading);
   color: var(--bb-accent);
@@ -517,7 +535,7 @@ html.dark .yue .bb-step-fig img.bb-step-detail.bb-lineart { background: #e8e6e1;
 @media (max-width: 860px) {
   .bb-step { grid-template-columns: 2.6rem minmax(0, 1fr); }
   .bb-step .bb-step-num { font-size: 2.2rem; }
-  .bb-step-fig { grid-column: 2; margin-top: 0.8rem; }
+  .bb-step-fig { grid-column: 2; margin-top: 0.8rem; justify-self: start; width: min(100%, 24rem); }
 }
 
 /* --- Landing page (docs/index.md, layout/home.html): one sentence, what exists, one picture, text ------------ */
@@ -644,4 +662,91 @@ html.dark .bb-zoom img.bb-lineart { filter: invert(1) hue-rotate(180deg) brightn
 
 .yue table.bb-bom td.text-right, .yue table.bb-bom th.text-right { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .yue table.bb-bom td { vertical-align: top; }
-.yue table.bb-bom td:first-child { min-width: 14rem; }
+.yue table.bb-bom td:first-child { min-width: min(14rem, 48vw); }
+
+/* --- Diagrams drawn for the site (docs/img/diagrams/*.svg, put into the page itself: they take its type and
+       its colours, in both themes) ------------------------------------------------------------------------ */
+
+.yue figure.bb-diagram { margin: 1.8rem 0 2rem; }
+.bb-diagram svg { display: block; width: 100%; max-width: 46rem; height: auto; color: var(--bb-ink-strong); }
+.bb-diagram .d-box { fill: var(--bb-paper); stroke: currentColor; stroke-width: 1.5; }
+.bb-diagram .d-group { fill: none; stroke: var(--bb-muted); stroke-width: 1; stroke-dasharray: 5 4; }
+.bb-diagram .d-line, .bb-diagram .d-power, .bb-diagram .d-dash { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.bb-diagram .d-power { stroke-width: 2.6; }
+.bb-diagram .d-dash { stroke-dasharray: 4 4; }
+.bb-diagram .d-head { fill: currentColor; }
+.bb-diagram .d-t { font: 600 14px var(--sy-f-text); fill: currentColor; }
+.bb-diagram .d-s { font: 400 12px var(--sy-f-mono); fill: var(--bb-muted); }
+.bb-diagram .d-l { font: 500 12px var(--sy-f-mono); fill: currentColor; paint-order: stroke; stroke: var(--bb-paper); stroke-width: 5px; stroke-linejoin: round; }
+
+/* --- After the readers' review ---------------------------------------------------------------------------- */
+
+/* no two hairlines boxing in empty space: under the status line, and between a heading and its first step */
+.yue .bb-status + section > h2:first-child, .yue .bb-status + h2 { border-top: 0; padding-top: 0; margin-top: 2.2rem; }
+.yue h2 + .bb-step, .yue h3 + .bb-step, .yue h2 + p + .bb-step { border-top: 0; padding-top: 0.5rem; }
+.yue h2 + .bb-step:first-of-type, .yue h3 + .bb-step:first-of-type { margin-top: 0.4rem; }
+
+/* a tool's own help is reference, read and not pasted: no grey box, no copy button */
+.yue .bb-tool-help-wrapper .code-block-caption { background: transparent; border-style: dashed; border-bottom: 0; }
+.yue .bb-tool-help-wrapper .highlight > pre, .yue .bb-tool-help-wrapper pre.bb-tool-help {
+  background: transparent; border: 1px dashed var(--bb-rule); border-top: 0; font-size: 0.8rem; color: var(--bb-ink);
+}
+.yue .bb-tool-help-wrapper button.copybtn { display: none; }
+
+/* pictures on a light ground, in the dark: the still's dark twin when it exists (bitbunk.js), dimmed otherwise */
+html.dark .yue img.bb-still:not(.bb-still-dark), html.dark .yue img.bb-pcb-render { filter: brightness(0.8) contrast(1.04); }
+html.light .yue img.bb-pcb-render { mix-blend-mode: multiply; }
+.yue figure:has(> img.bb-pcb-render), .yue figure:has(> a > img.bb-pcb-render) { text-align: center; }
+.yue figure:has(> img.bb-pcb-render) figcaption { text-align: left; }
+
+/* a screenshot of the bay's page may take the gutter: its text is small */
+@media (min-width: 900px) { .yue figure.bb-screenshot { margin-inline: -1.25rem; } }
+
+/* keyboard: a picture that opens at full size shows where the focus is */
+.yue img[data-zoom]:focus-visible { outline: 2px solid var(--bb-mark); outline-offset: 3px; }
+
+/* the colour of a light, before the words that name it ({led}`red`) */
+.bb-led {
+  display: inline-block; width: 0.68em; height: 0.68em; border-radius: 50%; margin-right: 0.4em; vertical-align: -0.03em;
+  background: var(--c, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--bb-ink-strong) 28%, transparent);
+}
+.bb-led-red { --c: #e5484d; } .bb-led-orange { --c: #f76b15; } .bb-led-yellow { --c: #f5d90a; }
+.bb-led-green { --c: #30a46c; } .bb-led-blue { --c: #3e63dd; } .bb-led-magenta { --c: #d6409f; }
+.bb-led-white { --c: #ffffff; } .bb-led-off { --c: transparent; }
+@media (prefers-reduced-motion: no-preference) { .bb-led-blink { animation: bb-blink 1.1s steps(1) infinite; } }
+@keyframes bb-blink { 50% { background: transparent; } }
+
+/* "Every action, four ways" ({.bb-ways-table} above a table): commands on one line; on a phone each row is
+   a short list, each line named by its column (bitbunk.js copies the heads into data-label) */
+.yue table.bb-ways-table td > code, .yue table.bb-ways-table td > a > code { white-space: nowrap; }
+@media (max-width: 700px) {
+  .yue table.bb-ways-table, .yue table.bb-ways-table tbody { display: block; width: 100%; }
+  .yue table.bb-ways-table thead { display: none; }
+  .yue table.bb-ways-table tr { display: block; padding: 0.7rem 0; border-bottom: 1px solid var(--bb-rule); }
+  .yue table.bb-ways-table td { display: block; padding: 0.14rem 0; border: 0; white-space: normal; }
+  .yue table.bb-ways-table td:first-child { font-weight: 600; color: var(--bb-ink-strong); padding-bottom: 0.3rem; }
+  .yue table.bb-ways-table td:not(:first-child)::before {
+    content: attr(data-label); display: inline-block; min-width: 5.2rem;
+    font: 500 0.66rem/1.4 var(--sy-f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--bb-muted);
+  }
+  .yue table.bb-ways-table td:empty { display: none; }
+  .yue table.bb-ways-table td > code, .yue table.bb-ways-table td > a > code { white-space: normal; overflow-wrap: anywhere; }
+}
+
+/* a date does not break at its hyphens; a note is one step quieter than a page of the manual */
+.yue td { hyphens: manual; }
+.yue table.bb-dates td:nth-child(2), .yue .bb-nowrap { white-space: nowrap; }
+.yue:has(.bb-note-banner) h1 { font-size: 1.95rem; line-height: 1.15; }
+
+/* the landing page: the sentence is the headline, the name a label over it */
+.yue .bb-home h1 {
+  font: 500 0.74rem/1.4 var(--sy-f-mono); letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--bb-muted); margin: 2.4rem 0 0.9rem;
+}
+.bb-lede {
+  font: 650 clamp(1.6rem, 2.9vw, 2.25rem)/1.2 var(--sy-f-heading); letter-spacing: -0.02em; color: var(--bb-ink-strong);
+}
+.bb-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); }
+.bb-figures { padding-top: 1.6rem; }
+.bb-ways { padding-top: 0.4rem; }
+@media (max-width: 520px) { .yue .bb-ways pre { white-space: pre-wrap; overflow-wrap: anywhere; } }

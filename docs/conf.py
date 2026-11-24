@@ -36,7 +36,6 @@ extensions = [
     "myst_parser",
     "sphinx_design",
     "sphinx_copybutton",
-    "sphinxcontrib.mermaid",
     "sphinxext.opengraph",
     "sphinx_sitemap",
     "bitbunk",          # docs/_ext: links to the repository, build steps, status, a tool's --help
@@ -62,7 +61,6 @@ myst_substitutions = {
     "repo_url": repo_url,
     "viewer_url": html_baseurl + "viewer/",
 }
-myst_fence_as_directive = ["mermaid"]          # ```mermaid fences, as GitHub draws them
 suppress_warnings = ["myst.strikethrough"]
 
 # bitbunk extension (docs/_ext/bitbunk.py)
@@ -88,7 +86,7 @@ linkcheck_anchors_ignore_for_url = [r"https://github\.com/.*"]
 html_theme = "shibuya"
 html_title = "BitBunk"
 html_short_title = "BitBunk"
-html_logo = "../electronics/tools/bitbunk-logo.svg"     # copied to _static/, drawn by bitbunk.css as a mask
+html_logo = "../electronics/tools/bitbunk-logo.svg"     # copied to _static/; the top bar carries it inline (below)
 html_favicon = "_static/favicon.svg"
 html_static_path = ["_static"]
 html_css_files = ["fonts.css", "bitbunk.css"]
@@ -114,6 +112,14 @@ html_theme_options = {
     "globaltoc_expand_depth": 1,
 }
 
+import re  # noqa: E402
+
+# The logo, put into every page's top bar: one path, filled with the text's colour.
+_logo = (REPO / "electronics" / "tools" / "bitbunk-logo.svg").read_text(encoding="utf-8")
+_logo = re.sub(r"<title>.*?</title>", "", _logo, flags=re.S)
+_logo = re.sub(r'\s(width|height)="[^"]*mm"', "", _logo)
+_logo = re.sub(r'fill="#0{3,6}"', 'fill="currentColor"', _logo).replace("<svg ", '<svg aria-hidden="true" focusable="false" ', 1)
+
 html_context = {
     "source_type": "github",
     "source_user": repo_owner,
@@ -122,6 +128,7 @@ html_context = {
     "source_docs_path": "/docs/",
     "bitbunk_repo_url": repo_url,
     "bitbunk_viewer": "viewer/",
+    "bitbunk_logo_svg": _logo.strip(),
 }
 
 # Shibuya puts these in the right-hand column.
