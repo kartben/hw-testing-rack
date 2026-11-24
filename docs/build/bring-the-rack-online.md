@@ -145,6 +145,6 @@ The camera's M12 lens has no autofocus: it is focused once, by hand, at the real
 4. Hold the lens still and tighten the nut finger-tight; check with one more snapshot, then set the resolution
    back (640 × 480 for the stream).
 
-Found a step that is wrong? [Report a finding](../reference/known-limitations.md#report-a-finding).
+A step that is wrong: [report it](../reference/known-limitations.md#report-a-finding).
 
 The rack is ready for [a first session with a bay](../use/first-session.md).

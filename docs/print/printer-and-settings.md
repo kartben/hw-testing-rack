@@ -5,9 +5,9 @@ ladders of the two 165 mm rows, 203.3 × 238.8 mm on the bed: by bounding box, a
 every part, and so does a 250 × 210 mm one with the ladders turned a quarter turn.
 
 :::{status} designed
-Sliced in Bambu Studio for a Bambu Lab H2D: the 30 parts that existed on 2026-10-21 in one review, the
-drawer's front, the cradle and its strip since. No slicer result is recorded for the slot bin. Nothing has
-been printed, and no other printer or slicer has been tried.
+Sliced in Bambu Studio for a Bambu Lab H2D: 30 parts in the review of 2026-10-21; the drawer, its front, the
+cradle and its strip, changed or drawn after that day, by the mechanical design document. The slot bin has not been
+sliced. Nothing has been printed, and no other printer or slicer has been tried.
 [What exists today](../plan/status.md#status-frame).
 :::
 
@@ -47,33 +47,34 @@ PETG: the clips and the snaps were sized for it. PLA creeps under the drawer's l
 ASA have not been assessed. For drawers that slide more smoothly, the design document suggests printing the
 trays in a POM-like "igus" filament; nobody has tried it.
 
-The bill of materials counts 4.3 kg for the default rack:
+<!-- site:filament -->
+Buy 5.1 kg of PETG for the default rack, six 1 kg spools, and 0.6 kg more for the twelve optional covers
+(52 g each). That is 4.7 kg by the slicer's figures, part by part, and 10 % for waste, as the bill of
+materials adds to its own figure. The bill counts 4.3 kg: 3.9 kg from the volume of each STL file, at 55 % of
+the solid, and the same 10 %. The slicer, with three walls, gives more for the trays, the drawers and the
+plates. All of it can be one colour but the two camera pods (28 g, dark and opaque), the two diffusers
+(1 g each) and the inlays, which take a light colour.
+<!-- /site:filament -->
 
-```{bom-table}
-:category: Printed parts
-:columns: item, qty, notes
-```
-
-That figure takes the volume of each STL file, PETG at 1.27 g/cm³, 55 % of the solid volume for three walls
-and a sparse infill, and adds 10 % of waste. It is not a slicer's figure, and the whole rack has never been
-sliced. For the three heaviest lines of the bill, the slicer gives more:
+Four parts make 0.69 kg of the 0.8 kg between the slicer's 4.7 kg and the bill's 3.9 kg:
 
 | Part | In the rack | Bill's estimate | Slicer | More, in the rack |
 |---|---|---|---|---|
-| `tray` | 12 | 82.0 g | 100 g | 216 g |
+| `tray` | 12 | 82.0 g | 108 g | 312 g |
 | `drawer` | 11 | 35.6 g | 49 g | 147 g |
 | `plate` | 7 | 41.0 g | 56 g | 105 g |
+| `floor_plate`, `cap_plate` | 4 each | 38.8 g, 39.9 g | 54 g, 56 g | 125 g |
 
-That is 0.47 kg on top of the bill's 3.9 kg before waste: 4.4 kg, and 4.8 kg with the same 10 %. Plan on
-4.8 kg, and on 0.6 kg more for the twelve optional covers (51 g each in the slicer). The tray's and the
-drawer's slicer figures are the mechanical design document's, undated; the plate's is the slicer review's
-of 2026-10-21. Every part's grams, with their source:
-[Parts and quantities](parts-list.md).
+The 4.7 kg adds up each part's slicer figure on [Parts and quantities](parts-list.md), times its count: the
+review's of 2026-10-21, and the design document's for the drawer, its front, the cradle and the strip. The
+four slot bins, the five `ladder_c` (shorter than the 165 mm row ladder the review sliced) and the power
+box's inlay have no slicer figure and are counted at the bill's estimate, 0.44 kg in all. The whole rack has
+never been sliced in one go, and no spool has been weighed after a print.
 
-For a smaller rack, the same document gives three slicer figures: a bay on its own about 487 g, each bay
-added beside it about 382 g, each further cell of a large grid about 217 g (a tray, a drawer and its front,
-a ladder and a brace: no plate, cradle or peg). The bill's estimate for a plain 2 × 2 rack, 1.7 kg, is on
-[Parts and quantities](#plain-2x2). No source splits the mass by colour.
+A smaller rack: [One bay in the frame](parts-list.md#one-bay-in-the-frame) and
+[A plain 2 × 2 rack](parts-list.md#plain-2x2) give the bill's grams for each. For a rack that grows, the
+design document gives, undated, each bay added beside another about 382 g and each further cell of a large
+grid about 217 g (a tray, a drawer and its front, a ladder and a brace: no plate, cradle or peg).
 
 ## Slicer settings
 
@@ -92,12 +93,13 @@ bed at 70 °C in the enclosure, and these values:
 | X-Y hole compensation (`xy_hole_compensation`) | 0.1 mm |
 | Longest bridge printed without support (`max_bridge_length`) | 30 mm |
 
-The last three change the stock profile, which has no elephant-foot or hole compensation. Without them, the
-holes that open towards the bed (the camera's inserts under the tray, the cradle's screw holes) come out 0.1
-to 0.2 mm tight in the first layers; with them, the inserts' Ø4.0 holes come out true, and an insert seats
-without bulging its boss. At the stock bridge length of 10 mm the slicer asks for supports under the tray's
-lips and over the power box's windows, which PETG bridges cleanly at this layer height (25 to 30 mm); the key
-only decides where supports are asked for, not how a bridge is printed.
+The last three change the stock profile, which has no elephant-foot or hole compensation. The slicer review of
+2026-10-21 expects the holes that open towards the bed (the camera's inserts under the tray, the cradle's
+screw holes) to come out 0.1 to 0.2 mm tight in the first layers without them, and the Ø4.0 insert holes to
+come out true with them, so that an insert seats without bulging its boss. At the stock bridge length of
+10 mm the slicer asks for supports under the tray's lips and over the power box's windows; the review counts
+on PETG bridging 25 to 30 mm at this layer height. No part has been printed to check either: the
+[test tray](index.md#what-to-check-on-a-test-tray-and-a-test-ladder) does.
 
 No PrusaSlicer or OrcaSlicer profile has been tried: set the same three values, in millimetres, under your
 slicer's names for them. The repository holds no profile, no project and no 3MF file.
@@ -117,8 +119,8 @@ Four parts depart from the profile:
 ## No supports, anywhere
 
 Switch supports off for every part. On a ladder or a cap strip they do harm: tree supports land inside the
-grooves of the bed face, which are 5.3 mm bridges and print clean without them. What the parts ask of the
-printer instead:
+grooves of the bed face, 5.3 mm bridges that the slicer's preview of 2026-10-21 prints without them. What the
+parts ask of the printer instead:
 
 | Part | Overhang or bridge |
 |---|---|
@@ -132,14 +134,8 @@ printer instead:
 ## Colours and two-colour parts
 
 Three colours are asked for: the camera pod dark and opaque, its diffuser white, the inlays of the bay
-labels and of the power box lighter than their body. The rest is your choice.
-
-```{figure} ../img/viewer/rack.jpg
-:alt: The default rack of twelve bays, dark grey frame, near-white drawers, blue plates and slot bins, a black power box under A1
-
-The 3D model of the default rack, in the model's own colours: a dark grey frame and trays, near-white
-drawers, blue plates and slot bins, a black power box.
-```
+labels and of the power box lighter than their body. The rest is your choice; the 3D model shows a dark grey
+frame and trays, near-white drawers, blue plates and slot bins and a black power box.
 
 Two objects are made of two files that register, one per colour:
 
@@ -151,6 +147,8 @@ Two objects are made of two files that register, one per colour:
 In Bambu Studio, load both files at once, answer yes to loading them as one object with multiple parts, and
 give the inlay the light filament.
 
-A printer with one nozzle builds the whole rack. Print a label's body alone and stick 12 mm tape over it.
-Print the power box's base alone, at the finer layers given under [Slicer settings](#slicer-settings): its
-lettering is engraved 0.8 mm deep and reads under grazing light.
+A printer with one nozzle builds the whole rack. Print a label's body alone: its debossed name reads without
+the inlay. Or print no label and put 12 mm label tape in the front's recess; nothing in the design holds
+either in place ([Fit out a tray](../build/fit-out-a-tray.md)). Print the power box's base alone, at the
+finer layers given under [Slicer settings](#slicer-settings): its lettering is engraved 0.8 mm deep and reads
+under grazing light.

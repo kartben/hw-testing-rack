@@ -33,7 +33,7 @@ outside a git checkout.
 
 | Needs | For | Notes |
 |---|---|---|
-| Python 3.10 or later | all three | CI runs them on 3.12 |
+| Python 3.10 or later | all three | CI runs on 3.12: `build.py stl` in the hardware workflow, `bom.py` in the site's build, `plate_layout.py` through the tool tests |
 | The packages of [tools/requirements.txt](../../tools/requirements.txt) | all three | seven packages, and two marked optional that only the 3D model and the renders use. `plate_layout.py` alone imports nothing but PyYAML |
 | OpenSCAD on the `PATH` (`openscad` or `openscad-nightly`), or Docker | `build.py` | without a local OpenSCAD, `build.py` runs the image `openscad/openscad:latest` |
 | The font Liberation Sans Bold | `build.py` | the bay labels and the power box's lettering are set in it; CI installs the package `fonts-liberation` |

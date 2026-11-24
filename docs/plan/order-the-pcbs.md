@@ -1,10 +1,11 @@
 # Order the PCBs
 
-A rack is built from five PCBs: a bay node and a DATA board (DATA ×6 or DATA ×4) in every bay, one power
-hub, and a camera pod for each bay that gets a camera.
+A rack is built from five kinds of PCB: a bay node and a DATA board (DATA ×6 or DATA ×4) in every bay, one
+power hub, and a camera pod for each bay that gets a camera. The default 4 × 3 rack takes 27 PCBs: 12 bay
+nodes, 10 DATA ×6, 2 DATA ×4, the power hub and the two camera pods the bill counts.
 
 :::{status} designed
-v1.0 of the five PCBs has been at NextPCB since 2026-11-11; none has arrived. No source holds an ordering
+v1.0 of the five PCB designs has been at NextPCB since 2026-11-11; none has arrived. No source holds an ordering
 procedure: this page is put together from the notes of that order and from the options of JLCPCB's quotes.
 [What exists today](status.md#the-five-pcbs).
 :::
@@ -13,7 +14,7 @@ The placement files in the repository are in JLCPCB's format and carry JLCPCB's 
 are to another assembler, they turn parts. Every price in the repository is a JLCPCB quote, yet the one
 order placed went to NextPCB, with KiCad's raw position file, which is not committed.
 
-## The five PCBs and how many you need
+## The five kinds, and how many of each
 
 | PCB | Size, layers, finish | Soldered by hand after the fab |
 |---|---|---|
@@ -65,7 +66,7 @@ The two tabs of the joint are cut, never snapped
 
 ## What was ordered on 2026-11-11, and how
 
-v1.0 of the five PCBs left for NextPCB on 2026-11-11, from commit `125c4ece`: five PCBs of each, two of
+v1.0 of the five PCB designs left for NextPCB on 2026-11-11, from commit `125c4ece`: five PCBs of each, two of
 them assembled, the DATA ×4 with its logic ([electronics/released.json](../../electronics/released.json)).
 How it was sent was settled in the review of 2026-11-09, which is in French
 ([Design review of the v1.0 PCBs](../pcb-review-2026-11-09.md)):

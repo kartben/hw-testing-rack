@@ -836,7 +836,7 @@ main(int argc, char* argv[])
         pos->Add(Vector(cx + 1.0, -2.0, cz)); // the DUTs' lab AP
         for (uint32_t i = 0; i < dutStas; i++)
         {
-            /* over its node, as the boards sit 25-32 mm over the antenna (docs/architecture.md › Radio) */
+            /* over its node, as the boards sit 25-32 mm over the antenna (docs/use/wifi.md) */
             const double off = dutCm > 0 ? dutCm / 100.0 / std::sqrt(2.0) : 0;
             pos->Add(dutCm > 0 ? Vector((i % 4) * colPitch + off, off, (i / 4) * rowPitch)
                                : Vector((i % 4) * colPitch + 0.05, 0.08, (i / 4) * rowPitch));

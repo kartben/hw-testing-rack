@@ -5,7 +5,7 @@ up for the rack: one channel, 6 or 11, fixed, 20 MHz wide. That channel carries 
 board in the rack, and it is shared with the boards' own radios a few centimetres away.
 
 :::{status} simulated
-The nodes' radio settings ran on the XIAO ESP32-S3 and M5Stack CoreS3 stand-ins, with a home access point.
+The nodes' radio settings ran on the XIAO ESP32-S3 stand-in, with a home access point.
 The capacity and Bluetooth figures come from two simulations, an ns-3 model and a BabbleSim model, of racks of
 8 and 16 bays with four boards a bay; the default rack has 12 bays, most of them with a DATA ×6. No rack has
 been on the air. [What exists today](../plan/status.md#status-wifi).

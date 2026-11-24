@@ -5,8 +5,9 @@ board and its boards, 2.9 W when the bay has a camera.
 
 :::{status} designed
 Every figure here is a design value, a computed one or the result of a simulation, and each table says which.
-One is a measurement, taken on a bench stand-in. Nothing has been measured on a v1.0 PCB or on a printed frame.
-[What exists today](../plan/status.md).
+One is a measurement, taken on a bench stand-in. Nothing has been measured on a v1.0 PCB or on a printed frame:
+the rows of [the frame](../plan/status.md#the-printed-frame) and of [the five PCBs](../plan/status.md#the-five-pcbs)
+in What exists today.
 :::
 
 ## Size and mass
@@ -15,19 +16,19 @@ One is a measurement, taken on a bench stand-in. Nothing has been measured on a 
 | | Value | Kind, and where it comes from |
 |---|---|---|
 | The default rack, 4 columns × 3 rows | 671 × 225 × 619 mm, width × depth × height | computed from [rack.yaml](../../config/rack.yaml): 670.6 × 225.3 × 618.7 |
-| What stands on the bench | 671 × 201 mm | 3D model |
+| What stands on the bench | 671 × 201 mm | the floor contacts of the base, [study of 2026-10-25](../stability.md) |
 | One column more | 165.8 mm: a 158 mm tray, a 7.4 mm ladder, two clearances | [rack.yaml](../../config/rack.yaml) |
 | Height of a row | 165 mm for rows A and B, 120 mm for row C, over an 80 mm base | [rack.yaml](../../config/rack.yaml) |
 | Tilt of the shelves | 20°, front edge lower | [rack.yaml](../../config/rack.yaml) |
 | Drawer stroke | 140 mm | [rack.yaml](../../config/rack.yaml) |
 | Mass with two rows, 8 bays | 3.7 kg with light boards, 4.7 kg with 160 g in every drawer | computed from the 3D model, [study of 2026-10-25](../stability.md) |
 | Mass with four rows, 16 bays | 6.6 kg and 8.8 kg | the same study |
-| Printed parts of the default rack | 243 parts, ≈ 3.9 kg of PETG | estimate of [the bill](bill-of-materials.md) |
+| Printed parts of the default rack | 243 parts; 4.3 kg of PETG by the bill's estimate, 4.7 kg by the slicer's figures: buy 5.1 kg | [Printer, filament, settings](../print/printer-and-settings.md#filament) |
 <!-- /site:size-and-mass -->
 
-The mass of the default three rows was not computed: it lies between the two. The height is 619 mm with the
-default rows. A rack this light
-tips when a top drawer is pulled: [Screw the rack to the bench](../build/screw-the-rack-to-the-bench.md).
+The mass of the default three rows was not computed: it lies between the two. By the same study, a pull of 8
+to 13 N at the top row tips a rack of two or four rows forwards (three were not computed):
+[Screw the rack to the bench](../build/screw-the-rack-to-the-bench.md).
 
 ## Chargers and what each feeds
 
@@ -149,7 +150,7 @@ What USB will not do through the rack is on [Known issues, and what will not wor
 | Connections to a bay's page and API | 6; an idle one is dropped after 3 s | [the node's prj.conf](../../firmware/bay-node/prj.conf) |
 | Browsers on a bay's serial console | 2 | [the node's Kconfig](../../firmware/bay-node/Kconfig), `BAY_CONSOLE_WEB_CLIENTS` |
 | Clients of the AUX UART over the network | 1 on RFC 2217 (TCP 4001) and 1 on raw TCP (TCP 4000) | [the node's Kconfig](../../firmware/bay-node/Kconfig) |
-| Telnet shells on a node | 1 | [the node's Kconfig](../../firmware/bay-node/Kconfig) |
+| Telnet shells on a node | 1 | Zephyr's telnet backend refuses a second client; the comment in [the node's Kconfig](../../firmware/bay-node/Kconfig) counts one |
 | Clients of a bay's camera | 3, at 5 frames a second at most | [the node's Kconfig](../../firmware/bay-node/Kconfig), `BAY_CAMERA_CLIENTS` |
 | Connections to the hub's page and API | 6 | [the hub's prj.conf](../../firmware/power-hub/prj.conf) |
 | Events the hub keeps | the last 32, in RAM | [the hub's Kconfig](../../firmware/power-hub/Kconfig), `HUB_EVENTS` |
@@ -181,7 +182,7 @@ A DATA ×6 has no pins. What passes through the pin matrix and what does not is 
 |---|---|---|
 | Rows | 4 | the hub has four row outputs, A to D; the default rack uses three |
 | Bays in a row | 15 on the rack bus; power stops it well before | a fifth column leaves each bay 4.0 W, a DATA board alone takes 2.1 to 3.0 W |
-| Height of a row | 165 mm | a 185 mm row makes a 261 mm ladder, too long for a 256 mm bed |
+| Height of a row | 165 mm | a 185 mm row takes a 258.8 mm ladder, too long for a 256 mm bed |
 | Width of a bay | 158 mm, one size | a double-width bay is not designed |
 | Charger | 100 W | the 140 W, 28 V option is locked out |
 

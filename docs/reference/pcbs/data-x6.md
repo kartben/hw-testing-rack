@@ -163,7 +163,7 @@ the 5 V set to 5.08 V.
 - The converters' enable line runs 83 mm at high impedance past a switching node: converter A may stop
   and restart by itself, mostly with VIN close to its 13.5 V threshold. [X6-06]
 - Nothing clamps the 5 V rails: one failure in a converter (an open joint on its feedback divider, a
-  shorted switch) puts VIN on the hub, on the port switches and on your boards. [X4A-09]
+  shorted switch) puts VIN on the hub, on the port switches and on your boards. [X4A-09: the review files it under the DATA ×4 and finds the same design here]
 - The receptacles' peg holes follow an older GCT drawing (0.66 mm where the current one asks 0.71 mm, for
   pegs of 0.56 ± 0.05 mm): a receptacle may not go down flat, and one that sits askew also fouls the
   cradle's comb. Look at the six at stage 1 of the checklist. [X6-09]

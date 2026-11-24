@@ -2,13 +2,12 @@
 
 A rack that stands loose tips forwards: a pull of 8 to 13 N at a top drawer's front is enough, and unplugging a
 USB-C cable takes 8 to 20 N.  Screw the four floor plates to the bench, two wood screws each.  Choose the
-rack's place before the first ladder goes up: the screws are driven once the base brace is on
-([step 4 of The frame and the first bay](first-bay.md)), and later only a stubby screwdriver reaches them.
+rack's place before the first ladder goes up.
 
 :::{status} designed
 A calculation of 2026-10-25 on the 3D model, for racks of two and of four rows of 165 mm
 ([Can the rack tip over?](../stability.md)).  The default rack, three rows of 165, 165 and 120 mm, was not
-computed, and no rack has been built to try any of it.  [What exists today](../plan/status.md).
+computed, and no rack has been built to try any of it.  [What exists today](../plan/status.md#status-stability).
 :::
 
 ## Why it tips
@@ -29,12 +28,12 @@ boards in every drawer, the most the study loaded; a slot-bin drawer of row C ho
 is counted at 55 % of solid PETG; at 80 % every force rises by about 35 % and the verdict stands.  The push on
 an open drawer is the likely accident: leaning on it, or pushing a plug into a board that lies on it.
 
-```{figure} ../img/side.jpg
-:alt: Render of a two-row rack seen from its right side, two drawers pulled out in front of it
-:width: 85%
+```{figure} ../img/viewer/rack-side-drawers-out.jpg
+:alt: The default rack seen from its right side, every drawer pulled out ahead of the base
+:width: 55%
 
-Render of the earlier two-row rack, one of the two cases computed.  The rows step back with the 20° tilt, and
-the open drawers hang ahead of the footprint.
+The 3D model of the default rack from its right side, every drawer pulled out: the open drawers hang ahead of
+the base's front edge, the edge it tips over.  This three-row rack is not one of the two cases computed.
 ```
 
 ## Eight screws through the floor plates
@@ -56,9 +55,9 @@ conservative pull-out from particle board.  The target was 40 N, twice a 20 N pu
 screws clear the plates and the power box.
 
 Each column's two screws go in once its base brace is on and before row A's tray: step 4 of
-[The frame and the first bay](first-bay.md), then the same point of each further column
+[The frame and the first bay](first-bay.md), then step 2 of each further column
 ([Add a bay, then a row](add-a-bay.md)).  With row A's tray in place, 78 mm remain above the front screws
-and 133 mm above the rear ones.
+and 133 mm above the rear ones: room for a stubby screwdriver only.
 
 ## If you cannot drill the bench
 
@@ -68,8 +67,8 @@ and 133 mm above the rear ones.
 * Two furniture anti-tip straps from the rear posts of the top ladders to the wall, when there is a wall
   behind the rack.
 
-Three other ideas do not hold.  Printed outrigger feet would have to reach 266 to 311 mm ahead of the rack.  Ballast in the base cells would
-take 9.7 kg for two rows and 20.3 kg for four.  Two racks joined side by side hold 15 to 16 N: the force at
+Three other ideas do not hold.  Printed outrigger feet would have to reach 266 to 311 mm ahead of the rack.
+Ballast in the base cells would take 9.7 kg for two rows and 20.3 kg for four.  Two racks joined side by side hold 15 to 16 N: the force at
 one bay stays what it was.
 
-Found a step that is wrong?  [Report a finding](../reference/known-limitations.md#report-a-finding).
+A step that is wrong: [report it](../reference/known-limitations.md#report-a-finding).

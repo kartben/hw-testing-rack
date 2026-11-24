@@ -1,14 +1,15 @@
 # Known issues, and what will not work
 
 A board in a bay gets full-speed USB over the network, never high speed, and no new revision changes that:
-the sections headed *By design* hold limits of that kind. What is known to be wrong on the v1.0 PCBs and in
+the three sections *by design* hold limits of that kind. What is known to be wrong on the v1.0 PCBs and in
 firmware 0.5 can be fixed by a next revision or release. What is only untested is on
 [What exists today](../plan/status.md).
 
 Nothing on this page was found on a rack: no rack exists. Every line comes from the design, from the code or
 from a review of the layout, and a few from the bench stand-ins, where the line says so.
 
-## By design: USB
+(by-design-usb)=
+## USB, by design
 
 Over USB/IP a board's USB passes through the bay node's ESP32-S3 and the Wi-Fi network.
 
@@ -34,7 +35,8 @@ None of these limits is in the way of a laptop on the bay's front port: classic 
 the laptop's own USB, at 480 Mbit/s ([Front port and classic mode](../use/front-port.md)). It needs the bay
 node powered and its firmware running, and it has never been tried.
 
-## By design: network and access
+(by-design-network-and-access)=
+## Network and access, by design
 
 | Limit | What it means |
 |---|---|
@@ -49,7 +51,8 @@ node powered and its firmware running, and it has never been tried.
 What the access rules protect, and what they leave open: [Access rules and security](../use/access.md).
 Keep the rack on a lab network or behind a VPN.
 
-## By design: mechanics and power
+(by-design-mechanics-and-power)=
+## Mechanics and power, by design
 
 | Limit | What it means |
 |---|---|

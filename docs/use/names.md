@@ -16,7 +16,7 @@ bay of row B. The same board answers to other names, and each interface wants it
 :::{status} simulated
 The busids by port are tested on native_sim with Zephyr's virtual USB bus, the enumeration on a simulated
 rack, and `bayctl` against the simulated node. The mDNS names were used on the bench stand-ins. Nothing here
-has run behind a DATA ×6 or a DATA ×4. See [What exists today](../plan/status.md).
+has run behind a DATA ×6 or a DATA ×4. See [What exists today](../plan/status.md#status-names).
 :::
 
 ## A bay is a row letter and a place
@@ -43,13 +43,15 @@ bay's DATA board. The screens say port, the API and `bayctl` say slot or sub-slo
 
 Port 1 is the leftmost socket seen from the boards' side, from the front of the pulled-out drawer; the
 others follow left to right. The drawer's port wall has six slots and no numbers: a DATA ×6 fills all six, a
-DATA ×4 stands behind slots 2 to 5 and has a large port number on its silkscreen, over each pin header.
+DATA ×4 stands behind slots 2 to 5. Both boards print each port's number in a filled disc of silkscreen:
+the DATA ×6 above each USB-C, where it shows over the port wall, the DATA ×4 just left of each socket.
 
 A bay holds up to four boards flat on its plate with a DATA ×4, up to six on edge in a slot bin with a
 DATA ×6, lane k on port k ([Put a board in a bay](mount-a-board.md)). A board with two USB connectors, one
 for its probe and one for its own USB, takes two ports and so has two names. In the example rack, B3.3 is
-the bay's logic analyzer and not a board under test: commands that name the whole bay pass it by, except
-power.
+a stock Pico 2 used as a stand-alone analyzer, chosen before the DATA ×4's co-processor, which is the bay's
+own analyzer ([A Pico 2 on a port instead](logic-analyzer.md#a-pico-2-on-a-port-instead)). It is not a
+board under test: commands that name the whole bay pass it by, except power.
 
 ## A bay that holds one board
 

@@ -112,10 +112,12 @@ The lens, from the sourcing notes:
 ```
 
 Only a bay with a DATA ×4 takes these. The 20 cm strip is torn into small ribbons that run from the
-DATA ×4's pin headers to the pins of the boards ([Wires between boards](../use/wires.md)). The Pico 2 is the
-logic analyzer of the example's sub-slot B3.3, with gusmanb's LogicAnalyzer firmware, and the 10 cm strip
-carries its channels. Buy revision A4 of its RP2350, marked on the chip: on A2 an input released from high
-can stay near 2.1 V ([Logic analyzer](../use/logic-analyzer.md)).
+DATA ×4's pin headers to the pins of the boards ([Wires between boards](../use/wires.md)). The Pico 2 is a
+stand-alone analyzer in the example's sub-slot B3.3, with gusmanb's LogicAnalyzer firmware, and the 10 cm
+strip carries its channels. It was chosen before the DATA ×4's co-processor, which is the bay's own
+analyzer: a bay with a DATA ×4 with its logic does not need it
+([A Pico 2 on a port instead](../use/logic-analyzer.md#a-pico-2-on-a-port-instead)). If you buy one, buy
+revision A4 of its RP2350, marked on the chip: on A2 an input released from high can stay near 2.1 V.
 
 ## USB cables for your boards
 

@@ -31,7 +31,7 @@ and VREF (below); no GND wire, the USB cable carries it.
 
 The viewer colours VREF red, RESET brown, BOOT green and GND black (the bill names the same colours for GND,
 RESET and BOOT). Take the strip's colours in the order its wires lie onto the pins at both ends, so that they
-do not cross, and tie the ribbon down rather than let it pull on the header.
+do not cross.
 
 ```{figure} ../img/viewer/b3-drawer-out.jpg
 :alt: Bay B3 pulled out: a XIAO, two Pico 2 and a XIAO on the plate, the DATA ×4 standing at the back, two small ribbons from its headers to the first two boards

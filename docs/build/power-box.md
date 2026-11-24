@@ -6,7 +6,7 @@ into the box's rear wall, and one feed per row leaves its left wall for the row'
 :::{status} designed
 The box has not been printed, and no charger has been tried on a hub. What each LED shows below is read from
 the hub's schematic and from its firmware, which builds and has not run on a hub.
-[What exists today](../plan/status.md#status-pd).
+[What exists today](../plan/status.md#status-pod).
 :::
 
 ```{figure} ../img/viewer/power-box-under-a1.jpg
@@ -126,8 +126,8 @@ Every pattern, from [LEDs, buttons and switches](../reference/leds-and-buttons.m
 
 If PD stays dark, the charger made no PD contract: try another charger before suspecting the hub. If PD is
 on and no ON LED lights, the hub has no firmware or a contract under 15 V, and the rows stay off; `hub status`
-and `hub pd`, on the console USB-C, show the contract and what the charger offers. A 3 A cable changes no LED:
-the contract is 20 V × 3 A, and `hub pd` is where it shows.
+and `hub pd`, on the console USB-C, show the contract and what the charger offers. With the rows empty, a 3 A
+cable changes no LED: the contract is 20 V × 3 A, and `hub pd` is where it shows.
 
 ## Now the row feeds
 
@@ -149,15 +149,14 @@ Out to the left and back in from the left, a feed takes a half turn along the wa
 one. Row A takes the feed of 305 mm leads, row B the 60 cm one, row C the 80 cm one. The bill counts no cable
 tie for the feeds and no source places them: the route is the one [the 3D model](/viewer/) draws.
 
-Plug the charger in again. Each row comes up through its eFuse's soft start, and each node sees one clean
-power-up.
+Plug the charger in again. Each row comes up through its eFuse's soft start.
 
 ## Check before you go on
 
 - [ ] PD on, CTL steady, no red FAULT LED.
 - [ ] The ON LED of every row lit.
-- [ ] The LED of every bay lit, on the left of its fascia. A dark one has no power or no firmware.
+- [ ] The LED of every bay lit, on the left of its fascia.
 
 A red FAULT LED or a CTL that blinks: [Troubleshooting](../use/troubleshooting.md).
 
-Found a step that is wrong? [Report a finding](../reference/known-limitations.md#report-a-finding).
+A step that is wrong: [report it](../reference/known-limitations.md#report-a-finding).

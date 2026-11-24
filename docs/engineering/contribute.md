@@ -32,10 +32,18 @@ measure it and write its entry: [A board that is not in the library](../use/add-
 ## Change a source, run its generator
 
 ```{include} ../../CONTRIBUTING.md
-:start-after: <!-- site:contributing -->
-:end-before: <!-- /site:contributing -->
-:relative-docs: docs/
+:start-after: <!-- site:contributing-table -->
+:end-before: <!-- /site:contributing-table -->
 ```
+
+`tools/kicad.sh <board>`, with or without `--route`, builds the PCB again from `design.py` and drops the
+routing it had: never run it on one of the five v1.0 PCBs, which are frozen. What to run on a routed or
+released PCB: [Change a PCB](change-a-pcb.md).
+
+The generators need Python 3.10 or later (`pip install -r tools/requirements.txt`), OpenSCAD, local or in the
+Docker image `openscad/openscad`, and Docker for KiCad 10 (`kicad/kicad:10.0-full`), Freerouting
+(`eclipse-temurin:25-jre`) and Blender (`render/Dockerfile`). A local Blender 4.2 or later with the Blender MCP
+add-on listening on `127.0.0.1:9876` lets `tools/blender_live.py` render on your GPU.
 
 ```{include} ../../CONTRIBUTING.md
 :start-after: <!-- site:jlc-parts -->

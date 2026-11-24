@@ -34,12 +34,12 @@ like the bay.
 In the **USB devices** card of `http://bay-b3.local/`, each port's row carries its target under the
 device: the Zephyr board, the runner and **Edit**, or "No board target" and **Set board…**.
 
-```{figure} ../img/web-ui-ports.png
+```{figure} ../img/web-ui-ports-attach.png
 :class: bb-screenshot
-:alt: The USB devices card of bay B3, four port rows; B3.1 has a target and an Edit button, B3.2 a Set board button
+:alt: Two port rows: B3.1 with the target frdm_mcxn947/mcxn947/cpu0, runner linkserver and Edit; B3.2 with No board target and Set board
 
-Simulated node, a DATA ×4 bay. B3.1 has a target (`frdm_mcxn947/mcxn947/cpu0`, runner linkserver); B3.2 has
-none yet. B3.3 is reserved by another address, so its **Edit** is greyed.
+Simulated node, ports 1 and 2 of a DATA ×4 bay. B3.1 has a target (`frdm_mcxn947/mcxn947/cpu0`, runner
+linkserver); B3.2 has none yet.
 ```
 
 1. Click **Set board…** or **Edit**. The button needs the control right, and it is greyed while another

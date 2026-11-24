@@ -37,8 +37,9 @@ the way up its file has it. They are published under CERN-OHL-P-2.0, as the rest
 
 By `part_jobs()` in [tools/build.py](../../tools/build.py), no part file depends on the number of columns:
 a rack with fewer columns is fewer copies of the same files, and one with more columns needs the two label
-files of each new bay. Rows are different: the cap strip is rendered for the row it sits on, so a rack with
-fewer rows is rebuilt, and `git status` then says which files changed.
+files of each new bay. A rack with fewer rows needs no new file either. The cap strip is rendered for the
+row it sits on, but its shape is the same on every row: rendered for one row and for three on 2026-11-24, it
+came out the same solid, only placed higher. The committed `ladder_cap` serves a frame of one row.
 
 ## What is in the folder
 

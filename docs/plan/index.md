@@ -5,8 +5,8 @@ bay has a PCB of its own, the bay node, which switches and meters the boards in 
 on the network. One USB-C charger feeds the whole rack.
 
 :::{status} designed
-The printed frame is at v0.2 and has not been built, the five PCBs have been at the fab since 2026-11-11,
-and the firmware has run in simulation and on stand-in boards only:
+The printed frame is at v0.2 and has not been built, the five PCB designs have been at the fab at v1.0 since
+2026-11-11, and the firmware has run in simulation and on stand-in boards only:
 [What exists today](status.md).
 :::
 
@@ -17,18 +17,18 @@ The 3D model: the drawers of B1, B3 and C2 pulled out, the power box under A1 at
 [Open the model](/viewer/) to turn it round.
 ```
 
-"Board" alone is your development board. The rack's own are the bay node, the power hub, the DATA board and
-the camera pod: [the five PCBs](../reference/pcbs/index.md). The project's other words are in the
-[glossary](../reference/glossary.md).
+"Board" alone is your development board. The rack's own are PCBs of five kinds: the bay node, the power hub,
+the DATA ×6, the DATA ×4 and the camera pod ([The five PCBs](../reference/pcbs/index.md)). The project's
+other words are in the [glossary](../reference/glossary.md).
 
 ## One bay, from the tray up
 
-```{figure} ../img/exploded.jpg
-:alt: Render of one bay pulled apart: tray with the bay node and the drag chain, drawer, board plate, board, camera pod
+```{figure} ../img/viewer/b3-drawer-out.jpg
+:alt: Bay B3 with its drawer pulled out: a DATA ×4 at the back, four small boards on the plate, a USB cable to each
 
-Render of bay B2 pulled apart, made for the earlier two-row rack. Two things have changed since: a DATA board
-now stands at the back of every drawer, and the bay node v1.0 has no connector for the display drawn in the
-drawer's front.
+The 3D model: bay B3, the example bay of these pages, with its drawer out. A DATA ×4 stands behind the port
+wall; two XIAOs and two Pico 2s sit on the plate between their pegs, each on its own USB cable; three-wire
+ribbons run from the DATA ×4's pin headers to two of them.
 ```
 
 | From the bottom | What it is |
@@ -42,14 +42,6 @@ drawer's front.
 
 Two cables finish the bay. The DATA lead, eight wires, runs from the bay node through the drag chain to the
 DATA board, and never needs touching again. Each board then has its own short USB cable to one port.
-
-```{figure} ../img/viewer/b3-drawer-out.jpg
-:alt: Bay B3 with its drawer pulled out: a DATA ×4 at the back, four small boards on the plate, a USB cable to each
-
-The 3D model: bay B3, the example bay of these pages, with its drawer out. A DATA ×4 stands behind the port
-wall; two XIAOs and two Pico 2s sit on the plate between their pegs, each on its own USB cable; three-wire
-ribbons run from the DATA ×4's pin headers to two of them.
-```
 
 The same tray takes three other kinds of bay, and a bay converts from one to another. A sled is a drawer
 without a drag chain: unplug the board's cable, then pull. A fixed bay is a sled screwed in place. A dense bay
@@ -103,15 +95,12 @@ The reset lines, the serial console, the wires between pins, the logic analyzer 
 One USB-C PD charger outside the rack, 100 W at 20 V on a 5 A cable, is the only supply: no mains voltage
 enters the printed parts. Its cable plugs into the power box under A1.
 
-The power hub in the box asks the charger for 20 V. It has no input switch: the charger's output is the
-rack's supply rail, VRACK. One eFuse per row, set to 1.6 A, keeps the row off until the contract with the
-charger is final; then the row cable carries VRACK from bay to bay. The PCBs are also drawn for 28 V from a
-140 W charger, and the firmware keeps that locked out today.
-
-Each bay node makes its own 5 V from VRACK, and passes VRACK on to the drawer through an eFuse of its own,
-about 1.76 A, and a meter. The DATA board makes the boards' 5 V from it and switches and meters each port,
-about 0.5 A a port. Nothing reaches a drawer by default: the bay node's eFuse is off until the firmware turns
-it on, and the firmware keeps it on only if a DATA board answers on the lead within 1 s.
+The power hub in the box asks the charger for 20 V, and the charger's output is the rack's supply rail,
+VRACK. An eFuse per row, 1.6 A, keeps the row off until the contract with the charger is final. Each bay node
+passes VRACK on to its DATA board through an eFuse of its own, about 1.76 A, and the DATA board makes the
+boards' 5 V and switches and meters each port, about 0.5 A a port. Nothing reaches a drawer until the
+firmware turns the bay node's eFuse on, and it stays on only if a DATA board answers on the lead within 1 s.
+Every figure: [Specifications](../reference/specifications.md#voltages).
 
 A 100 W charger does not feed twelve bays at their worst. The hub shares what the charger grants: with twelve
 bays each DATA lead may draw 5.4 W, a port that does not fit waits its turn, and the hub switches a row off
@@ -124,9 +113,11 @@ before the charger cuts the whole rack:
 the bays that have a camera, and an example population that says which board sits in which bay.
 `tools/build.py` turns it into the constants of the printed parts and into the scene of the 3D model. The PCB
 generators read its `pcb:` section, so that outlines, mounting holes and connector positions match the prints,
-and `tools/bom.py` counts the bill of materials from it. Change a row or a column there and everything that
-depends on it is regenerated.
+and `tools/bom.py` counts the bill of materials from it. Change a row or a column there, run
+`tools/build.py`, and everything that depends on it is regenerated.
 
 The 3D model is that file, drawn. [Bay B3 with its drawer out](/viewer/?bay=B3&openbay=1&view=bay) is the
-example of these pages: a DATA ×4 bay with a XIAO on port 1 (B3.1), a Pico 2 on port 2 (B3.2) and the bay's
-logic analyzer, another Pico 2, on port 3.
+example of these pages: a DATA ×4 bay with a XIAO on port 1 (B3.1), a Pico 2 on port 2 (B3.2), a stock
+Pico 2 used as a stand-alone analyzer on port 3 (B3.3) and another XIAO on port 4. The bay's own analyzer is
+the DATA ×4's co-processor; B3.3 was chosen before it
+([A Pico 2 on a port instead](../use/logic-analyzer.md#a-pico-2-on-a-port-instead)).

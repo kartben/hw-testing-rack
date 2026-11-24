@@ -4,13 +4,11 @@ One board goes into a drawer, and from then on it is powered, flashed and read f
 being touched again. The board here is a new Raspberry Pi Pico 2 on port 2 of bay B3, a DATA ×4 bay: `B3.2`.
 
 :::{status} simulated
-The `bayctl` lines that need no USB were run against the simulated node, and their output is shown as it
-came. Attaching and flashing cannot be simulated, and no rack exists to try them on. See
-[What exists today](../plan/status.md).
+Worked out from [tools/bayctl.py](../../tools/bayctl.py) and the pages it links; nobody has done it yet.
+The `bayctl` lines that need no USB ran against the simulated node on 2026-11-24, with a XIAO on ports 1
+and 4 and a Pico in its bootloader on port 2, and their output is shown as it came. Attaching and flashing
+cannot be simulated. See [What exists today](../plan/status.md#status-bayctl).
 :::
-
-This walk-through is worked out from [tools/bayctl.py](../../tools/bayctl.py) and from the pages it links;
-nobody has done it yet.
 
 ## What you need
 
@@ -21,14 +19,21 @@ nobody has done it yet.
 - A Zephyr workspace with `west` on that machine.
 - A Pico 2 that has never been flashed, and a short USB-C to micro-B cable with straight plugs.
 
-On a rack you share, hold the bay for the session first: `bayctl lease B3 --for 1h`, and
-`bayctl release B3` at the end ([Reserve a bay](reserve-a-bay.md)).
+On a rack you share, hold the whole bay for the session first, which also keeps other hosts off its
+boards' USB/IP ([Reserve a bay](reserve-a-bay.md)):
+
+```console
+$ python tools/bayctl.py lease B3 --for 1h
+B3 reserved for 127.0.0.1, 3600 s
+```
+
+A bay node names your machine's address; the simulated node, on the same machine, sees 127.0.0.1.
 
 ## Put the board in B3, on port 2
 
 Pull the drawer of B3 out; it stays connected on its drag chain. Set the Pico 2 on the plate between its
-pegs ([Put a board in a bay](mount-a-board.md)) and plug its cable into port 2 of the DATA ×4: the second
-of its four sockets from the left, below the pin header numbered 2. Push the drawer in.
+pegs ([Put a board in a bay](mount-a-board.md)) and plug its cable into port 2 of the DATA ×4, the USB-C
+with the 2 in a filled disc of silkscreen just left of it. Push the drawer in.
 
 ## Power it, and see what the node sees
 
@@ -37,17 +42,19 @@ off or the port is still waiting for power. Switching it on again does no harm:
 
 ```console
 $ python tools/bayctl.py power B3.2 on
-B3.2   port 2  VBUS on 97 mA  no USB device
+B3.2   port 2  VBUS on 89 mA  2e8a:0003 RP2 Boot  busid 1-1.2
 $ python tools/bayctl.py ports B3
 B3.1   port 1  VBUS on 92 mA  303a:1001 USB JTAG/serial debug unit  busid 1-1.1
-B3.2   port 2  VBUS on 133 mA  2e8a:0003 RP2 Boot  busid 1-1.2
-B3.3   port 3  VBUS on 93 mA  2e8a:0003 RP2 Boot  busid 1-1.3
-B3.4   port 4  VBUS on 95 mA  303a:1001 USB JTAG/serial debug unit  busid 1-1.4
+B3.2   port 2  VBUS on 87 mA  2e8a:0003 RP2 Boot  busid 1-1.2
+B3.3   port 3  VBUS on 130 mA  2e8a:0003 RP2 Boot  busid 1-1.3
+B3.4   port 4  VBUS on 87 mA  303a:1001 USB JTAG/serial debug unit  busid 1-1.4
 ```
 
-The first answer comes before the board has enumerated; once it has, `ports` lists it. A blank Pico 2
-starts in its USB bootloader, which is what port 2 shows. The simulated node's Pico reports `2e8a:0003`, the
-id of the older RP2040; a Pico 2 reports `2e8a:000f`. The busid `1-1.2` is port 2 of a DATA ×4; on a
+A port that was off answers `no USB device` until its board has enumerated; `ports` lists it once it has.
+A blank Pico 2 starts in its USB bootloader, which is what port 2 shows. The simulated node's Pico is an
+RP2040 in BOOTSEL, `2e8a:0003`; a Pico 2 reports `2e8a:000f`. The product names come from the simulator:
+firmware 0.5 sends only the USB ids in `/api/ports`, so on a bay node the line reads
+`2e8a:000f   busid 1-1.2`, and `status B3` gives the names. The busid `1-1.2` is port 2 of a DATA ×4; on a
 DATA ×6 port 2 would be `1-1.1` ([Bays, ports and addresses](names.md)). Switching a port, and what a
 refusal means: [Power-cycle or reset a board](power-and-reset.md).
 
@@ -124,10 +131,13 @@ Stop `attach --follow` with Ctrl-C, then:
 ```console
 $ python tools/bayctl.py detach B3.2
 detached 1 device(s)
+$ python tools/bayctl.py release B3
+B3 released
 ```
 
 The board stays powered. Switch it off with `power B3.2 off` if it should not run; the port is on again at
 the node's next restart.
 
-The same session, command for command, runs today against the simulated node with nothing on the desk:
+The same session runs today against the simulated node with nothing on the desk, with a USB serial bridge
+on its port 2 unless you put a Pico there (`curl "http://localhost:8766/dev/usb?preset=pico&port=2"`):
 [Try it without hardware](../plan/try-it-without-hardware.md).

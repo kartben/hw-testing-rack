@@ -105,6 +105,6 @@ the Access card, from a browser that holds the admin key, or with `bayctl` and t
 $ python tools/bayctl.py release B3 --force
 ```
 
-(`B3.2` for one port.) In the node's shell, `bay access release` ends the bay's reservation and every port's;
-over telnet it needs only the shell right, which is why that right is for admin hosts. Restarting the node
-also ends it, and restarts every board of the bay with it.
+(`B3.2` for one port.) The node's shell ends it too, with `bay access release`, and over telnet that needs
+only the shell right, which is why that right is for admin hosts. Restarting the node also ends it, and
+restarts every board of the bay with it.

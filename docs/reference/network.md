@@ -36,7 +36,8 @@ Read from the bay node's [prj.conf](../../firmware/bay-node/prj.conf) and
 - TCP 8081 is `CONFIG_BAY_CAMERA_PORT`, its clients `CONFIG_BAY_CAMERA_CLIENTS`, 1 to 8. Without a camera
   it answers 503.
 
-The access rules drop a refused connection to 3240, 23, 4000 and 4001 without an answer, so the client
+The access rules drop a refused connection to 3240, 23, 4000, 4001 and, on a build with the camera, 8081
+without an answer, so the client
 waits for its own timeout. There is no TLS, no IPv6 and no login on telnet:
 [Access rules and security](../use/access.md).
 

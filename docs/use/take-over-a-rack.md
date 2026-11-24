@@ -6,7 +6,7 @@ the rack and leave with a person: the admin key, the lab file and the key that s
 
 :::{status} simulated
 Every command and screen named here exists and is tested against the simulated node and hub. The page is
-worked out from them: nobody has taken over a rack yet. See [What exists today](../plan/status.md).
+worked out from them: nobody has taken over a rack yet. See [What exists today](../plan/status.md#status-rack-page).
 :::
 
 ## Find the rack on the network

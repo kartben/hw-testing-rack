@@ -8,7 +8,7 @@ a rack's worth of everything is bought.
 :::{status} designed
 The boxes and the frame were checked on exact solids, every PCB in and every plug plugged, and sliced in
 Bambu Studio on 2026-10-21.  None has been printed, and no bay node has been powered from a PD trigger
-module.  [What exists today](../plan/status.md).
+module.  [What exists today](../plan/status.md#status-standalone).
 :::
 
 ## Which pages of the main line apply
@@ -16,11 +16,13 @@ module.  [What exists today](../plan/status.md).
 The stages of [The build, stage by stage](../plan/stages.md) hold, with fewer pages:
 
 1. [Order the PCBs](../plan/order-the-pcbs.md): one bay node and one DATA ×4, with its logic or as a base.  No
-   power hub, no DATA ×6.  A fab makes five bare PCBs and assembles two of a kind at least, so the order
-   leaves a spare of each.
+   power hub, no DATA ×6.  The order of 2026-11-11 was five bare PCBs of each design, two of them assembled:
+   an order like it leaves a spare of each.
 2. Buy the parts of the tables below, and a USB-C charger that offers 20 V at 30 W or more.
-3. [Measure before you print](../print/index.md): the PD trigger module.  Then print the Quad, the desk frame,
-   the board plate and the pegs your board needs.
+3. [Measure before you print](../print/index.md): the PD trigger module.  Then print
+   `standalone_quad_base` upright, `standalone_quad_lid` top face down, `standalone_quad_shelf` and
+   `standalone_desk_frame` flat, all in PETG with no supports, and the board plate and the pegs your board
+   needs ([Get the STL files](../print/stl-files.md)).
 4. [Build or download the firmware](get-the-firmware.md): the bay node's image only.
 5. [Solder the connectors](solder-the-connectors.md) of the DATA ×4, then
    [the bay node's checklist](check-the-pcbs/bay-node.md) up to its fourth stage and
@@ -40,8 +42,8 @@ Row cables, trays, the frame, the power box and bringing a rack online do not ap
 | **Desk frame** | none: the rack's board plate, the boards on its pegs | 142.8 × 190.8 × 8.5 mm | frame and plate on one plate: 85 g, 4 h 01 |
 | **Solo** | the bay node and the single DATA port PCB | 106 × 95.5 × 33.6 mm | [do not build it](#the-solo) |
 
-The print figures are Bambu Studio's of 2026-10-21; the bill of materials below estimates less filament, from
-the parts' volume.
+The print figures are Bambu Studio's of 2026-10-21, before the Quad's front took a window over the DATA ×4's
+SWD header on 2026-11-02; the bill of materials below estimates less filament, from the parts' volume.
 
 ```{figure} ../../electronics/data-port-x4/docs/data-port-x4-iso.jpg
 :alt: KiCad render of the DATA ×4, its four USB-C receptacles along one edge, a pin header above each
@@ -51,20 +53,13 @@ KiCad render of the DATA ×4 v1.0.  In the Quad it stands behind the front face,
 face and each 2 × 6 header under a window of its own.
 ```
 
-In the Quad the DATA ×4 stands in two side slots on the floor.  A Dupont housing plugs into each header
-through its window.  Its VBUS LEDs are behind windows, and D1 and
-the SWD header J2 behind one more, so a debug probe's lead plugs in from the front.  The port numbers 1 to 4
-are debossed on the face.  The node lies on a shelf over it, front edge forward: the PC port, SERVICE and the
-status LED are at the top of the front face, as on a tray's fascia.  The shelf rests 0.5 mm over the DATA ×4's
-top edge, so the board cannot lift out.
-
-At the back stands the PD trigger module, its USB-C through the rear wall.  The lid has pin holes over RESET
-and BOOT, vents over the node's buck and a window over J6, the camera's socket; the right wall has a slot for
-an AUX lead at its top.  Two things are not drawn: a mast to hold a camera pod over the desk frame, and a
-blank for the header windows.
-
-The front face is cut for the DATA ×4's four ports and headers.  No box is drawn for a DATA ×6, and nobody has
-checked that one would fit.
+In the Quad the DATA ×4 stands in two side slots on the floor; a Dupont housing plugs into each header
+through its window, and D1 and the SWD header J2 sit behind one more, so a debug probe's lead plugs in from
+the front.  Its VBUS LEDs show through windows, and the port numbers 1 to 4 are debossed on the face.  The node lies on a shelf over it, front edge forward: the PC port, SERVICE and the status LED are
+at the top of the front face, as on a tray's fascia.  The shelf rests 0.5 mm over the DATA ×4's top edge, so
+the board cannot lift out.  The lid has pin holes over RESET and BOOT and a window over J6, the camera's
+socket; the right wall has a slot for an AUX lead.  Not drawn: a mast for a camera pod over the desk frame, a
+blank for the header windows, and any box for a DATA ×6.
 
 ## What to print, buy and order
 
@@ -82,15 +77,17 @@ The pegs for your board come out of `tools/plate_layout.py`, as for a drawer:
 ## Power from a PD trigger module
 
 The module is a bought CH224K board with a DIP switch: set the switch to **20 V**.  It feeds the node's J1,
-ROW IN, through a two-wire lead: a JST PHR-6 housing, two SPH-002T-P0.5S contacts and two 15 cm wires of
-24 AWG, soldered to the module's output pads.
+ROW IN, through a two-wire lead that you make (step 2 below).
 
 | J1 pin | Wire | Module |
 |---|---|---|
 | 1, VRACK | red | + |
 | 2, GND | black | − |
 
-The charger must offer 20 V at 30 W or more: a bay draws 13 W at most, camera included.
+The charger must offer 20 V at 30 W or more.  A DATA ×4 with every port at its limit draws 0.92 A at 20 V,
+about 18 W; the node draws 1.8 W, and 2.5 W more with a camera.  With no hub to grant it power, the node holds
+the DATA lead under 25 W (`CONFIG_BAY_PORTS_LIMIT_MW`)
+([Specifications](../reference/specifications.md)).
 
 * 12 V and 9 V do not start the node: its 5 V buck needs 13.5 V.
 * 15 V starts the node, and the sources say it works.  On v1.0 that is to be verified: the eFuse on the DATA
@@ -100,8 +97,8 @@ The charger must offer 20 V at 30 W or more: a bay draws 13 W at most, camera in
   fallback is not documented.  The node then stays off and nothing is harmed.
 
 The seller gives no size.  The boxes are drawn for the largest board the photos allow, 30 × 21 × 1.6 mm, and a
-smaller one fits them as committed, as long as its USB-C stands 0.6 to 2 mm proud of its PCB's edge.  Measure the module you bought before the base is printed; a larger one
-goes into `config/rack.yaml` › `standalone.pd_module` (its PCB's length and width, its thickness, the USB-C's
+smaller one fits them as committed, as long as its USB-C stands 0.6 to 2 mm proud of its PCB's edge.  Measure
+the module you bought before the base is printed; a larger one goes into `config/rack.yaml` › `standalone.pd_module` (its PCB's length and width, its thickness, the USB-C's
 axis off its back face), and the seat and the collar follow ([Measure before you print](../print/index.md)).
 
 ## Assemble the Quad
@@ -113,6 +110,17 @@ axis off its back face), and the seat and the collar follow ([Measure before you
 :::
 
 :::{build-step} 2
+:parts: JST PHR-6 housing=1, SPH-002T-P0.5S contact=2, 24 AWG wire 15 cm=2
+
+The **PD lead**.  Crimp a contact onto one end of each wire, as for
+[the feeds](row-cables.md#make-the-feeds) ([a crimp cannot be undone](index.md#crimp)).  Click the red wire's
+contact into position 1 of the housing and the black one's into position 2: position 1 is the end towards
+the node's rear edge, the edge with the ESP32-S3 module's antenna, once the housing is in J1
+([the bench lead](row-cables.md#a-two-wire-lead-for-the-bench) is made the same way).  Solder the red wire to
+the module's + output pad and the black one to its − pad.
+:::
+
+:::{build-step} 3
 :parts: PD trigger module=1, Foam pad 1 mm=1
 
 **PD module**, its DIP switch at 20 V, on its long edge against its low wall at the rear left, its back face
@@ -120,14 +128,14 @@ on the foam pad.  Its USB-C goes into the rear wall's collar, its far end behind
 faces into the box: it can be changed only while the lid is off.
 :::
 
-:::{build-step} 3
+:::{build-step} 4
 :parts: DATA ×4=1, JST PH 8 lead 15 cm=1
 
 The **DATA lead** into the DATA ×4's J1 first, then the board down into its side slots, USB-C forward.  The
 lead is the rack's DATA lead at 15 cm, "Same direction": pin n meets pin 9 − n.
 :::
 
-:::{build-step} 4
+:::{build-step} 5
 :parts: Bay node=1
 :hardware: m3x8=4
 
@@ -135,13 +143,13 @@ lead is the rack's DATA lead at 15 cm, "Same direction": pin n meets pin 9 − n
 ledges.
 :::
 
-:::{build-step} 5
+:::{build-step} 6
 :hardware: m3x8=4, Rubber bumper Ø10 × 3=4
 
 **Lid** on, four M3 × 8.  The four bumpers into their pockets under the base.
 :::
 
-:::{build-step} 6
+:::{build-step} 7
 :parts: Desk frame=1, Board plate=1
 
 The **plate** into the desk frame's pocket, over its two pins, its pegs and your board on it as in a drawer.
@@ -179,4 +187,4 @@ It is then `bay-b3.local`, the name the bay in place B3 of a rack has.  `bayctl`
 ([Set up bayctl and usbip](../use/set-up-your-machine.md)).  From there,
 [A first session with a bay](../use/first-session.md) follows B3, a DATA ×4 bay like this one.
 
-Found a step that is wrong?  [Report a finding](../reference/known-limitations.md#report-a-finding).
+A step that is wrong: [report it](../reference/known-limitations.md#report-a-finding).

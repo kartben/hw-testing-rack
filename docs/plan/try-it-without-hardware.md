@@ -5,6 +5,8 @@ myst:
       ```console
       $ git clone REPO_URL
       $ cd REPO_DIR
+      $ python3 -m venv .venv
+      $ . .venv/bin/activate
       $ pip install pyyaml
       ```
 ---
@@ -49,7 +51,8 @@ looks into B2 with its light on and its camera's picture beside it. Every parame
 
 ## Start a simulated bay
 
-It takes Python 3.10 or later, PyYAML and a checkout of the repository:
+It takes Python 3.10 or later and a checkout of the repository. The simulator needs PyYAML alone, installed
+here in a virtual environment, since Homebrew's and Debian's Python refuse a plain `pip install`:
 
 {{ clone | replace("REPO_URL", repo_url) | replace("REPO_DIR", repo_url.split("/")[-1]) }}
 
@@ -61,7 +64,10 @@ bay node mock on http://localhost:8766 (camera on port 8767), 4 ports
 ```
 
 Open <http://localhost:8766>: it is the page a bay node serves, here for bay B3. The simulator puts four
-made-up boards on its ports, B3.1 to B3.4, and every button acts on them.
+made-up boards on its ports, B3.1 to B3.4, and every button acts on them. They enumerate a moment after the
+server starts: a command typed at once still finds the ports without a USB device. If 8766 is taken, give another
+port before `--ports`: `dev_server.py 8790 --ports 4` serves on 8790 with the camera on 8791, and the lab
+file below then says `http_port: 8790`.
 
 ```{figure} ../img/web-ui-ports.png
 :class: bb-screenshot
@@ -71,17 +77,20 @@ Simulated node: the *USB devices* card, one row per port, some way into a sessio
 is reserved and B3.4 waits for power.
 ```
 
-In a second terminal, tell `bayctl` where that bay is. It reads `config/lab.yaml`, which git ignores:
+In a second terminal, tell `bayctl` where that bay is. Its lab file is `config/lab.yaml` unless
+`BAYCTL_LAB` names another; write this one as `sim-lab.yaml` at the top of the checkout, so that a lab file
+of your own stays as it is:
 
 ```{code-block} yaml
-:caption: config/lab.yaml
+:caption: sim-lab.yaml
 bays:
   B3: {host: 127.0.0.1, http_port: 8766}
   B3.2: {platform: rpi_pico2/rp2350a/m33_0}
 ```
 
 ```console
-$ export BAYCTL_HUB=none
+$ . .venv/bin/activate
+$ export BAYCTL_LAB=$PWD/sim-lab.yaml BAYCTL_HUB=none
 $ python tools/bayctl.py ports B3
 B3.1   port 1  VBUS on 95 mA  1fc9:0143 MCU-LINK on-board (r0E7) CMSIS-DAP V3.172  busid 1-1.1
 B3.2   port 2  VBUS on 140 mA  0403:6001 FT232R USB UART  busid 1-1.2
@@ -90,7 +99,11 @@ B3.4   port 4  VBUS on 93 mA  1a86:7523 None  busid 1-1.4
 ```
 
 `BAYCTL_HUB=none` stops `bayctl` from looking for a power hub on the network. The currents move a little
-from one call to the next. How `bayctl` finds a real rack, and what else a machine needs:
+from one call to the next. The product names are the simulator's: firmware 0.5 sends only the VID, the PID
+and the busid in `/api/ports`, so on a real bay nothing stands between `1fc9:0143` and the busid. The `None`
+of B3.4 is the simulator's CH340, which has no product string. `bayctl status B3` lists every device with
+its name, from `/api/usb`. How
+`bayctl` finds a real rack, and what else a machine needs:
 [Set up bayctl and usbip](../use/set-up-your-machine.md).
 
 `--ports 6` is a bay with a DATA ×6. Started without `--ports`, the simulator is a bay node with one board and
@@ -113,7 +126,7 @@ Tell the bay which board it is. The lab file names the board; `import lab` write
 the page and every other machine see it (on the page, the *Set board…* button of the row):
 
 ```console
-$ python tools/bayctl.py import lab config/lab.yaml B3.2
+$ python tools/bayctl.py import lab sim-lab.yaml B3.2
 B3.2: rpi_pico2/rp2350a/m33_0, pinned to 0403:6001 S/N A50285BI
 $ python tools/bayctl.py list
 B3.1  -                   (no target)                        -                    usb     127.0.0.1
@@ -259,12 +272,11 @@ row C  SHED        0 mA    0.0 W
 row D  ON          0 mA    0.0 W
 ```
 
-`/dev/restore` brings the first charger back, `/dev/fault?row=B` trips a row's eFuse and
-`/dev/lose?node=0x13` silences a bay. `/dev/image?version=0.6.0` gives an image to try **Update firmware…**
-with (laid out as `zephyr.signed.bin`, unsigned), and `/dev/rollback` makes the next update roll back. Every
-hook is listed at the top of [the hub's dev_server.py](../../firmware/power-hub/web/dev_server.py). The two simulators do not know each other: the hub's bays have made-up
-addresses, so keep `BAYCTL_HUB=none` for the commands that talk to the simulated bay. The page itself:
-[Rows and the rack's page](../use/rack-page.md).
+`/dev/restore` brings the first charger back. The other hooks (a row's eFuse tripped, a bay silenced, an
+image for **Update firmware…**, an update that rolls back) are listed at the top of
+[the hub's dev_server.py](../../firmware/power-hub/web/dev_server.py). The two simulators do not know each
+other: the hub's bays have made-up addresses, so keep `BAYCTL_HUB=none` for the commands that talk to the
+simulated bay. The page itself: [Rows and the rack's page](../use/rack-page.md).
 
 ## A twister hardware map without a rack
 
@@ -276,8 +288,10 @@ $ BAYCTL_HUB=none python tools/bayctl.py --lab config/lab.example.yaml hwmap -o 
 
 It prints eight warnings about what the example leaves open (A2 has no board target, A4 no console path,
 B3.2 no probe, so flashing it takes BOOTSEL), then says that it wrote
-`rack-map.yaml` with 7 boards and one pre-script per board in `rack-scripts/`. Git ignores both. The map's
-first board:
+`rack-map.yaml` with 7 boards and one pre-script per board in `rack-scripts/`. Git ignores both. The
+example lab file is older than the DATA boards: its A1 to A4, B2 and B4 hold one board on the node itself, a
+form a v1.0 rack does not have, where the first board would be A1.1
+([lab.yaml](../reference/lab-yaml.md)). The map's first board:
 
 ```{code-block} yaml
 :caption: rack-map.yaml, its first board

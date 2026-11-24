@@ -62,7 +62,7 @@ its back, and C2, a slot bin. The laptop is on B4's front port.
 | | 1 | 2 | 3 | 4 |
 |---|---|---|---|---|
 | **C** | slot bin, 6 boards | slot bin, 4 boards | slot bin, 5 boards | slot bin, 3 boards |
-| **B** | DATA ×4, base: 2 boards and a RESET wire | a GIGA R1 with its display on its own plate, under the camera | DATA ×4 with its logic: 3 boards, wires and the bay's analyzer | an UNO R4, a laptop on the front port |
+| **B** | DATA ×4, base: 2 boards and a RESET wire | a GIGA R1 with its display on its own plate, under the camera | DATA ×4 with its logic: 3 boards, wires, and a Pico 2 as a stand-alone analyzer | an UNO R4, a laptop on the front port |
 | **A** | a NUCLEO-64 | a NUCLEO-144 | a BeaglePlay on a sled, no drag chain | a Wio Terminal |
 
 A plain rack is what the same file gives with an empty `population`: every bay a drawer on a drag chain with a
@@ -104,8 +104,8 @@ Which feature needs which DATA board, and how far each has been tested:
 [What a bay can do](../use/index.md#with-a-data-6-with-a-data-4).
 
 Eight small boards are two bays, not eight: four on the plate of each of two DATA ×4 bays, as B3 holds two
-XIAOs and two Pico 2s (one of them its analyzer), or six on edge in one slot bin and two more in a second bay.
-Four on a plate is the most, and B1 holds two: beside its Pico 2 and its Nano Matter, a third board leaves no
+XIAOs and two Pico 2s (one of them a stand-alone analyzer), or six on edge in one slot bin and two more in a
+second bay. Four on a plate is the most, and B1 holds two: beside its Pico 2 and its Nano Matter, a third board leaves no
 room for its pegs' cams. Which boards fit a lane of a slot bin is the fit table of the
 [board library](../reference/board-library.md#how-each-is-held). Boards that share a bay also share its power.
 
@@ -119,11 +119,10 @@ The hub grants each bay an equal share of its row's 1.6 A, less a 10 % margin, a
 :end-before: <!-- /site:bay-share -->
 ```
 
-A bay's share follows the width of the rack: with one to three rows, a 2 × 2 rack and a 2 × 3 one both grant
-12.6 W. A fourth row of four turns that round, because the charger's 90 W divided by 16 bays is then the
-smaller share: 3.8 W a bay. The 140 W, 28 V charger would raise every figure; the default firmware locks it out
-until every converter's inductor is rated for it
-([Specifications](../reference/specifications.md#chargers-and-what-each-feeds)).
+Up to three rows, a bay's share follows the width of the rack alone. A fourth row of four lowers it to 3.8 W
+a bay ([The largest rack](../reference/specifications.md#the-largest-rack)). The 140 W, 28 V charger would
+raise every figure, and the default firmware locks it out
+([Chargers and what each feeds](../reference/specifications.md#chargers-and-what-each-feeds)).
 
 The DATA board's own draw comes out of the grant first. At four columns, on design estimates:
 
@@ -144,7 +143,7 @@ board or a few light ones. Six boards in a slot bin can ask for more than their 
 find no room wait their turn ([Power budget and queued ports](../use/power-budget.md)). A bay on a desk has no
 hub and no grant: its node keeps it under 25 W.
 
-## What a size changes: PCBs, cables, printed parts
+## PCBs, cables and parts for a size
 
 ```{include} order-the-pcbs.md
 :start-after: <!-- site:pcbs-per-size -->
@@ -178,7 +177,7 @@ The parts for each size, with their files and filament, are on [Parts and quanti
 what to buy is on the [shopping list](shopping-list.md).
 
 The frame stops at four rows, because the hub has four row outputs, and at rows 165 mm high: a 185 mm row
-makes a 261 mm ladder, longer than a 256 mm bed. A double-width bay is not designed, so every entry of a row's
+makes a 258.8 mm ladder, longer than a 256 mm bed. A double-width bay is not designed, so every entry of a row's
 `layout` is `1` ([The largest rack](../reference/specifications.md#the-largest-rack)).
 
 Row C's 120 mm are sized for slot bins: 85 mm from the bin's floor to the ceiling. In the 165 mm rows the

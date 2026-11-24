@@ -74,14 +74,14 @@ $ west build --sysbuild -b bay_node/esp32s3/procpu path/to/hw-testing-rack/firmw
 
 ## Run it without the PCBs
 
-Two development servers serve the node's and the hub's pages and APIs from Python, with the same endpoints and
-JSON as the firmware, and hooks under `/dev/` that make faults happen. The hub's needs the standard library
-only, the node's PyYAML too (Pillow, optional, for its camera). The node's camera takes port 8767, the hub's
-default, so the hub gets another:
+Two development servers serve the node's and the hub's pages and APIs from Python, in the firmware's JSON
+shape ([where the node's differs](../reference/node-api.md#routes-and-the-right-each-needs)), with hooks under
+`/dev/` that make faults happen. The hub's needs the standard library only, the node's PyYAML too (Pillow,
+optional, for its camera). The node's camera takes port 8767, the hub's default, so the hub gets another:
 
 ```console
 $ python firmware/bay-node/web/dev_server.py --ports 4
-$ python firmware/power-hub/web/dev_server.py 8768
+$ python firmware/power-hub/web/dev_server.py 8770
 ```
 
 A session against them, with `bayctl` and the hooks: [Try it without hardware](../plan/try-it-without-hardware.md).

@@ -7,7 +7,7 @@ met on a rack: no rack has run yet.
 
 :::{status} simulated
 The messages and states quoted here appear on native_sim, on the simulated node and hub, and some on the bench
-stand-ins. None has been seen on a v1.0 PCB. [What exists today](../plan/status.md#firmware-feature-by-feature).
+stand-ins. None has been seen on a v1.0 PCB. See [What exists today](../plan/status.md#firmware-feature-by-feature).
 :::
 
 ## Where the rack tells you things
@@ -29,19 +29,19 @@ pattern: [LEDs, buttons and switches](../reference/leds-and-buttons.md).
 
 | What you see | The likely cause | What to do |
 |---|---|---|
-| The bay's LED is dark | The node has no power, or no firmware | [A bay is missing or does not answer](#a-bay-is-missing-or-does-not-answer) |
-| It blinks red | The DATA lead's eFuse is in current limit, or a fault switched the lead off: a short, the eFuse's fault, a DATA board that stopped answering | The reason is in the bay page's banner; once it is mended, `bay power on` ([After an over-current](power-and-reset.md#after-an-over-current)) |
-| It is dim white | The DATA lead is off: switched off by hand, or a check failed before it went on | The Power card or `bay power` gives the reason: [No power](#no-power-from-the-charger-to-the-port) |
-| It blinks orange, slowly | No network | [Recover a node or a hub](recover.md#a-node-that-is-on-the-rack-bus-but-not-on-wi-fi) |
-| It is yellow | SERVICE is on: the front port goes to the node itself | Slide SERVICE off ([Front port and classic mode](front-port.md)) |
-| It is magenta | Classic mode: a laptop on the PC port, or `bay mode classic` | [Front port and classic mode](front-port.md) |
-| It blinks white | A claim waits for a press on BOOT | Press BOOT briefly, or let the 60 s run out ([Access rules and security](access.md)) |
-| It flashes white and blue | The rack's page asked "which one is it?" | Nothing: it stops after 10 s |
-| It stays dim blue | No board has enumerated on any port | [USB/IP and flashing](usb-and-flashing.md) |
-| PD, on the power box, stays dark | The charger made no PD contract | Try another charger before suspecting the hub ([Power box and charger](../build/power-box.md)) |
+| The bay's LED is {led}`off` dark | The node has no power, or no firmware | [A bay is missing or does not answer](#a-bay-is-missing-or-does-not-answer) |
+| It blinks {led}`red blink` red | The DATA lead's eFuse is in current limit, or a fault switched the lead off: a short, the eFuse's fault, a DATA board that stopped answering | The reason is in the bay page's banner; once it is mended, `bay power on` ([After an over-current](power-and-reset.md#after-an-over-current)) |
+| It is {led}`white dim` dim white | The DATA lead is off: switched off by hand, or a check failed before it went on | The Power card or `bay power` gives the reason: [No power](#no-power-from-the-charger-to-the-port) |
+| It blinks {led}`orange blink` orange, slowly | No network | [Recover a node or a hub](recover.md#a-node-that-is-on-the-rack-bus-but-not-on-wi-fi) |
+| It is {led}`yellow` yellow | SERVICE is on: the front port goes to the node itself | Slide SERVICE off ([Front port and classic mode](front-port.md)) |
+| It is {led}`magenta` magenta | Classic mode: a laptop on the PC port, or `bay mode classic` | [Front port and classic mode](front-port.md) |
+| It blinks {led}`white blink` white | A claim waits for a press on BOOT | Press BOOT briefly, or let the 60 s run out ([Access rules and security](access.md)) |
+| It flashes {led}`white blink` white and {led}`blue blink` blue | The rack's page asked "which one is it?" | Nothing: it stops after 10 s |
+| It stays {led}`blue dim` dim blue | No board has enumerated on any port | [USB/IP and flashing](usb-and-flashing.md) |
+| PD, on the power box, stays {led}`off` dark | The charger made no PD contract | Try another charger before suspecting the hub ([Power box and charger](../build/power-box.md)) |
 | PD on, no ON LED | The rows stay off without firmware, and with a contract under 15 V | `hub status` and `hub pd` on the hub's console |
 | CTL blinks once a second | No PD charger, the hub on its console USB-C alone; or the contract is not final yet | Wait a second; then the charger |
-| CTL blinks twice a second, a FAULT LED is red | A row's eFuse is in current limit or too hot; the hub leaves the row on and the eFuse holds it at 1.6 A | [No power](#no-power-from-the-charger-to-the-port) |
+| CTL blinks twice a second, a FAULT LED is {led}`red` red | A row's eFuse is in current limit or too hot; the hub leaves the row on and the eFuse holds it at 1.6 A | [No power](#no-power-from-the-charger-to-the-port) |
 | CTL double-blinks | Rows shed for lack of power | [Power budget and queued ports](power-budget.md) |
 | CTL flickers | A claim waits for the hub's BOOT | [Access rules and security](access.md#on-the-hub-reading-is-open-and-actions-are-signed) |
 
@@ -146,7 +146,8 @@ the node's LED is lit, ask for a new enumeration: **Re-enumerate** on the rack's
 `python tools/bayctl.py hub enumerate`. The meter checks of a node and its cable are those of stage 4 of
 [the rack bus checklist](../build/check-the-pcbs/rack-bus.md#4-if-a-node-is-missing-from-hub-nodes).
 
-**The bay is on the page with no address.** It is on the rack bus and not on Wi-Fi. The hub can still identify
+**The bay is on the page with no IP address.** This is not the *no address* above, which is a place on the
+rack bus never confirmed: the bay has its place, and is on the rack bus and not on Wi-Fi. The hub can still identify
 it, reset or power-cycle its boards and restart it:
 [Recover a node or a hub](recover.md#a-node-that-is-on-the-rack-bus-but-not-on-wi-fi).
 
@@ -155,7 +156,7 @@ shows. If it answers, the name is your machine's mDNS, not the bay:
 [Without mDNS, or from another subnet](set-up-your-machine.md#without-mdns-or-from-another-subnet).
 
 A bay that was there and goes silent for 3.5 s is shown lost, *no answer*, dashed on the page, and the events
-keep `node B3 (0x13) lost: no STATUS for 3 s`: a power cut, a crash or a cable. A node that restarts asks for
+keep `node B3 (0x13) lost: no STATUS for 3 s`, the 3.5 s rounded down: a power cut, a crash or a cable. A node that restarts asks for
 an address again and the hub enumerates the whole rack, well under a second. *newer protocol* means the node
 speaks a newer version of the rack bus protocol than the hub's firmware: update the hub ([Update the firmware](update-firmware.md)).
 

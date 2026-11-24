@@ -7,7 +7,8 @@ bay B3.
 :::{status} simulated
 The port logic is tested on native_sim against emulated DATA boards, and `bayctl` against the simulated node.
 The bench plan for the M5Stack CoreS3 stand-in switches one board's 5 V; no result is written down. No DATA ×6
-or DATA ×4 has been on a node. See [What exists today](../plan/status.md).
+or DATA ×4 has been on a node. The `bayctl` lines below are the simulated node's output. See
+[What exists today](../plan/status.md#status-power).
 :::
 
 Needs: a DATA ×6 or a DATA ×4 in the bay, since a v1.0 node powers nothing without one
@@ -18,12 +19,12 @@ Needs: a DATA ×6 or a DATA ×4 in the bay, since a v1.0 node powers nothing wit
 
 Open `http://bay-b3.local/`. The **USB devices** card has one row per port.
 
-```{figure} ../img/web-ui-ports.png
+```{figure} ../img/web-ui-ports-power.png
 :class: bb-screenshot
-:alt: The USB devices card of bay B3: four port rows, each ending with its buttons
+:alt: Three port rows: B3.2 on with Reset, Bootloader, Cycle and Off; B3.3 reserved, its buttons greyed; B3.4 off with As soon as possible and Power on
 
-Simulated node, a DATA ×4 bay. B3.3 is reserved by another address, so its buttons are greyed; B3.4 is off,
-with a power-on queued.
+Simulated node, ports 2 to 4 of a DATA ×4 bay. B3.2 is on; B3.3 is reserved by another address, so its
+buttons are greyed; B3.4 is off, with **Power on** and the **As soon as possible** box.
 ```
 
 A port that is on has **Cycle** and **Off**; **Off** asks before it cuts the 5 V. A port that is off has
@@ -40,8 +41,9 @@ B3.2   port 2  VBUS on 139 mA  no USB device
 ```
 
 The line is the port as the node reports it when the cycle ends: powered again, not yet enumerated.
-`power B3.2 off` and `power B3.2 on` switch it; `cycle --ms 2000` keeps it off for at least two seconds,
-where the default is 1000 ms. A power-on that the bay's share has no room for fails with 409;
+`power B3.2 off` and `power B3.2 on` switch it. A cycle keeps the port off for `--ms`, 1000 ms unless
+said, then until its VBUS reads under 1 V, 2 s more at most. A power-on that the bay's share has no room
+for fails with 409;
 `--when available`, `--wait SECONDS` and `power B3.2 cancel` are on
 [Power budget and queued ports](power-budget.md). Every option: [bayctl](../reference/bayctl.md).
 
@@ -53,10 +55,10 @@ On a DATA ×6, `bayctl` reaches ports 1 to 4 only, for the reason given under th
 $ curl -s -X POST bay-b3.local/api/ports/2/power -d '{"action":"cycle"}'
 ```
 
-The answer is the port's object. `action` is `on`, `off` or `cycle`. A cycle has no fixed length: the port
-stays off until its VBUS reads under 1 V, and 2 s at most, because the port's switch does not discharge
-its output and only the board on it does. `"ms": 2000` beside the action sets a shortest off time, from 1
-to 10000.
+The answer is the port's object. `action` is `on`, `off` or `cycle`. Without `ms` a cycle keeps the port
+off until its VBUS reads under 1 V, 2 s at most, because the port's switch does not discharge its output
+and only the board on it does. `"ms": 2000` beside the action keeps it off that long first, from 1 to
+10000; `bayctl` always sends `ms`, 1000 by default.
 
 Firmware 0.5 registers `/api/ports/<n>/power`, `/reset` and `/boot` for ports 1 to 4
 ([web.c](../../firmware/bay-node/src/web.c)). Ports 5 and 6 of a DATA ×6 answer to `/api/power` with a port
@@ -149,9 +151,10 @@ A port's switch limits the current ([Specifications](../reference/specifications
 
 The DATA lead has a protection of its own, an eFuse on the node. A fault there, or a DATA board that misses
 two polls in a row (20 ms apart), switches the whole lead off at once. The bay's LED blinks red, the hub
-receives an alert, and the banner reads "DATA lead off:" with the reason. The lead stays off until
-`bay power on` in the node's shell, which runs the power-on checks again and prints
-`DATA_VIN stays off:` and the reason when one fails.
+receives an alert, and the banner reads "DATA lead off:" with the reason. The lead stays off until it is
+switched on again: `bay power on` in the node's shell, a power or a cycle of the bay from
+[the rack's page](rack-page.md), or a restart of the node. Each runs the power-on checks again; the shell
+prints `DATA_VIN stays off:` and the reason when one fails.
 
 ## After a power cut or a restart
 

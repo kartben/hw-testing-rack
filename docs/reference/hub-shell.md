@@ -1,17 +1,19 @@
 # Power hub shell
 
-The hub's shell runs on its console USB-C only, at 115200 Bd, with no telnet and no login: it switches rows,
+The hub's shell runs on its console USB-C only, with no telnet and no login: it switches rows,
 so it is reached with a cable, and whoever holds the cable is the hub's admin. The header of
 `firmware/power-hub/src/shell.c` still says "and telnet"; the hub has none.
 
 :::{status} written
-The shell builds with the hub's firmware 0.5.0, and the same shell code runs on the bench stand-ins. No hub
-has been on a bench. See [What exists today](../plan/status.md#status-rack-page).
+The shell builds with the hub's firmware 0.5.0 and has no test. Its row in
+[What exists today](../plan/status.md#status-rack-page) reads simulated for the rack's page and the hub's API,
+which ran against the simulated hub; that simulator has no shell, and the bench plan for a XIAO that runs the
+hub's firmware records no shell session. No hub has been on a bench.
 :::
 
 The console USB-C is in the power box's front wall, under the CTL label, beside the CTL LED. It also powers
-the hub's controller, but not the rows, so the shell works on a desk with no charger. Any serial terminal opens
-it; the prompt is `uart:~$`.
+the hub's controller, but not the rows, so the shell works on a desk with no charger. It is the
+ESP32-S3's own USB serial port: any serial terminal opens it, at any baud rate. The prompt is `uart:~$`.
 
 ## The commands
 
@@ -20,7 +22,7 @@ it; the prompt is `uart:~$`.
 | `hub status` | the hostname and address, the contract, each row, the budget, the rack bus | |
 | `hub pd` | the contract, the sink's state, what the hub asks for, and the charger's offers (`*` the one in use) | |
 | `hub pd 20v` | ask the charger for 20 V | yes |
-| `hub pd epr` | ask for 28 V EPR when offered; refused on a default build (notes) | yes |
+| `hub pd epr` | ask for 28 V EPR when offered; refused on a default build (notes) | yes, on a build that allows it |
 | `hub row <A-D> on` / `off` | switch a row on or off | yes |
 | `hub row <A-D> cycle [ms]` | power-cycle a row that is on; 2000 ms off unless said | no |
 | `hub nodes` | one line per bay: place, node id, MAC, IP, flags, DATA lead current, firmware, state | |

@@ -44,7 +44,7 @@ The per-installation settings (host names, board targets, access) are in another
 | `frame.base_height` | floor to row A: the base ladders, the cell the power box sits in |
 | `frame.panel_thickness`, `panel_clearance` | a ladder, and the play of a tray between two: with `bay.width` they make the column pitch, 165.8 mm |
 | `rows` | one entry per row, bottom to top. `id` is the row's letter, which is also the hub's output that feeds it; four rows at most, the hub's four outputs |
-| `rows[].height` | the row's pitch: 165 for a row of plates, 120 for row C, whose slot bins take boards up to 82 mm tall. 165 at most: a 185 mm row makes a 261 mm ladder |
+| `rows[].height` | the row's pitch: 165 for a row of plates, 120 for row C, whose slot bins take boards up to 82 mm tall. 165 at most: a 185 mm row takes a 258.8 mm ladder, too long for a 256 mm bed |
 | `rows[].layout` | one `1` per column. Every entry is `1`: a double-width bay (`2`) is not designed |
 | `bay.width`, `bay.depth` | the tray, 158 × 210 |
 | `bay.carrier` | the tray's floor, walls and plenum, and where the bay node sits in it |
@@ -78,7 +78,8 @@ Two comments in this section of the file are out of date. The port wall does not
 U's": it has six identical standing slots, one per port of a DATA ×6, and a DATA ×4 stands behind slots 2 to 5.
 The single DATA port board it names was retired from the rack on 2026-10-31.
 
-## population: one entry per bay
+(population-one-entry-per-bay)=
+## population
 
 The file calls its `population` an example, "used by the docs, the BOM roll-up and the 3D viewer". Each key is
 a bay; a bay left out is empty.

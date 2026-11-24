@@ -153,48 +153,62 @@ Making a key and giving it to the hub and the nodes: [Access rules and security]
 
 ## A first look with list, status and ports
 
-```console
-$ python tools/bayctl.py list --probe
-A1    nucleo-64           nucleo_g474re                      stm32cubeprogrammer  usb     192.168.1.61  VBUS on 92 mA
-A2    nucleo-144          (no target)                        stm32cubeprogrammer  usb     192.168.1.62  VBUS on 88 mA
-B2    giga-r1-display     arduino_giga_r1/stm32h747xx/m7     dfu-util             aux     192.168.1.78  VBUS on 210 mA
-B3.1  xiao                xiao_esp32c3                       esp32                usb     192.168.1.79  VBUS on 41 mA
-B3.3  -                   analyzer: gusmanb 6.0.0.1          -                    usb     192.168.1.79  [analyzer]  VBUS on 23 mA  LogicAnalyzer
-...
+The listings below are real output from the simulated node of a DATA ×4 bay, run on 2026-11-24
+([Try it without hardware](../plan/try-it-without-hardware.md)), with a lab file that gives B3's ports the
+targets of the example rack:
+
+```{code-block} yaml
+:caption: config/lab.yaml
+bays:
+  B3: {host: 127.0.0.1, http_port: 8766}
+  B3.1: {platform: xiao_esp32c3, runner: esp32}
+  B3.2: {board: rpi-pico2}
+  B3.3: {role: analyzer}
+  B3.4: {platform: xiao_ble, ci: false}
 ```
 
-No rack exists to print this listing: it is an illustration, with the made-up addresses and currents of
-the 3D model, drawn before the DATA ×6. Its `A1`, `A2` and `B2` hold one board on the node itself, the form
-of the bench stand-ins and of the simulator. A v1.0 node lists the ports of its DATA board instead, `A1.1`
-for instance, with a line `(empty port)` for each port that holds nothing.
+```console
+$ python tools/bayctl.py list --probe
+B3.1  xiao                xiao_esp32c3                       esp32                usb     127.0.0.1  VBUS on 83 mA
+B3.2  rpi-pico2           rpi_pico2/rp2350a/m33_0            uf2                  usb     127.0.0.1  VBUS on 82 mA
+B3.3  -                   analyzer: gusmanb 6.0.0.1          -                    usb     127.0.0.1  [analyzer]  VBUS on 90 mA  BOOTSEL
+B3.4  xiao                xiao_ble                           uf2                  usb     127.0.0.1  [not in CI]  VBUS on 91 mA
+```
 
 Each line is a board: its name, its family in the [board library](../reference/board-library.md), its
 Zephyr target, the west runner, the console and the node's address, from its
 [board target](board-targets.md) and the lab file. A tag follows where it applies: `[not in CI]`,
-`[analyzer]`, `[not the board its target was saved for]`. `--probe` asks every node for the board's power
-and current, prints `unreachable` for a node that does not answer, and says what an analyzer's port holds.
+`[analyzer]`, `[not the board its target was saved for]`, and an empty port of a DATA board is
+`(empty port)`. `--probe` asks every node for the board's power and current, prints `unreachable` for a
+node that does not answer, and says what an analyzer's port holds: `LogicAnalyzer` once its firmware runs,
+`BOOTSEL` here.
+
+With B3.4 switched off first:
 
 ```console
+$ python tools/bayctl.py power B3.4 off
+B3.4   port 4  VBUS off 0 mA  no USB device
 $ python tools/bayctl.py ports B3
-B3.1   port 1  VBUS on 133 mA  1fc9:0143 MCU-LINK on-board (r0E7) CMSIS-DAP V3.172  busid 1-1.1
+B3.1   port 1  VBUS on 94 mA  1fc9:0143 MCU-LINK on-board (r0E7) CMSIS-DAP V3.172  busid 1-1.1
 B3.2   port 2  VBUS on 98 mA  0403:6001 FT232R USB UART  busid 1-1.2
-B3.3   port 3  VBUS on 94 mA  2e8a:0003 RP2 Boot  busid 1-1.3
+B3.3   port 3  VBUS on 97 mA  2e8a:0003 RP2 Boot  busid 1-1.3
 B3.4   port 4  VBUS off 0 mA  no USB device
 ```
 
-This one is real output, from the simulated node: a DATA ×4 bay with made-up boards
-([Try it without hardware](../plan/try-it-without-hardware.md)). Each line is a port: its power and
-current, the USB device on it, the busid USB/IP exports it under, and `USB/IP <address>` when a machine has
-it attached. `status B3` prints the node's own line first (its name, its address, the data path, the supply
-of the bay, the count of USB devices and USB/IP sessions), then the same port lines, then each USB device
-with its maker, its serial number and its classes. Every command and option: [bayctl](../reference/bayctl.md).
+Each line is a port: its power and current, the USB device on it, the busid USB/IP exports it under, and
+`USB/IP <address>` when a machine has it attached. The simulator's boards are made up, and the product
+names come from the simulator: firmware 0.5 sends only the USB ids in `/api/ports`, so a bay node's line reads
+`1fc9:0143   busid 1-1.1`. `status B3` prints the node's own line first (its name, its address, the data
+path, the supply of the bay, the count of USB devices and USB/IP sessions), then the same port lines, then
+each USB device with its name, maker, serial number and classes. Every command and option:
+[bayctl](../reference/bayctl.md).
 
 ## On macOS and Windows
 
 The commands that only speak HTTP work on any system with Python: `list`, `status`, `ports`, `power`,
 `reset`, `boot`, `mode`, `lease`, `release`, `access`, `export`, `import`, `update`, `coproc`, `wire`,
-`row`, `hub`, and `capture` with Node. `attach`, `detach` and `prepare` are Linux only: they call `usbip`
-and look for the new device under `/dev/serial/by-id`. `pty` is POSIX.
+`row`, `hub`, `pty`, and `capture` with Node. `attach`, `detach` and `prepare` are Linux only: they call
+`usbip` and look for the new device under `/dev/serial/by-id`.
 
 On Windows the bench PC attached boards from WSL2, which is Linux with `vhci_hcd` loaded as a module. A
 native Windows client is untested, and the sources name none for macOS. What those systems can do with a

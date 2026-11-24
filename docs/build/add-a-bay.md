@@ -6,27 +6,20 @@ through the windows in both tray walls and in the shared ladder.
 
 :::{status} designed
 Written from the 3D model.  No two bays have been joined, and no jumper has carried a row's current.
-[What exists today](../plan/status.md).
+[What exists today](../plan/status.md#status-frame).
 :::
 
 ## What the next bay shares
 
 A ladder has tray grooves on both faces and four square nuts in its rear edge, and a brace's holes sit at
-different heights on its left and on its right, so two neighbouring braces share a ladder.
-
-```{figure} ../img/notice/done.svg
-:class: bb-lineart
-:width: 60%
-:alt: Line drawing of two bays side by side on three ladders, under one row of cap plates
-
-Two bays on three ladders, as the notice drew them on 2026-10-20: the middle ladder carries a tray on each
-face.  The drawers are that date's, with a one-piece front.
-```
+different heights on its left and on its right, so two neighbouring braces share a ladder: the middle one
+carries a tray on each face.
 
 For one more bay in a one-row rack:
 
-* a base ladder, a row ladder, a cap strip, a floor plate, a cap plate, a base brace and a row brace, the
-  nuts and inserts in ([Inserts and square nuts](../print/inserts-and-nuts.md));
+* a base ladder (`ladder_base`), a row ladder (`ladder_a`), a cap strip (`ladder_cap`), a floor plate, a cap
+  plate, a base brace (`brace_base`) and a row brace (`brace_a`), the nuts and inserts in
+  ([Inserts and square nuts](../print/inserts-and-nuts.md));
 * a tray from [Fit out a tray](fit-out-a-tray.md);
 * 8 M3 × 8, two bench screws, a jumper that was rung out ([Make the row cables](row-cables.md)) and two
   cable ties of 2.5 × 100 mm.
@@ -42,7 +35,7 @@ edge.
 :parts: lb=1, fp=1
 :click:
 
-**Base ladder** on the right; the **floor plate** slides in from the front, between it and the shared ladder.
+**Base ladder** (`ladder_base`) on the right; the **floor plate** slides in from the front, between it and the shared ladder.
 :::
 
 :::{build-step} 2
@@ -52,7 +45,7 @@ edge.
 :parts: bb=1
 :hardware: m3x8=4
 
-**Base brace**: four M3 × 8, into the free nuts of the shared ladder (its 1st and 3rd from the bottom) and
+**Base brace** (`brace_base`): four M3 × 8, into the free nuts of the shared ladder (its 1st and 3rd from the bottom) and
 into the 2nd and 4th of the new one.  Then this floor plate's two bench screws
 ([Screw the rack to the bench](screw-the-rack-to-the-bench.md)).
 :::
@@ -63,7 +56,7 @@ into the 2nd and 4th of the new one.  Then this floor plate's two bench screws
 :parts: la=1
 :click:
 
-**Row ladder** onto the new base ladder, as for [the first bay](first-bay.md#the-row-ladders).
+**Row ladder** (`ladder_a`) onto the new base ladder, as for [the first bay](first-bay.md#the-row-ladders).
 :::
 
 :::{build-step} 4
@@ -82,7 +75,8 @@ Its fitted **tray** slides in until both barbs click.
 :hardware: m3x8=4
 :click:
 
-**Row brace**, four M3 × 8.  On the top row only: the cap strip, then the cap plate.
+**Row brace** (`brace_a`), four M3 × 8.  On the top row only: the cap strip (`ladder_cap`), then the cap
+plate.
 :::
 
 ## The jumper between two nodes
@@ -111,16 +105,17 @@ to 12 mm from the front.
 
 :::{warning}
 Nothing but a row cable goes into ROW OUT.  AUX (J5) is the same 6-pin socket, on the same edge of the node,
-22 mm away, and pin 6 of ROW OUT carries the rack's 20 V.  An AUX lead pushed into ROW OUT puts that voltage
-on its BOOT wire and into the board at its end.  A row cable pushed into AUX trips the row's eFuse.
+22 mm away, and pin 6 of ROW OUT carries VRACK, the row's 20 or 28 V.  An AUX lead pushed into ROW OUT puts
+that voltage on its BOOT wire and into the board at its end.  A row cable pushed into AUX trips the row's eFuse.
 :::
 
 ## The next row
 
 A row stacks on the one below as the first row stacked on the base: its ladders snap onto those under them,
-ridge into notch, then come its trays and its braces.  Print the files named for the row
-(`ladder_b` and `brace_b`, `ladder_c` and `brace_c`): row C is 120 mm high and its ladder is shorter.  The
-tray above is the ceiling of the bay below, with the four inserts of a camera's mount.
+ridge into notch, then come its trays and its braces.  Take the files named for the row where the steps above
+say `ladder_a` and `brace_a`: `ladder_b` and `brace_b`, then `ladder_c` and `brace_c`.  Row C is 120 mm high
+and its ladder is shorter.  The tray above is the ceiling of the bay below, with the four inserts of a
+camera's mount.
 
 Jumpers stay inside a row: three for a row of four bays, nine for the default rack.  Each row has its own
 feed from the power box into its first bay, three feeds for the default rack, and its own eFuse in the hub
@@ -192,4 +187,4 @@ to type on the node.  One more bay on a row also shares the row's 1.6 A with its
 A new row needs its entry in `config/rack.yaml`, its own printed ladders and braces, a free row output on
 the hub, which has four, and a feed.  The caps come off first: release each hook by pushing its barb through the window.
 
-Found a step that is wrong?  [Report a finding](../reference/known-limitations.md#report-a-finding).
+A step that is wrong: [report it](../reference/known-limitations.md#report-a-finding).

@@ -8,7 +8,7 @@ of them.
 :::{status} designed
 The pinouts are those of the routed v1.0 PCBs, as the design review of 2026-11-09 read them pad by pad. The
 lengths come from the 3D model. No cable has been made or plugged yet.
-[What exists today](../plan/status.md).
+[What exists today](../plan/status.md#the-five-pcbs).
 :::
 
 | Cable | Connector | Between | Length |
@@ -18,12 +18,9 @@ lengths come from the 3D model. No cable has been made or plugged yet.
 | [DATA lead](#data-lead) | JST PH 8 | the node's J7 and the DATA board's J1 | 50 cm, ≈ 38 cm routed |
 | [Camera lead](#camera-lead) | JST PH 8, the same lead | the node's J6 and the camera pod's J1 | 50 cm, ≈ 45 cm routed |
 | [The cable to your board](#the-cable-to-your-board) | USB-C, and what the board takes | a DATA port and the board | 15 to 25 cm |
-| [AUX lead](#aux-lead) | JST PH 6 | the node's J5 and the board's pins | in no source |
+| [AUX lead](#aux-lead) | JST PH 6 | the node's J5 and the board's pins | not given |
 | [Jumper wires](#jumper-wires-on-a-data-4) | Dupont, female to female | a DATA ×4's pin header and the board's pins | 20 cm, 30 cm where that does not reach |
 | [Charger cable](#charger-cable) | USB-C to USB-C, 5 A e-marked | the charger and the power box's PD IN | 1 to 2 m |
-
-Three rules drove the design: no loose cable spans between bays, a board stays connected while you work on
-it, and each cable is as short as it can be without ever being taut.
 
 ## Row cable, jumpers and feeds
 
@@ -65,9 +62,7 @@ model's.
 
 Each cable is six single leads of UL1007 24 AWG in two housings, a red PHR-6-R at the IN end (a node's J1) and
 a black PHR-6-BK at the OUT end (a node's J2 or a hub output). The cable works either way round: the colours
-only make it readable. The cables are made by hand because JST rates the PH contact's 2 A on 24 AWG only, and
-no ready-made 6-pin cable states 24 AWG with this wiring
-([the decision of 2026-10-21](../power-distribution-review.md#decision-real-awg-24-leads)).
+only make it readable. Why by hand: [JST PH, not RJ45](../engineering/index.md#jst-ph-not-rj45).
 
 A rack of c columns and r rows takes r × (c − 1) jumpers and r feeds: nine and three for the default 4 × 3.
 A row needs no plug at its end. Both terminations of the bus are in the hub, and the last node's J2 stays
@@ -209,8 +204,8 @@ at the board; no source checks that both leads fit the chain's 7 × 7 mm channel
 
 :::{warning}
 J5 takes the same plug as ROW OUT (J2), 22 mm away on the same edge of the node. On the last node of a row J2
-is empty and live: its pin 6 is VRACK. An AUX lead pushed into J2 puts 20 V on its BOOT wire, and into your
-board. Nothing but a row cable goes into ROW OUT.
+is empty and live: its pin 6 is VRACK. An AUX lead pushed into J2 puts VRACK, 20 V today, on its BOOT wire,
+and into your board. Nothing but a row cable goes into ROW OUT.
 :::
 
 ## Jumper wires on a DATA ×4

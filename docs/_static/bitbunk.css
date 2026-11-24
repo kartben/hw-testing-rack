@@ -707,31 +707,35 @@ html.light .yue img.bb-pcb-render { mix-blend-mode: multiply; }
 
 /* the colour of a light, before the words that name it ({led}`red`) */
 .bb-led {
-  display: inline-block; width: 0.68em; height: 0.68em; border-radius: 50%; margin-right: 0.4em; vertical-align: -0.03em;
+  display: inline-block; width: 0.68em; height: 0.68em; border-radius: 50%; margin: 0 0.4em 0 0.15em; vertical-align: -0.03em;
   background: var(--c, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--bb-ink-strong) 28%, transparent);
 }
 .bb-led-red { --c: #e5484d; } .bb-led-orange { --c: #f76b15; } .bb-led-yellow { --c: #f5d90a; }
 .bb-led-green { --c: #30a46c; } .bb-led-blue { --c: #3e63dd; } .bb-led-magenta { --c: #d6409f; }
-.bb-led-white { --c: #ffffff; } .bb-led-off { --c: transparent; }
+.bb-led-white { --c: #ffffff; box-shadow: 0 0 0 1px var(--bb-muted); }
+.bb-led-off { --c: transparent; box-shadow: inset 0 0 0 1px var(--bb-muted); }
+.bb-led-dim { opacity: 0.45; }
 @media (prefers-reduced-motion: no-preference) { .bb-led-blink { animation: bb-blink 1.1s steps(1) infinite; } }
 @keyframes bb-blink { 50% { background: transparent; } }
 
-/* "Every action, four ways" ({.bb-ways-table} above a table): commands on one line; on a phone each row is
-   a short list, each line named by its column (bitbunk.js copies the heads into data-label) */
-.yue table.bb-ways-table td > code, .yue table.bb-ways-table td > a > code { white-space: nowrap; }
-@media (max-width: 700px) {
-  .yue table.bb-ways-table, .yue table.bb-ways-table tbody { display: block; width: 100%; }
-  .yue table.bb-ways-table thead { display: none; }
-  .yue table.bb-ways-table tr { display: block; padding: 0.7rem 0; border-bottom: 1px solid var(--bb-rule); }
-  .yue table.bb-ways-table td { display: block; padding: 0.14rem 0; border: 0; white-space: normal; }
-  .yue table.bb-ways-table td:first-child { font-weight: 600; color: var(--bb-ink-strong); padding-bottom: 0.3rem; }
-  .yue table.bb-ways-table td:not(:first-child)::before {
-    content: attr(data-label); display: inline-block; min-width: 5.2rem;
-    font: 500 0.66rem/1.4 var(--sy-f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--bb-muted);
-  }
-  .yue table.bb-ways-table td:empty { display: none; }
-  .yue table.bb-ways-table td > code, .yue table.bb-ways-table td > a > code { white-space: normal; overflow-wrap: anywhere; }
+/* "Every action, four ways" ({.bb-ways-table} above a table): four commands side by side are wider than any
+   column, so each row is drawn as a short list, the action first, then one line per way, named by its column
+   (bitbunk.js copies the heads into data-label) */
+.yue .table-wrapper:has(> table.bb-ways-table) { background: none; overflow: visible; }
+.yue table.bb-ways-table, .yue table.bb-ways-table tbody { display: block; width: 100%; }
+.yue table.bb-ways-table thead { display: none; }
+.yue table.bb-ways-table tr { display: block; padding: 0.75rem 0 0.8rem; border-bottom: 1px solid var(--bb-rule); }
+.yue table.bb-ways-table tbody tr:first-child { border-top: 1.5px solid var(--bb-rule-strong); }
+.yue table.bb-ways-table tbody tr:hover { background: transparent; }
+.yue table.bb-ways-table td { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.12rem 0; border: 0; white-space: normal; }
+.yue table.bb-ways-table td:first-child { display: block; font-weight: 600; color: var(--bb-ink-strong); padding-bottom: 0.3rem; }
+.yue table.bb-ways-table td:not(:first-child)::before {
+  content: attr(data-label); flex: 0 0 6.2rem;
+  font: 500 0.66rem/1.9 var(--sy-f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--bb-muted);
 }
+.yue table.bb-ways-table td > p { min-width: 0; }
+.yue table.bb-ways-table td code { white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 520px) { .yue table.bb-ways-table td:not(:first-child)::before { flex-basis: 4.8rem; } }
 
 /* a date does not break at its hyphens; a note is one step quieter than a page of the manual */
 .yue td { hyphens: manual; }
@@ -750,3 +754,11 @@ html.light .yue img.bb-pcb-render { mix-blend-mode: multiply; }
 .bb-figures { padding-top: 1.6rem; }
 .bb-ways { padding-top: 0.4rem; }
 @media (max-width: 520px) { .yue .bb-ways pre { white-space: pre-wrap; overflow-wrap: anywhere; } }
+
+/* an option keeps its hyphens together (--when, --ports); a YAML excerpt wraps its trailing comments */
+.yue :not(pre) > code .pre { white-space: nowrap; }
+.yue .highlight-yaml pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+/* a small picture in a table cell keeps its width; a narrow figure sits in the middle, its caption stays left */
+.yue table img { max-width: none; }
+.yue figure.align-default { text-align: center; }
+.yue figure.align-default figcaption { text-align: left; max-width: 40rem; margin-inline: auto; }

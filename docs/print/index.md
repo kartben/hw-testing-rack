@@ -22,11 +22,8 @@ Everything whose source reads no bought part's size:
   take ([Put a board in a bay](../use/mount-a-board.md));
 - the bay labels, the power box, the camera's diffuser.
 
-Print the [test tray and the test ladder](#what-to-check-on-a-test-tray-and-a-test-ladder) first. Then set
-the slicer as [Printer, filament, settings](printer-and-settings.md) says, take the files from
-[Get the STL files](stl-files.md), and count them on [Parts and quantities](parts-list.md), which gives the
-order of the run. The inserts and the square nuts go in as the parts come off the bed:
-[Fit the inserts and the square nuts](inserts-and-nuts.md).
+Print the [test tray and the test ladder](#what-to-check-on-a-test-tray-and-a-test-ladder) first; the order
+of the rest of the run is on [Parts and quantities](parts-list.md#in-what-order-to-print).
 
 ## What waits, and for which bought part
 
@@ -37,10 +34,9 @@ order of the run. The inserts and the square nuts go in as the parts come off th
 
 Two more bought parts have an assumed size; neither holds up the default rack.
 
-The display in the drawer front, a Waveshare 1.9inch Touch LCD (31122): its depth, `drawer.display.seat`,
-8.6 mm from the face of the glass to the ends of its stand-offs, is assumed, and Waveshare does not give the
-diameter of its four holes (`drawer.display.screw`, for M2 screws). The bay node v1.0 has no connector for a
-display, and the bill of materials lists the display's screws but not the module: do not buy one, and print
+The display in the drawer front, a Waveshare 1.9inch Touch LCD (31122): its depth (`drawer.display.seat`,
+8.6 mm) and its holes (`drawer.display.screw`, for M2) are assumed. The bay node v1.0 has no connector for a
+display, and the bill lists the display's screws but not the module: do not buy one, and print
 `drawer_front` as committed, its window empty.
 
 The PD trigger module of [one bay on a desk](../build/one-bay-on-a-desk.md): `standalone.pd_module` holds
@@ -59,6 +55,13 @@ This sequence is worked out from `config/rack.yaml`, `tools/build.py` and the th
 1. Measure four things on the chain and its end pieces (the rigid link with a two-hole tab at each end of
    the chain), and write them over the assumed values:
 
+   | Key | What to measure | Assumed |
+   |---|---|---|
+   | `outer` | the link's outside: across its two side plates, then the other way, in the plane the chain bends in | 13.5, 10.2 mm |
+   | `radius` | lay the chain on a side plate and bend it into its tightest U; measure across the outside of the two runs, subtract the second `outer` figure and halve | 18 mm |
+   | `end_holes` | on an end piece's tab: from one hole's centre to the other's, then from the mouth to the nearer hole's centre | 8, 4 mm |
+   | `end_length` | an end piece, from its mouth to its pivot on the chain | 26 mm |
+
    ```{literalinclude} ../../config/rack.yaml
    :language: yaml
    :caption: config/rack.yaml
@@ -75,9 +78,9 @@ This sequence is worked out from `config/rack.yaml`, `tools/build.py` and the th
    $ python tools/build.py stl --only tray chain_anchor chain_foot
    ```
 
-3. Three lines `ok`: the three files in `mechanical/stl/` are now drawn for your chain; print those. A
-   line `FAIL` carries one of three messages, and that part's file is not rewritten: the one in the folder
-   is still drawn for the assumed chain.
+3. If the three lines read `ok`, the three files in `mechanical/stl/` now fit your chain: print them. A
+   line `FAIL` carries one of three messages, and OpenSCAD then writes no file: the one in the folder is
+   still drawn for the assumed chain.
 
    | Message | The model requires | With the assumed values |
    |---|---|---|

@@ -5,7 +5,7 @@ rack takes twelve, all wired the same way: nine jumpers from node to node and th
 
 :::{status} designed
 The parts were chosen on 2026-10-21 and are in the bill of materials. No row cable has been made, and none
-has carried a row's power or the rack bus. [What exists today](../plan/status.md#status-rack-bus).
+has carried a row's power or the rack bus. [What exists today](../plan/status.md).
 :::
 
 Make them while the PCBs are on their way: a meter is all a cable needs to be tested, and the checklists use
@@ -14,7 +14,7 @@ then at the first step of [the hub and two nodes](check-the-pcbs/rack-bus.md).
 
 ## What a row cable is
 
-Six pins of JST PH, 2.0 mm pitch, carry a row's power (VRACK, 20 V), the rack's CAN bus and the position wire
+Six pins of JST PH, 2.0 mm pitch, carry a row's power (VRACK, 20 or 28 V), the rack's CAN bus and the position wire
 (POS). Every output has the input's pinout mirrored, so one cable does for every link: pin n at one end meets
 pin 7 − n at the other.
 
@@ -180,4 +180,4 @@ the schematics; none has been tried.
 What a missing bay looks like from the hub, once the rack is powered, is on
 [Troubleshooting](../use/troubleshooting.md).
 
-Found a step that is wrong? [Report a finding](../reference/known-limitations.md#report-a-finding).
+A step that is wrong: [report it](../reference/known-limitations.md#report-a-finding).

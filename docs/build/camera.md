@@ -7,7 +7,7 @@ ceiling, the tray above or the cap plate, has the four inserts.  A rack without 
 :::{status} designed
 The pod was checked on exact solids with a placeholder for the camera's case.  No Arducam Mega has been on a
 node or on a stand-in: the camera's firmware has run against a simulated camera only.
-[What exists today](../plan/status.md).
+[What exists today](../plan/status.md#status-pod).
 :::
 
 ## Parts for one camera
@@ -107,4 +107,4 @@ answer.
 The lens has no autofocus.  It is focused once, by hand, from the bay page's live view, and that needs the
 rack on: it is one of the checks per bay of [Bring the rack online](bring-the-rack-online.md).
 
-Found a step that is wrong?  [Report a finding](../reference/known-limitations.md#report-a-finding).
+A step that is wrong: [report it](../reference/known-limitations.md#report-a-finding).

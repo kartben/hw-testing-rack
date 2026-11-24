@@ -3,7 +3,7 @@
 Nobody has built a BitBunk yet. On 2026-11-24 the project stands here:
 
 - The printed frame is at v0.2. No part of it has been printed.
-- Five PCBs went to fabrication at v1.0 on 2026-11-11. None is on a bench.
+- The five PCB designs went to fabrication at v1.0 on 2026-11-11. None is on a bench.
 - The firmware builds. Its tests run in simulation, and parts of it have run on bought ESP32-S3 boards that
   stand in for the PCBs. It has never run on a bay node or on a power hub.
 
@@ -29,7 +29,7 @@ row below.
 
 | Level | The status line reads | It means |
 |---|---|---|
-| hardware | Verified on the v1.0 boards | measured or run on the fabricated PCBs, or on printed parts. No row says it today |
+| hardware | Verified on the v1.0 PCBs | measured or run on the fabricated PCBs, or on printed parts. No row says it today |
 | bench | Run on bench stand-ins | ran on a bought ESP32-S3 board with the project's firmware: a XIAO ESP32-S3, an M5Stack CoreS3 |
 | simulated | Tested in simulation | tests on Zephyr's native_sim or on a PC, or a tool against the simulated node |
 | written | Written, not tested yet | the code exists and builds |
@@ -56,7 +56,7 @@ their own figures in [mechanical.md](../mechanical.md).
 
 ## The five PCBs
 
-v1.0 of all five went to NextPCB on 2026-11-11 and is frozen: a change now takes a new revision.
+v1.0 of all five designs went to NextPCB on 2026-11-11 and is frozen: a change now takes a new revision.
 
 ```{include} ../electronics.md
 :start-after: <!-- site:revisions-at-the-fab -->
@@ -125,9 +125,9 @@ Each caption says which of these a picture is:
 |---|---|
 | The 3D model | a still of the project's [3D viewer](/viewer/), which is generated from `config/rack.yaml` and shows the rack as it is designed today |
 | Render | a Blender picture in `docs/img/`, rendered in October 2026. The large ones show the earlier layout of two rows and eight bays, and the power box picture shows hub v0.5 |
-| KiCad render | one of the five PCBs at v1.0 |
+| KiCad render | one of the five PCB designs at v1.0 |
 | Simulated node, simulated hub | a screenshot of the bay's page or of the rack's page, served by the simulators. Most show a bay with one board at 5 V, a form that only the stand-ins and the simulator have |
-| nothing, beside a build step | a line drawing of the assembly notice, drawn on 2026-10-20. A build page uses one only where the step still matches the design |
+| nothing, beside a build step | a line drawing of the assembly notice, drawn on 2026-10-20, or on 2026-11-24 for the drawer's front, the cradle, the DATA board and the strip. A build page uses one only where the step still matches the design |
 
 ## What is not designed
 

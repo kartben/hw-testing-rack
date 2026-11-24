@@ -11,7 +11,7 @@ the expected values below are the design's.  [What exists today](../../plan/stat
 
 ## 1. Wire
 
-Hub row A → node 1's J1 (ROW IN); node 1's J2 (ROW OUT) → node 2's J1.  Row leads are JST PH 6,
+Hub row A → node 1's J1 (ROW IN); node 1's J2 (ROW OUT) → node 2's J1.  Row cables are JST PH 6,
 "Same direction": a feed and a jumper of [Make the row cables](../row-cables.md), rung out there.
 Nothing else plugged into the nodes.
 

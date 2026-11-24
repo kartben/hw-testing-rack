@@ -121,7 +121,7 @@ camera. `hideui` leaves the camera preview and the bay labels. Three links that 
 - [/viewer/?bay=B2&view=camera&camlight=1&preview=B2](/viewer/?bay=B2&view=camera&camlight=1&preview=B2): what
   B2's camera sees, its light on
 
-The stills of the model on this site are under `docs/img/viewer/`, taken with `hideui` and `quality=low`.
+The stills of the model on this site are under `docs/img/viewer/`, taken with `python tools/viewer_still.py <picture> "<query>"` on the site's paper colour; with `--dark` it takes the twin that the dark theme shows, kept under `docs/_static/viewer-dark/` by the same name.
 
 ## Screenshots and the console screencast
 

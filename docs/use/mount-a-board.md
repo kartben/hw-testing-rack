@@ -1,4 +1,4 @@
-# Put a board in a bay: plate, pegs, slot bin
+# Put a board in a bay
 
 A board lies on its bay's honeycomb plate, held at its edges by clip-in pegs, or stands on edge in a slot bin;
 one short USB cable joins it to a port of the bay's DATA board. No screw holds it and no plate is made for it,

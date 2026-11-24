@@ -8,7 +8,7 @@ drawer's wall.  The default rack takes twelve trays.
 :::{status} designed
 One assembled bay was checked for clashes on exact solids, the chain over the drawer's whole 140 mm stroke.
 No tray has been printed, and no node or DATA board has been in one.
-[What exists today](../plan/status.md).
+[What exists today](../plan/status.md#status-bay).
 :::
 
 ## Which tray for which bay
@@ -23,19 +23,14 @@ chain in every bay, reads the first row only ([Choose a size, change the layout]
 | C1, C2, C3, C4 | the same drawer and DATA ×6; a slot bin where the board plate goes | the same three, then [A slot bin in the plate's place](#a-slot-bin-in-the-plates-place) |
 | A3 | no chain: a sled, and the DATA ×6 in a port block | [step 1](#the-node-on-its-standoffs), then [A sled bay, without a chain](#a-sled-bay-without-a-chain) |
 
-```{figure} ../img/viewer/rack.jpg
-:alt: The twelve bays of the example rack, each with its label, three drawers pulled out
-
-The 3D model of the example rack: slot bins in row C, a DATA ×4 and its wires in B1 and B3, pulled out.  The
-model draws a display in every drawer front; node v1.0 cannot drive one.
-```
+[The 3D model](/viewer/?bay=B3&openbay=1) shows each kind in its place.
 
 One drawer bay takes:
 
 * a tray, a drawer and its front, a chain anchor, a chain foot, a cradle (`x4_cradle`) and its strip
   (`x4_strip`), printed ([Parts and quantities](../print/parts-list.md)), with their inserts in: four in the
-  tray's node standoffs, two where the anchor goes, three in the drawer's bosses
-  ([Inserts and square nuts](../print/inserts-and-nuts.md));
+  tray's node standoffs, two where the anchor goes, three in the drawer's bosses, and on a tray of row B or C four
+  underneath, the mount of a camera pod in the bay below ([Inserts and square nuts](../print/inserts-and-nuts.md));
 * a bay node that passed [its checklist](check-the-pcbs/bay-node.md) and has its Wi-Fi credentials: its test
   pads and its UART pads are on its bottom face, out of reach from step 1 on
   ([what cannot be undone](index.md#wifi));
@@ -103,6 +98,8 @@ in the wrong one harms nothing and does nothing.
 ## The drawer's front, then the DATA board
 
 :::{build-step} 5
+:drawing: d1
+:alt: The front coming onto the drawer's walls, a screw behind the post at the front end of each side wall
 :parts: Drawer=1, Drawer front=1
 :hardware: pt23x8=2
 
@@ -120,6 +117,8 @@ you chose `drawer.detent: magnet`, glue the two magnets now and let the glue set
 before step 9 ([magnets for the detent](first-bay.md#a-rear-cover-and-detent-magnets-both-optional)).
 
 :::{build-step} 6
+:drawing: d2
+:alt: The cradle coming down onto the three bosses of the drawer's rear bay, a screw over each boss
 :parts: Cradle (x4_cradle)=1
 :hardware: m3x8=3
 
@@ -127,6 +126,9 @@ before step 9 ([magnets for the detent](first-bay.md#a-rear-cover-and-detent-mag
 :::
 
 :::{build-step} 7
+:drawing: d3
+:detail: latch
+:alt: The lead coming up through the window at the rear right into J1 on the DATA ×6's rear face, the board going down into the cradle; in the circle, a latch over the board's top edge
 :parts: DATA ×6 or DATA ×4=1
 
 The DATA lead first.  Out of the chain's moving end it goes forwards and turns back at once in a flat U,
@@ -138,6 +140,8 @@ the U's of the cradle's comb.
 :::
 
 :::{build-step} 8
+:drawing: d4
+:alt: The strip coming down onto the comb in front of the DATA ×6, five screws over it, the screwdriver on the right-hand one
 :parts: Strip (x4_strip)=1
 :hardware: pt23x8=5
 
@@ -146,78 +150,52 @@ between the port wall and the board.  The strip closes the U's over the receptac
 then bears on the cradle, not on the receptacles' solder joints.
 :::
 
-```{figure} ../img/viewer/a4-open-data-x6.jpg
-:width: 62%
-:alt: A drawer pulled out of the 3D model: the DATA ×6 stands in its dark cradle behind the port wall
-
-The 3D model, bay A4 pulled out, as after step 8: a receptacle of the DATA ×6 in each of the wall's six slots,
-the strip across them, the DATA lead coming up behind the board.  The plate and its board come later; the
-display in the front is not fitted.
-```
-
-A DATA ×4 (B1 and B3 of the example: the base assembly and the one with the pin matrix) goes in by steps 6 to 8
-unchanged.  Its four ports stand in slots 2 to 5 of the wall's six, and its pin headers point forwards over the
-port wall, for the jumper wires of [Wires between boards](../use/wires.md).  To swap one DATA board for the
-other later: [Take out a tray, a node or a DATA board](../use/service-a-bay.md).
+A DATA ×4 goes in by steps 6 to 8 unchanged: its four ports stand in slots 2 to 5 of the wall's six, its pin
+headers pointing forwards over the port wall for [the jumper wires](../use/wires.md).
 
 ## The drawer onto the tray
 
 :::{build-step} 9
 :drawing: t3
-:alt: The drawer sliding onto the tray's ledges from the front, one screw at the chain foot and one at the left lip
+:alt: The drawer, its front on and the DATA board standing in its cradle, sliding onto the tray's ledges from the front, a screw at the chain foot
 :hardware: pt23x8=1
 
 Slide the **drawer** in from the front onto the tray's ledges, its rear flange under the guide lips.  The chain
 foot goes into the groove at the drawer's rear: lock it with one PT 2.3 × 8 from inside the rear bay.
-
-The drawing predates the separate front and the standing DATA board; the slide and the two screws are
-today's.
 :::
 
 :::{build-step} 10
 :hardware: pt23x8=1
 
-**Stop screw**: one PT 2.3 × 8 down through the left guide lip, the other screw of the drawing above.  Pulled
-out 140 mm, the drawer rests on it, its flange still under the lips.
+**Stop screw**: one PT 2.3 × 8 down through the left guide lip.  Pulled out 140 mm, the drawer rests on it,
+its flange still under the lips.
 :::
 
 To carry a fitted tray with its drawer shut, two more PT 2.3 × 8 (the bill does not count them) go down
 through the guide lips at the holes a sled bay's port block takes, level with the closed drawer's rear
 flange.  Like the stop screw, they are out of reach once the tray is in the frame.
 
-The bay's printed label, or 12 mm tape, goes in the recess on the front's left once you know which place the
-tray takes.
+The bay's printed label, or 12 mm label tape, goes in the recess on the front's left once you know which place
+the tray takes.  The label is 12 × 1.0 mm in a recess 12.4 mm tall and 0.9 mm deep; nothing in the design
+holds it there, and no source says what should.
+
+```{figure} ../img/viewer/a4-fitted-tray.jpg
+:width: 70%
+:alt: Bay A4 of the 3D model, its drawer pulled out: the DATA ×6 standing in its cradle behind the port wall, the drawer's floor empty, the front's window empty
+
+The 3D model, bay A4 pulled out: a fitted tray once it is in the frame.  The DATA ×6 stands in its cradle, the
+strip across its six receptacles, and the node lies under the drawer's rear.  No plate, no board, nothing in
+the front's window.
+```
 
 ## A slot bin in the plate's place
 
-*Worked out from [mechanical/parts/slot_bin.scad](../../mechanical/parts/slot_bin.scad) and `drawer.slot_bin`
-in [config/rack.yaml](../../config/rack.yaml): no source gives these steps, and nobody has done them yet.*
-
 A dense bay (`plate: slots`; C1 to C4 of the example, the 120 mm row) is a drawer bay with a DATA ×6, fitted as
-above.  The slot bin takes the board plate's place, and its boards stand on edge.
-
-```{figure} ../img/viewer/c1-open-slot-bin.jpg
-:width: 62%
-:alt: A drawer pulled out of the 3D model, six boards on edge between the walls of a slot bin, a short cable from each to the DATA ×6 behind
-
-The 3D model, bay C1 pulled out: six lanes, a board on edge in each, one short cable from each board to the
-port straight behind its lane.
-```
-
-The bin drops onto the drawer's floor in the plate's footprint, over the drawer's two locating pins, its 12 mm
-front stop towards the drawer's front and the recesses of its rear edge under the port wall's slots.  It does
-not turn round.
-
-* Six lanes of 21.0 mm run between its walls.  Lane k, counted from the left, goes with the DATA ×6's port k.
-* A board stands on the edge nearer its USB connector, the connector towards the port wall.  The rack's tilt
-  slides it forwards to the stop, and a thin board leans on a wall.
-* A lane takes a board up to 19.8 mm thick with its parts, 86.5 mm long and 82 mm tall, on one straight 15 cm cable.
-* These bays have no jumper wires: a board that needs wires goes to a bay with a plate.
-
-The bin was checked for fit on exact solids with the drawer, the cradle, the DATA ×6, six of the largest USB
-overmolds and the largest board in every lane; it was not among the parts of the
-[slicer review of 2026-10-21](../printed-parts-fdm-review.md).  It goes in with the boards:
-[Put a board in a bay](../use/mount-a-board.md).
+above.  Its slot bin takes the board plate's place and goes in with the boards, once the rack answers
+([On edge in a slot bin](../use/mount-a-board.md#on-edge-in-a-slot-bin-with-a-data-6)).  It drops onto the
+drawer's floor over the drawer's two locating pins, its 12 mm front stop towards the drawer's front and the
+recesses of its rear edge under the port wall's slots; it does not turn round.  This is worked out from
+[mechanical/parts/slot_bin.scad](../../mechanical/parts/slot_bin.scad); nobody has done it yet.
 
 ## A sled bay, without a chain
 
@@ -268,8 +246,6 @@ sled's flanges.  A sled bay takes 10 PT 2.3 × 8 in all, a fixed one 12.
 
 ## Check before you go on
 
-The values are the design's: no tray has been fitted yet.
-
 - [ ] The node's four screws are in, the two left ones through the guide's holes.
 - [ ] The lead's plug is in J7 (DATA), not in J6 (CAM).
 - [ ] Both latches of the cradle are over the DATA board's top edge, and the strip's five screws are in.
@@ -279,4 +255,4 @@ The values are the design's: no tray has been fitted yet.
 - [ ] The lead's spare is beside the node, not in front of the chain's moving end.
 - [ ] Every screw of the guide lips is in: the stop screw; in a sled bay, the block's two locks as well.
 
-Found a step that is wrong?  [Report a finding](../reference/known-limitations.md#report-a-finding).
+A step that is wrong: [report it](../reference/known-limitations.md#report-a-finding).

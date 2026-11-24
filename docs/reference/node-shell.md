@@ -17,9 +17,10 @@ node. See [What exists today](../plan/status.md#status-bay-page).
 | telnet, TCP 23 | `telnet bay-b3.local` | one client at a time, no login: the addresses that the access rules give the `shell` right |
 
 The front USB-C port gives no shell: in SERVICE mode it reaches the module's USB-Serial-JTAG, for flashing,
-and a shell on it is not written yet. A stand-in (XIAO ESP32-S3, M5Stack CoreS3) has the local shell on its
-own USB console instead of the pads. Who gets the `shell` right, and why telnet has no password of its own:
-[Access rules and security](../use/access.md).
+and a shell on it is not written yet. On a stand-in (XIAO ESP32-S3, M5Stack CoreS3) the shell is on the
+board's own USB until the node's USB host takes that port at boot, then over telnet only (the boards'
+overlays in [firmware/bay-node/boards](../../firmware/bay-node/boards)). Who gets the `shell` right, and why
+telnet has no password of its own: [Access rules and security](../use/access.md).
 
 ## The commands
 

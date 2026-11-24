@@ -1,4 +1,4 @@
-# A laptop on the front port: classic mode
+# Front port and classic mode
 
 A laptop plugged into the USB-C port on a bay's front takes the bay's boards off the network and sees them
 as if they were on its own desk, while the rack goes on powering and measuring them. It is the designed
@@ -7,7 +7,7 @@ answer for macOS and Windows, and for a bench with no network.
 :::{status} written
 The mode logic is in the firmware and the two USB switches are on the v1.0 bay node. No bench stand-in has
 the switches, so classic mode has never run; on the stand-ins SERVICE is a jumper. See
-[What exists today](../plan/status.md).
+[What exists today](../plan/status.md#status-modes).
 :::
 
 ## Three modes

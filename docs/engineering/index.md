@@ -6,7 +6,8 @@ stands on a printed frame. Each choice was weighed against others before the v1.
 
 :::{status} designed
 Every reason below is argued from datasheets, calculations, simulations and the bench stand-ins. None has been
-checked on a v1.0 PCB or on a printed frame: [What exists today](../plan/status.md).
+checked on a v1.0 PCB or on a printed frame: the rows of [the frame](../plan/status.md#the-printed-frame) and
+of [the five PCBs](../plan/status.md#the-five-pcbs) in What exists today.
 :::
 
 | Choice | Weighed against | Evidence |
@@ -34,8 +35,9 @@ ladders, stand between the bays and are shared by both neighbours, so the grid g
 slide into the ladders' grooves. An X brace behind every bay keeps the grid square: in
 `tools/panel_frame_fea.py` a 4 × 4 grid sways about 8 mm without braces and 0.16 mm under 2 N with taut ones,
 so each diagonal is printed 0.25 mm short. The rows lean back 20°, a stadium:
-every board, LED and label faces you. A printed rack is light, and by calculation it tips forwards under a pull
-of 8 to 13 N at its top row: [Screw the rack to the bench](../build/screw-the-rack-to-the-bench.md).
+every board, LED and label faces you. A printed rack is light: by calculation for two and four rows (three
+were not computed), a pull of 8 to 13 N at the top row tips it forwards, hence
+[the screws into the bench](../build/screw-the-rack-to-the-bench.md).
 
 ```{figure} ../img/viewer/rack.jpg
 :alt: The default rack in the 3D model: four columns, three rows tilted back, the power box under A1
@@ -52,8 +54,10 @@ mains supply, a mains enclosure with its own wiring and fusing; PoE++, four Ethe
 nodes that talk over Wi-Fi anyway. The sink on the hub is a WCH CH224A: it negotiates 9 V by itself at plug-in,
 keeps the contract through a controller reset, and tells the controller over I²C what the charger offers. It
 replaced an AP33772S that was out of stock at LCSC. The rack runs at 20 V from a 100 W charger. 28 V from a
-140 W EPR charger is locked out in the firmware (`CONFIG_HUB_EPR_ALLOWED`) until every buck inductor in the rack
-is rated 60 V or more. The nodes run from 13.5 to 30 V, so a 24 V supply on J1 runs them too.
+140 W EPR charger is locked out in the firmware (`CONFIG_HUB_EPR_ALLOWED`), whose help still names a 30 V
+inductor; the v1.0 PCBs fit 75 V parts, but the review of 2026-11-09 finds no margin at 28 V on the hub, and
+the lock stays ([Open questions](../reference/known-limitations.md#open-questions)). The nodes run from 13.5 to
+30 V, so a 24 V supply on J1 runs them too.
 
 ## An eFuse on each row and each DATA lead
 

@@ -19,10 +19,12 @@ insert has been pressed into a printed part, and no nut into a printed ladder.
 The inserts go in with an iron and a tip for heat-set inserts ([Shopping list and tools](../plan/shopping-list.md));
 no source gives a tip, a temperature or a technique for pressing them into PETG. The holes are Ø4.0 mm and
 at least 5.7 mm deep, the insert's nominal size (`INSERT_M3` in
-[mechanical/lib/common.scad](../../mechanical/lib/common.scad)). They come out true with the slicer's hole
-compensation of 0.1 mm, and 0.1 to 0.2 mm tight without it, which is when PETG splits round an insert
-([Slicer settings](printer-and-settings.md#slicer-settings)). Fit each insert while its part lies loose on
-the bench, before anything is assembled onto it.
+[mechanical/lib/common.scad](../../mechanical/lib/common.scad)). By the slicer review of 2026-10-21, FDM
+holes come out 0.1 to 0.2 mm under size, and PETG splits round an insert pushed into a tight hole; the
+profile's 0.1 mm of hole compensation is meant to bring them true
+([Slicer settings](printer-and-settings.md#slicer-settings)). No part has been printed to check it: try one
+insert in the [test tray](index.md#what-to-check-on-a-test-tray-and-a-test-ladder) first. Fit each insert
+while its part lies loose on the bench, before anything is assembled onto it.
 
 ## Where the inserts go
 
@@ -79,11 +81,11 @@ These take none in the default rack:
 M2.5 and M2 inserts are for a board's own plate (`plate: boards`,
 [If pegs cannot hold it](../use/add-a-board.md#if-pegs-cannot-hold-it)); the default rack buys none.
 
-## One bay, and a plain 2 × 2 rack
+## One bay in the frame, and a plain 2 × 2 rack
 
-A drawer bay on its own, a rack of one column and one row, takes 13 inserts (4 for the node, 2 for the chain
-anchor, 4 under the cap plate, 3 in the drawer), 4 more in the power box, and 16 square nuts (two base
-ladders and two row ladders). A plain 2 × 2 rack:
+[One bay in the frame](parts-list.md#one-bay-in-the-frame), a rack of one column and one row, takes 13
+inserts (4 for the node, 2 for the chain anchor, 4 under the cap plate, 3 in the drawer), 4 more in the power
+box, and 16 square nuts (two base ladders and two row ladders). A plain 2 × 2 rack:
 
 ```{bom-table}
 :category: Fasteners

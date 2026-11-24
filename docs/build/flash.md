@@ -9,7 +9,7 @@ loader when esptool asks: neither PCB needs a BOOT press.
 `west flash` over the USB-Serial-JTAG, with MCUboot and a signed application, has been used on the stand-in
 boards (an M5Stack CoreS3, a XIAO ESP32-S3).  No v1.0 PCB has been flashed.  On the stand-ins SERVICE was a
 jumper: the node's switch and the USB path it routes have never run.
-[What exists today](../plan/status.md#status-modes).
+[What exists today](../plan/status.md#firmware-feature-by-feature).
 :::
 
 The commands are typed in the workspace `rack-ws`, and flash its two builds, `build-hub` and `build-bay`

@@ -6,8 +6,9 @@ pads, needs the node out of the rack.
 
 :::{status} written
 These procedures come from the firmware's design documents and code. None has been run on a v1.0 PCB. On the
-bench stand-ins: `settings unavailable (-45)` was met on an M5Stack StampS3 and cured with an erase, and a
-claim was confirmed with the BOOT button of a XIAO ESP32-S3.
+bench stand-ins: `settings unavailable (-45)` was met on an M5Stack StampS3, whose reused flash held another
+firmware's data (the erase below is the firmware's own advice for it), and a claim was confirmed with the
+BOOT button of a XIAO ESP32-S3.
 [What exists today](../plan/status.md#firmware-feature-by-feature).
 :::
 

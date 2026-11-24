@@ -4,14 +4,16 @@ A bay node answers plain HTTP/1.1 on TCP 80: `http://bay-b3.local/` is the bay's
 that does what the node's shell does, `/metrics` its Prometheus metrics. The camera's pictures are on TCP
 8081, and the server keeps six clients ([Network ports, names and metrics](network.md)).
 
-:::{status} simulated
-The routes are tested on native_sim and against the simulated node, `web/dev_server.py`, which serves the
-same JSON. The XIAO ESP32-S3 stand-in served the page, `/api/status`, `/metrics`, a claim and an update over
-Wi-Fi. The routes of a DATA board's ports have run against emulated DATA boards only, never on a v1.0 bay
-node. See [What exists today](../plan/status.md#status-bay-page).
+:::{status} bench
+The XIAO ESP32-S3 stand-in served the page, `/api/status`, `/metrics`, a claim and an update over Wi-Fi. The
+other routes are tested on native_sim and against the simulated node, `web/dev_server.py`, whose JSON has the
+firmware's shape with a few differences (the note below). The routes of a DATA board's ports have run
+against emulated DATA boards only, never on a v1.0 bay node. See
+[What exists today](../plan/status.md#status-bay-page).
 :::
 
-The examples act on bay B3, a DATA ×4 bay; the answers shown were captured from the simulated node.
+The examples act on bay B3, a DATA ×4 bay; the answer shown was captured from the simulated node, which puts
+a space after each `:` and `,` where the firmware puts none, and whose readings change from run to run.
 
 ## Routes and the right each needs
 
@@ -74,10 +76,13 @@ camera routes exist on builds with the camera, the wires, analyzer and co-proces
 node that can drive a DATA ×4.
 
 :::{note}
-Firmware 0.5.0 registers `/api/ports/<n>/power`, `/reset`, `/boot` and `/board` for ports 1 to 4 only. On a
-DATA ×6, ports 5 and 6 answer 404 there. Their power goes through `POST /api/power` with `"port": 5`, which
-is what the bay's page sends for every port; `bayctl`, which uses the per-port routes, reaches ports 1 to 4.
-The simulated node accepts any port number and hides the gap.
+Where the simulated node and firmware 0.5.0 differ. Firmware 0.5.0 registers `/api/ports/<n>/power`,
+`/reset`, `/boot` and `/board` for ports 1 to 4 only: on a DATA ×6, ports 5 and 6 answer 404 there. Their
+power goes through `POST /api/power` with `"port": 5`, which is what the bay's page sends for every port;
+`bayctl`, which uses the per-port routes, reaches ports 1 to 4. The simulated node accepts any port number.
+A port's `usb` object in `/api/ports` is `{"vid", "pid", "busid"}` on the firmware; the simulated node adds
+`manufacturer`, `product`, `serial`, `classes` and `ttys`, so `bayctl ports` prints a product name there and
+none on a node. The names are in `GET /api/usb`.
 :::
 
 ## Requests, answers and errors
@@ -125,9 +130,9 @@ of `lead_off`: [Bay node shell](node-shell.md#the-data-leads-reasons).
 | `POST /api/mode` | `{"mode": "usbip" \| "classic"}`, saved |
 
 On a node with a DATA board, `/api/power`, `/reset` and `/boot` need `"port"`, or the per-port routes below;
-without it they answer 409. `ms` goes from 1 to 10000. A `cycle` without `ms` keeps the one board off
-1000 ms, and keeps a port off until its VBUS reads under 1 V, 2 s at most. A RESET pulse is 100 ms unless
-`ms`. `power_cycle` holds BOOT across a power cycle of the port instead of a RESET pulse. `"when":
+without it they answer 409. `ms` goes from 1 to 10000. A `cycle` keeps the one board off `ms`, 1000 by
+default. A port stays off `ms` (0 by default), then until its VBUS reads under 1 V, 2 s at most: a port's
+switch does not discharge its output. A RESET pulse is 100 ms unless `ms`. `power_cycle` holds BOOT across a power cycle of the port instead of a RESET pulse. `"when":
 "available"` queues a power-on that the bay's budget has no room for: 202, and the port goes on by itself in
 its turn ([Power budget and queued ports](../use/power-budget.md)); without it the request fails with 409.
 A DATA ×6's port has no RESET or BOOT line: 400 `this port has no such line`.
@@ -288,12 +293,12 @@ The key crosses the network once, in the answer to a claim. A signature that doe
 |---|---|---|
 | 200 | done | |
 | 202 | a port's power-on is queued | |
-| 400 | a bad body or value | `bad JSON`; `ms must be 1..10000`; `action must be on, off, cycle or cancel`; `"when": "available" goes with "action": "on"`; `this port has no such line`; `mode must be usbip or classic`; `the DUT is powered off`; `ttl_s must be 10..86400`; `ports: a list of sub-slots`; `ports: unknown sub-slot`; `key: 64 hex digits`; `baud 300..5000000, data bits 5..8, stop bits 1 or 2`; `size and sha256 (64 hex digits) needed`; a board target's or a camera setting's own text; for an upload, `SHA-256 does not match`, `fewer bytes than announced`, `image for power-hub/power_hub, this is bay-node/bay_node` |
+| 400 | a bad body or value | `bad JSON`; `ms must be 1..10000`; `action must be on, off, cycle or cancel`; `"when": "available" goes with "action": "on"`; `this port has no such line`; `mode must be usbip or classic`; `the DUT is powered off`; `no BREAK on this board (no tx-gpios)`; `parity must be none, odd or even`; `enter must be cr, lf or crlf`; `this node serves one board: lease the bay (no "ports")`; `ttl_s must be 10..86400`; `ports: a list of sub-slots`; `ports: unknown sub-slot`; `key: 64 hex digits`; `baud 300..5000000, data bits 5..8, stop bits 1 or 2`; `size and sha256 (64 hex digits) needed`; a board target's or a camera setting's own text; for an upload, `SHA-256 does not match`, `fewer bytes than announced`, `image for power-hub/power_hub, this is bay-node/bay_node` |
 | 403 | refused | `not allowed from this address`; `kicked by an admin: retry in a minute`; `bad or expired admin signature`; `admin only: sign the request with the key`; `admin only: unlock with the admin key`; `admin only: claim the device first`; `only its holder or an admin may release it`; `no such ticket: begin again` |
 | 404 | nothing there | `no port 5 on this node`; `no camera on this bay`; `nobody pressed BOOT in time`; `no such claim from this address`; `no such connection`; any route that is not registered |
 | 409 | not now | `this node serves 4 boards: say which ("port": 1..4, or /api/ports/<n>/...)`; `no room in the bay's budget: the bay draws <n> mW, <n> mW kept for a start, <n> mW in all (the hub's grant)`; `the port's VBUS is up while it is off (a board powered from elsewhere): it comes on once that has gone`; `no queued request on this port`; `already claimed: unlock with the admin key, or reset the node`; `the analyzer is busy: try again (<n>)`; `the running firmware is on trial: wait until it confirms itself`; `another update is on its way`; `reserved by <address> for <n> min more: force to update anyway`; `the co-processor is being loaded: try again in a few seconds` |
 | 413 | too large | `body too large`; `size: larger than the update slot`; `size: larger than the coproc partition` |
-| 423 | reserved by another address | `reserved by <address> (<note>), <n> min left`; `B3.2 reserved by <address> (<note>), <n> min left`; `B3.2 is reserved by another address`; `reserved: another address holds the lease` |
+| 423 | reserved by another address | `reserved by <address> (<note>), <n> min left`; `B3.2 reserved by <address> (<note>), <n> min left`; `B3.2 reserved by <address>`, to a lease over a held port; `B3.2 is reserved by another address`; `reserved: another address holds the lease` |
 | 500 | the node failed | `action failed`; `response too large`; `rules applied, not saved`; `the UART refused it` |
 | 503 | the port cannot act | `the port is off, or the DATA board is not set up (DUT_5V off?)` |
 

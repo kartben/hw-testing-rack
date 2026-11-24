@@ -273,7 +273,8 @@ class PrintedParts(SphinxDirective):
             label += nodes.reference("", "", nodes.literal("", "bay_label_<bay>"), refuri=tree)
             label += nodes.Text(" and ")
             label += nodes.literal("", "bay_label_<bay>_inlay")
-            label += nodes.Text(f", one pair per bay ({bays[0].upper()} to {bays[-1].upper()})" if bays else "")
+            span = bays[0].upper() if len(bays) == 1 else f"{bays[0].upper()} to {bays[-1].upper()}" if bays else ""
+            label += nodes.Text(f", one pair per bay ({span})" if len(bays) > 1 else f", one pair ({span})" if bays else "")
             each = sum(p.get("grams_each") or 0 for p in labels) / max(len(bays), 1)
             total_g = sum(p.get("grams_total") or 0 for p in labels)
             parts += sum(p["qty"] for p in labels)

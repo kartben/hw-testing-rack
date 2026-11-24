@@ -62,7 +62,7 @@ v1.0 of the five went to NextPCB on 2026-11-11, from commit `125c4ece`: 5 PCBs a
 ```
 
 A revision that went to a fab is frozen: its Gerbers, its bill of materials and its placement file stay
-as they were sent, so that the repository shows the PCBs that are on the bench.
+as they were sent, so that the repository describes the PCBs the fab makes.
 [electronics/released.json](../../../electronics/released.json) holds the SHA-256 of each file, and
 `python tools/released.py` compares them with the tree. Any change, a silkscreen text or one track, goes
 into a new revision ([Change a PCB](../../engineering/change-a-pcb.md)). What a bench finds wrong on v1.0

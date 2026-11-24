@@ -18,17 +18,17 @@ that applies, so a fault hides the USB/IP state under it.
 <!-- site:bay-led -->
 | Colour | Meaning |
 |---|---|
-| off | no firmware, or the node is starting |
-| white and blue in turn, fast | identify: someone asked "which one is it?" from the rack's page or with `hub node … identify`; 10 s |
-| white, blinking twice a second | a claim waits: press BOOT briefly to confirm it |
-| red, blinking twice a second | the DATA lead was switched off by a fault: its eFuse tripped, a short at switch-on, or the DATA board stopped answering |
-| yellow | SERVICE: the front port goes to the node itself |
-| magenta | classic mode: the boards' USB goes to the front port (a laptop plugged, or forced) |
-| dim white | the DATA lead is off: no board of the bay has power |
-| orange, blinking once every 2 s | USB/IP mode, no network yet |
-| dim blue | USB/IP ready, no USB device enumerated on any port |
-| blue | at least one board enumerated and exportable |
-| green | at least one USB/IP client attached |
+| {led}`off` off | no firmware, or the node is starting |
+| {led}`white blink` {led}`blue blink` white and blue in turn, fast | identify: someone asked "which one is it?" from the rack's page or with `hub node … identify`; 10 s |
+| {led}`white blink` white, blinking twice a second | a claim waits: press BOOT briefly to confirm it |
+| {led}`red blink` red, blinking twice a second | the DATA lead was switched off by a fault: its eFuse tripped, a short at switch-on, or the DATA board stopped answering |
+| {led}`yellow` yellow | SERVICE: the front port goes to the node itself |
+| {led}`magenta` magenta | classic mode: the boards' USB goes to the front port (a laptop plugged, or forced) |
+| {led}`white dim` dim white | the DATA lead is off: no board of the bay has power |
+| {led}`orange blink` orange, blinking once every 2 s | USB/IP mode, no network yet |
+| {led}`blue dim` dim blue | USB/IP ready, no USB device enumerated on any port |
+| {led}`blue` blue | at least one board enumerated and exportable |
+| {led}`green` green | at least one USB/IP client attached |
 <!-- /site:bay-led -->
 
 Read from `firmware/bay-node/src/status_led.c` (`pick()`) and `src/dut.c`.
@@ -47,7 +47,7 @@ Render of an earlier layout, with a front display that node v1.0 does not have. 
 the left of each fascia: green at B2, a client attached; blue on the bay at the right edge.
 ```
 
-## The power box: ON, FAULT, PD, CTL
+## The power box's LEDs
 
 The front wall carries an ON and a FAULT LED for each row, with the row's letter under the pair, then PD and
 CTL. The console USB-C sits under the same CTL label.
@@ -55,18 +55,18 @@ CTL. The console USB-C sits under the same CTL label.
 <!-- site:power-box-leds -->
 | LED | Lit when |
 |---|---|
-| ON, green, one per row | the row's output carries VRACK. Dark while the row is off, shed or cycling, and with no contract |
-| FAULT, red, one per row | the row's eFuse reports a fault, current limit or over-temperature, on a row that is switched on. The eFuse holds the row at its limit and retries by itself; the hub does not switch the row off |
-| PD, green | the charger and the hub's PD sink hold a contract (the sink's power-good line), with or without firmware: already at the 9 V of plug-in |
-| CTL, green | the controller's firmware: the first pattern below that applies |
+| ON, {led}`green` green, one per row | the row's output carries VRACK. Dark while the row is off, shed or cycling, and with no contract |
+| FAULT, {led}`red` red, one per row | the row's eFuse reports a fault, current limit or over-temperature, on a row that is switched on. The eFuse holds the row at its limit and retries by itself; the hub does not switch the row off |
+| PD, {led}`green` green | the charger and the hub's PD sink hold a contract (the sink's power-good line), with or without firmware: already at the 9 V of plug-in |
+| CTL, {led}`green` green | the controller's firmware: the first pattern below that applies |
 
 | CTL | Meaning |
 |---|---|
-| flicker, four times a second | a claim waits for a press on the hub's BOOT |
-| fast blink, twice a second | a row in fault |
-| double blink, two short flashes a second | rows shed for lack of power |
-| slow blink, once a second | no PD charger (the controller runs from the console USB-C), or the contract is not final yet |
-| on | contract final, every row as wanted |
+| {led}`green blink` flicker, four times a second | a claim waits for a press on the hub's BOOT |
+| {led}`green blink` fast blink, twice a second | a row in fault |
+| {led}`green blink` double blink, two short flashes a second | rows shed for lack of power |
+| {led}`green blink` slow blink, once a second | no PD charger (the controller runs from the console USB-C), or the contract is not final yet |
+| {led}`green` on | contract final, every row as wanted |
 
 ON and FAULT are wired on the hub (`electronics/power-hub/design.py`), CTL is
 `led_level()` in `firmware/power-hub/src/main.c`.
@@ -84,15 +84,15 @@ console USB-C. The v1.0 hub keeps that order.
 
 ## A DATA port's LED
 
-Each port of a DATA ×6 and of a DATA ×4 has a green LED on its switched 5 V: lit while the port is on. It stays
+Each port of a DATA ×6 and of a DATA ×4 has a {led}`green` green LED on its switched 5 V: lit while the port is on. It stays
 dark for a port that is off, waiting for power, shed or latched off by an over-current
 ([States and error messages](states-and-messages.md#a-ports-states)). On the DATA ×4 the LED sits over the west
 end of the port's pin header, by the port's number; the rear bay cover has a window in front of each.
 
-The DATA ×4 has one LED more, D1, green, on the co-processor's GPIO25. The image loaded into the co-processor
+The DATA ×4 has one LED more, D1, {led}`green` green, on the co-processor's GPIO25. The image loaded into the co-processor
 drives it (the analyzer's, as on a Pico 2), and no document says what its patterns mean.
 
-The camera pod's four white LEDs are the camera's light, switched from the bay's page
+The camera pod's four {led}`white` white LEDs are the camera's light, switched from the bay's page
 ([Camera](../use/camera.md)).
 
 ## Buttons and the SERVICE switch of a bay node

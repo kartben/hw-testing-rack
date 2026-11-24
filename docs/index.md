@@ -33,7 +33,7 @@ You can print the frame and order the PCBs today. Nobody has finished a rack. [W
 ::::{div} bb-figures
 Twelve bays in [four columns and three rows](plan/choose-your-rack.md), 671 × 225 × 619 mm, for [about €1,500 in parts](plan/cost-and-time.md) at JLCPCB's prices of October 2026, before VAT.
 
-[243 printed parts](print/parts-list.md), about 4.8 kg of PETG by the slicer's figures, the largest 204 × 239 mm on the bed. Five kinds of PCB, 27 boards for this rack, two kinds with connectors to solder. One 100 W USB-C charger feeds the rack and grants each bay 5.4 W at four columns.
+[243 printed parts](print/parts-list.md), about 5.1 kg of PETG to buy by the slicer's figures, the largest 204 × 239 mm on the bed. Five kinds of PCB, 27 PCBs for this rack, two kinds with connectors to solder. One 100 W USB-C charger feeds the rack and grants each bay 5.4 W at four columns.
 ::::
 
 ::::{div} bb-ways

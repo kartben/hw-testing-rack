@@ -237,7 +237,7 @@ class Step(SphinxDirective):
 # Status
 
 STATUS = {
-    "hardware": "Verified on the v1.0 boards",
+    "hardware": "Verified on the v1.0 PCBs",
     "bench": "Run on bench stand-ins",
     "simulated": "Tested in simulation",
     "written": "Written, not tested yet",
@@ -326,13 +326,13 @@ LED_COLOURS = ("red", "orange", "yellow", "green", "blue", "magenta", "white", "
 
 def led_role(name, rawtext, text, lineno, inliner, options=None, content=None):
     """{led}`red`: a dot of that colour before the words that name a light's colour (the tables of what the
-    LEDs say).  `{led}`red blink`` makes it blink."""
+    LEDs say).  `{led}`red blink`` makes it blink, `{led}`white dim`` draws it dim."""
     words = text.lower().split()
     colour = words[0] if words else ""
     if colour not in LED_COLOURS:
         msg = inliner.reporter.warning(f"led: unknown colour {text!r} (one of {', '.join(LED_COLOURS)})", line=lineno)
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
-    classes = ["bb-led", f"bb-led-{colour}"] + (["bb-led-blink"] if "blink" in words[1:] else [])
+    classes = ["bb-led", f"bb-led-{colour}"] + [f"bb-led-{w}" for w in ("blink", "dim") if w in words[1:]]
     return [nodes.inline("", "", classes=classes)], []
 
 

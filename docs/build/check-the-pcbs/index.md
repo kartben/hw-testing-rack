@@ -63,7 +63,7 @@ step of these pages [that cannot be undone](../index.md#fuse).
 :end-before: <!-- /site:bench-equipment -->
 ```
 
-The row lead and the two-wire lead for the bench supply are made on
+The row cable and the two-wire lead for the bench supply are made on
 [Make the row cables](../row-cables.md).  The DATA lead and the camera lead are bought; the same page rings
 them out before a PCB sees them.
 

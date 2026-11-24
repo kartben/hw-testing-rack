@@ -95,7 +95,7 @@ Every command of this shell: [Bay node shell](../../reference/node-shell.md).
 
 ## 5. On the hub
 
-A [row lead](../row-cables.md) from one of the hub's rows to J1.  The node starts when the hub turns the row
+A [row cable](../row-cables.md) from one of the hub's rows to J1.  The node starts when the hub turns the row
 on, takes its position from the hub and shows it in `bay status`.  The bus itself, with two nodes:
 [the rack bus checklist](rack-bus.md).
 

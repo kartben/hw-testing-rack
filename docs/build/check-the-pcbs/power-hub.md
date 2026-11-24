@@ -100,7 +100,7 @@ uart:~$ wifi cred auto_connect
 
 ## 5. Load
 
-A row lead in row A's socket (J2; rows B, C, D are J3, J4, J5).  The supply is on the socket's
+A row cable in row A's socket (J2; rows B, C, D are J3, J4, J5).  The supply is on the socket's
 pin 6, GND on pins 2 and 5; at the lead's free end that is pin 1 and pins 2 and 5.  Confirm it
 with the meter (continuity to the ROW A pad), then put the 47 Ω 10 W resistor between the two
 for a few seconds: it takes 0.43 A and gets hot.

@@ -6,7 +6,7 @@ HTTP request and a shell command. A dash means the action has no such form.
 :::{status} simulated
 The page, `bayctl` and the HTTP requests below run against the simulated node and the simulated hub; the
 shells run on native_sim, and USB/IP and the node's shell also on the XIAO ESP32-S3 stand-in. Nothing here
-has run on a v1.0 rack. See [What exists today](../plan/status.md).
+has run on a v1.0 rack. See [What exists today](../plan/status.md#firmware-feature-by-feature).
 :::
 
 The examples act on bay B3, a DATA ×4 bay, and on B3.2, its port 2. `bayctl` runs from a checkout as
@@ -18,6 +18,7 @@ typed in the node's shell, or in the hub's for the rack. Each cell links to its 
 
 ## One board
 
+{.bb-ways-table}
 | Action | Bay's page | bayctl | HTTP | Shell |
 |---|---|---|---|---|
 | Read its port | [its row of **USB devices**](../use/power-and-reset.md#in-the-browser) | [`ports B3`](bayctl.md#status-and-ports) | [`GET /api/ports`](node-api.md#ports-of-a-data-board) | [`bay port`](node-shell.md#shell-bay-port) |
@@ -37,6 +38,7 @@ USB/IP itself is TCP 3240, not HTTP: `sudo usbip attach -r bay-b3.local -b 1-1.2
 
 ## One bay
 
+{.bb-ways-table}
 | Action | Bay's page | bayctl | HTTP | Shell |
 |---|---|---|---|---|
 | Read the bay's state | [the whole page](../use/index.md) | [`status B3`](bayctl.md#status-and-ports) | [`GET /api/status`](node-api.md#api-status-field-by-field) | [`bay status`](node-shell.md#shell-bay-status) |
@@ -57,6 +59,7 @@ the DATA lead itself, every board at once. A port of a DATA ×6 has no RESET or 
 
 ## The whole rack
 
+{.bb-ways-table}
 | Action | Rack's page | bayctl | HTTP, on rack.local | Hub's shell |
 |---|---|---|---|---|
 | Read the rows and the bays | [`http://rack.local/`](../use/rack-page.md) | [`hub status`](bayctl.md#hub) | [`GET /api/status`](hub-api.md) | [`hub status`](hub-shell.md) |
@@ -72,6 +75,7 @@ place: 19 (0x13) for B3. While B3 is reserved, its node refuses the hub's comman
 
 ## Sharing
 
+{.bb-ways-table}
 | Action | Bay's page | bayctl | HTTP | Shell |
 |---|---|---|---|---|
 | See rights, reservation, connections | [**Access** card](../use/access.md) | [`access show B3`](bayctl.md#access) | [`GET /api/access`](node-api.md#access-and-reservations) | [`bay access`](node-shell.md#shell-bay-access) |
@@ -87,6 +91,7 @@ switches on the rules the node already holds.
 
 ## Upkeep
 
+{.bb-ways-table}
 | Action | Bay's page | bayctl | HTTP | Shell |
 |---|---|---|---|---|
 | Update a node's firmware | [**Manage access…**: **Update…**](../use/update-firmware.md) | [`update build-bay/bay-node/zephyr/zephyr.signed.bin B3`](bayctl.md#update) | [`POST /api/update/begin`, then `/api/update?ticket=…`](node-api.md#firmware-update) | – |

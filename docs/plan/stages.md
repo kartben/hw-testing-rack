@@ -41,8 +41,9 @@ After that the rack is used every day ([What a bay can do](../use/index.md)) or 
 ([Zephyr twister](../use/twister.md)).
 
 Several steps of stages 4 to 6 cannot be undone: read [their table](../build/index.md#what-cannot-be-undone)
-before stage 4. One bay instead of a rack takes the same stages and fewer pages:
-[One bay on a desk](../build/one-bay-on-a-desk.md).
+before stage 4. One bay in the frame takes all nine stages with one bay node, one DATA board and the power
+hub: the hub and the power box feed it from stage 7. One bay without a frame, fed by a USB-C PD trigger
+module, takes fewer pages: [One bay on a desk](../build/one-bay-on-a-desk.md).
 
 ## What it asks of you
 
@@ -74,5 +75,8 @@ set up the workspace, write the node's Wi-Fi settings and build the two images
 before the PCBs, a meter alone tests a cable, and the node's checklist wants a lead on its row socket from
 its third stage on ([Make the row cables](../build/row-cables.md)).
 
-The frame can be printed from the first day, and a bay's page and `bayctl` can be tried against a simulated
-node with nothing on the desk ([Try it without hardware](try-it-without-hardware.md)).
+The frame can be printed from the first day, and part of it assembled: steps 1 to 5 of
+[The frame and the first bay](../build/first-bay.md) (base ladders, floor plate, base brace, bench screws,
+row ladders) need no tray. The tray slides in from the front at step 6, and the row brace and the caps
+follow it. A bay's page and `bayctl` can be tried against a simulated node with nothing on the desk
+([Try it without hardware](try-it-without-hardware.md)).

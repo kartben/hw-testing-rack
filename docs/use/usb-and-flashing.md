@@ -8,7 +8,7 @@ does with the board on the desk.
 USB/IP ran on a XIAO ESP32-S3 stand-in, with one board and then with several behind a bench hub (October
 and November 2026); the results are quoted below. The M5Stack CoreS3 build has a bench plan and no recorded
 result. The busid by port and the session that ends with its board are tested on native_sim. Nothing has
-gone through a DATA ×6 or a DATA ×4 on a v1.0 node. See [What exists today](../plan/status.md).
+gone through a DATA ×6 or a DATA ×4 on a v1.0 node. See [What exists today](../plan/status.md#status-usbip).
 :::
 
 Needs: a Linux machine with `usbip`, the `vhci-hcd` module and a sudo rule
@@ -20,12 +20,12 @@ rules, exactly as for boards plugged into that machine.
 A browser cannot attach a USB device; the bay's page shows what there is to attach and gives the line that
 does it.
 
-```{figure} ../img/web-ui-ports.png
+```{figure} ../img/web-ui-ports-attach.png
 :class: bb-screenshot
-:alt: The USB devices card of bay B3, one row per port with its device, busid and USB/IP state
+:alt: Two port rows: B3.1, an MCU-Link attached by 192.168.1.41 for 12 min; B3.2, an FT232R ready to attach
 
-Simulated node, a DATA ×4 bay. Under each port's name is its busid; the middle column says whether the board
-is ready to attach or who has attached it, and since when.
+Simulated node, ports 1 and 2 of a DATA ×4 bay. Under each port's name is its busid, then whether the board
+is ready to attach or who has attached it, and for how long.
 ```
 
 Each row of the **USB devices** card names the device the node enumerated on that port: product, maker,

@@ -174,7 +174,7 @@ Simulated node, seen from 192.168.1.77 while another address holds the bay.
 
 ## See who is connected, kick a connection
 
-The Access card lists who holds the console, USB/IP and the shell. **Kick**, for an admin, closes a connection
+The Access card lists who holds the console, USB/IP, the shell and the camera's stream or snapshot. **Kick**, for an admin, closes a connection
 and refuses its address that service for 60 s. From the command line, the connection's id comes from
 `access show` (`usbip:51234`, `rfc2217`, `web0`):
 

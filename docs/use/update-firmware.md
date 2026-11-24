@@ -105,7 +105,8 @@ MCUboot puts the previous firmware back by itself. The dialog ends on *Rolled ba
 :class: bb-screenshot
 :alt: The firmware dialog after a rollback: Send and Restart done, Trial and Rolled back in red, running 0.6.0 again
 
-Simulated hub. 0.7.0 came back after the restart, did not confirm itself, and MCUboot went back to 0.6.0.
+Simulated hub, with made-up version numbers: 0.7.0 came back after the restart, did not confirm itself, and
+MCUboot went back to 0.6.0. The text above uses 0.6.0 over 0.5.0, the firmware's version today.
 ```
 
 The trial waits for what worked when the image arrived, so a node whose Wi-Fi or rack bus was already failing

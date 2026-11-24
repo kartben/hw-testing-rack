@@ -24,6 +24,8 @@ its standing today and the page that holds today's answer: follow that page.
 | superseded | it describes PCBs, parts or a rack that no longer exist |
 | not built | an option that was studied and left for later |
 
+The Standing column below names one of these, or says how far a note went: *Mostly applied*, *Day one implemented*.
+
 Where a note and a page of this site disagree, the page wins, and the code and `config/rack.yaml` win over both.
 Five things in the notes mean something else today:
 
@@ -51,66 +53,73 @@ few lines each: [Why it is built this way](index.md).
 Both reviews of 2026-10-21 count for a 2 × 4 rack, and the slicer's saw the 30 parts of that day; the drawer
 front, the cradle widened for the DATA ×6 with its strip, and the slot bin came later.
 
+{.bb-dates}
 | Note | Date, kind | Standing | Today's answer |
 |---|---|---|---|
-| [Printed parts: design review](../printed-parts-review.md): snaps, overhangs, fasteners and looks of every part, 17 findings | 2026-10-21, review | Mostly applied; counts are for a 2 × 4 rack | [Inserts and square nuts](../print/inserts-and-nuts.md) |
-| [Printed parts: what the slicer says](../printed-parts-fdm-review.md): every STL through Bambu Studio for an H2D, time and grams per part | 2026-10-21, review | Decisions applied; figures predate several parts | [Printer, filament, settings](../print/printer-and-settings.md) |
-| [Can the rack tip over?](../stability.md): the forces that tip it, and eight screws into the bench | 2026-10-25, study | Applies; computed for 2 and 4 rows, not the default 3 | [Screw the rack to the bench](../build/screw-the-rack-to-the-bench.md) |
+| [Printed parts: design review](../printed-parts-review.md): snaps, overhangs, fasteners and looks of every part, 17 findings | 2026-10-21<br>review | Mostly applied; counts are for a 2 × 4 rack | [Inserts and square nuts](../print/inserts-and-nuts.md) |
+| [Printed parts: what the slicer says](../printed-parts-fdm-review.md): every STL through Bambu Studio for an H2D, time and grams per part | 2026-10-21<br>review | Decisions applied; figures predate several parts | [Printer, filament, settings](../print/printer-and-settings.md) |
+| [Can the rack tip over?](../stability.md): the forces that tip it, and eight screws into the bench | 2026-10-25<br>study | Applies; computed for 2 and 4 rows, not the default 3 | [Screw the rack to the bench](../build/screw-the-rack-to-the-bench.md) |
 
 ## Power and row wiring
 
+{.bb-dates}
 | Note | Date, kind | Standing | Today's answer |
 |---|---|---|---|
-| [Row wiring and a shorter hub](../power-distribution-review.md): what a row cable carries, the hub in 100 mm | 2026-10-20/21, study and decision record | Applied; its load table is the old 5 V path | [Make the row cables](../build/row-cables.md) |
-| [Row bus on RJ45: electrical](../rj45-row-cable-feasibility.md): the row bus on Cat5e patch cords | 2026-10-22, research | Not built: no-go for v1.0, go for a next revision | [JST PH, not RJ45](index.md#jst-ph-not-rj45) |
-| [Row bus on RJ45: mechanical](../rj45-row-cable-mechanical.md): jacks in the tray, cords made to length | 2026-10-22, research | Not built | [JST PH, not RJ45](index.md#jst-ph-not-rj45) |
-| [Microamp power profiling](../power-profiling-research.md): current traces for Zephyr low-power tests | 2026-10-21, research | A plan, untested | [Specifications](../reference/specifications.md) |
+| [Row wiring and a shorter hub](../power-distribution-review.md): what a row cable carries, the hub in 100 mm | 2026-10-20/21<br>study and decision record | Applied; its load table is the old 5 V path | [Make the row cables](../build/row-cables.md) |
+| [Row bus on RJ45: electrical](../rj45-row-cable-feasibility.md): the row bus on Cat5e patch cords | 2026-10-22<br>research | Not built: no-go for v1.0, go for a next revision | [JST PH, not RJ45](index.md#jst-ph-not-rj45) |
+| [Row bus on RJ45: mechanical](../rj45-row-cable-mechanical.md): jacks in the tray, cords made to length | 2026-10-22<br>research | Not built | [JST PH, not RJ45](index.md#jst-ph-not-rj45) |
+| [Microamp power profiling](../power-profiling-research.md): current traces for Zephyr low-power tests | 2026-10-21<br>research | A plan, untested | [Specifications](../reference/specifications.md) |
 
-## DATA ×4: wires and analyzer
+## DATA ×4, wires and analyzer
 
+{.bb-dates}
 | Note | Date, kind | Standing | Today's answer |
 |---|---|---|---|
-| [Why the DATA ×4 is built this way](../data-x4-v2-research.md): the matrix, the level shifters, the co-processor, two assemblies | 2026-10-19/20, research and decision record | Applied; its first half describes a board never built | [Wires between boards](../use/wires.md) |
-| [A standing board: layout options](../data-x4-v2-layout-options.md): a deeper, standing or stacked board | 2026-10-20, study | Option B was built; prices and connector superseded | [DATA ×4](../reference/pcbs/data-x4.md) |
-| [Pin headers: usability review](../data-x4-logic-usability-review.md): one header per port, the groups as voltage domains | 2026-10-20, review | Applied 2026-10-21 | [Wires between boards](../use/wires.md) |
-| [The co-processor's firmware](../coproc-firmware-research.md): the stock analyzer first, a Zephyr firmware later | 2026-10-19, note of 2026-11-03; research and decision record | Day one implemented; the rest planned | [Logic analyzer](../use/logic-analyzer.md) |
-| [An SWD probe through the matrix](../debug-probe-research.md): a CMSIS-DAP probe on the co-processor | 2026-10-21, research | Not built | [USB/IP and flashing](../use/usb-and-flashing.md) |
+| [Why the DATA ×4 is built this way](../data-x4-v2-research.md): the matrix, the level shifters, the co-processor, two assemblies | 2026-10-19/20<br>research and decision record | Applied; its first half describes a board never built | [Wires between boards](../use/wires.md) |
+| [A standing board: layout options](../data-x4-v2-layout-options.md): a deeper, standing or stacked board | 2026-10-20<br>study | Option B was built; prices and connector superseded | [DATA ×4](../reference/pcbs/data-x4.md) |
+| [Pin headers: usability review](../data-x4-logic-usability-review.md): one header per port, the groups as voltage domains | 2026-10-20<br>review | Applied 2026-10-21 | [Wires between boards](../use/wires.md) |
+| [The co-processor's firmware](../coproc-firmware-research.md): the stock analyzer first, a Zephyr firmware later | 2026-10-19, note of 2026-11-03<br>research and decision record | Day one implemented; the rest planned | [Logic analyzer](../use/logic-analyzer.md) |
+| [An SWD probe through the matrix](../debug-probe-research.md): a CMSIS-DAP probe on the co-processor | 2026-10-21<br>research | Not built | [USB/IP and flashing](../use/usb-and-flashing.md) |
 
 ## Wi-Fi and the node's MCU
 
+{.bb-dates}
 | Note | Date, kind | Standing | Today's answer |
 |---|---|---|---|
-| [How much one Wi-Fi channel carries](../wifi-capacity-ns3.md): one rack's Wi-Fi in ns-3 | 2026-10-24, study (simulation) | Applies; models 8 and 16 bays | [Wi-Fi in the rack](../use/wifi.md) |
-| [Rack Wi-Fi and the boards' Bluetooth](../wifi-coexistence.md): a BLE link beside the rack, in BabbleSim | 2026-10-24, study (simulation) | Applies; its proposals are not the firmware's defaults | [Wi-Fi in the rack](../use/wifi.md) |
-| [Another MCU for the node?](../mcu-alternatives.md): the BL616 against the ESP32-S3 | 2026-10-16, research | Not built | [An ESP32-S3, and USB at full speed](index.md#an-esp32-s3-and-usb-at-full-speed) |
-| [The ESP32-S31](../esp32-s31-research.md): a high-speed USB host for the node | 2026-10-22, research | Not built | [An ESP32-S3, and USB at full speed](index.md#an-esp32-s3-and-usb-at-full-speed) |
-| [A wired node](../wired-node-mcu.md): Ethernet on every node, and its MCU | 2026-10-24, research | Not built | [Wi-Fi, not a cable to every node](index.md#wi-fi-not-a-cable-to-every-node) |
+| [How much one Wi-Fi channel carries](../wifi-capacity-ns3.md): one rack's Wi-Fi in ns-3 | 2026-10-24<br>study (simulation) | Applies; models 8 and 16 bays | [Wi-Fi in the rack](../use/wifi.md) |
+| [Rack Wi-Fi and the boards' Bluetooth](../wifi-coexistence.md): a BLE link beside the rack, in BabbleSim | 2026-10-24<br>study (simulation) | Applies; its proposals are not the firmware's defaults | [Wi-Fi in the rack](../use/wifi.md) |
+| [Another MCU for the node?](../mcu-alternatives.md): the BL616 against the ESP32-S3 | 2026-10-16<br>research | Not built | [An ESP32-S3, and USB at full speed](index.md#an-esp32-s3-and-usb-at-full-speed) |
+| [The ESP32-S31](../esp32-s31-research.md): a high-speed USB host for the node | 2026-10-22<br>research | Not built | [An ESP32-S3, and USB at full speed](index.md#an-esp32-s3-and-usb-at-full-speed) |
+| [A wired node](../wired-node-mcu.md): Ethernet on every node, and its MCU | 2026-10-24<br>research | Not built | [Wi-Fi, not a cable to every node](index.md#wi-fi-not-a-cable-to-every-node) |
 
 ## PCB reviews before the order
 
 Oldest first. Only the last one reviews the PCBs that were fabricated.
 
+{.bb-dates}
 | Note | Date, kind | Standing | Today's answer |
 |---|---|---|---|
-| [Node and hub, rev 0.2 to 0.5](../review-konnect.md): findings and fixes, then the change log of 18 and 19 October | 2026-10-16 to 10-19, review | Superseded: it reviews revisions that no longer exist | [The five PCBs](../reference/pcbs/index.md) |
-| [Assembly review](../pcba-review.md): five boards checked before an order at JLCPCB | 2026-10-19, review | Superseded: another set of PCBs, JLCPCB only | [Order the PCBs](../plan/order-the-pcbs.md) |
-| [Datasheet audit: node, hub, camera pod](../datasheet-audit.md): each main IC against its datasheet | 2026-10-24, audit | Fixes applied 2026-10-25; the node's U9 section no longer matches the PCB | [Check each PCB](../build/check-the-pcbs/index.md) |
-| [Datasheet audit: DATA ×4](../datasheet-audit-data-x4-v2.md): the same for the DATA ×4 | 2026-10-24, audit | Fixes applied 2026-10-25 | [DATA ×4](../reference/pcbs/data-x4.md) |
-| [Schematic review](../schematic-review-2026-10-25.md): every board and lead, six findings | 2026-10-25, review | Applied in part; six items open | [Known issues, and what will not work](../reference/known-limitations.md) |
-| [Design review of the v1.0 PCBs](../pcb-review-2026-11-09.md), in French: 65 findings two days before fabrication, the cable pinouts verified | 2026-11-09, review | Current; four fixes went in before fabrication, the rest is open | [Known issues, and what will not work](../reference/known-limitations.md) |
+| [Node and hub, rev 0.2 to 0.5](../review-konnect.md): findings and fixes, then the change log of 18 and 19 October | 2026-10-16 to 10-19<br>review | Superseded: it reviews revisions that no longer exist | [The five PCBs](../reference/pcbs/index.md) |
+| [Assembly review](../pcba-review.md): five boards checked before an order at JLCPCB | 2026-10-19<br>review | Superseded: another set of PCBs, JLCPCB only | [Order the PCBs](../plan/order-the-pcbs.md) |
+| [Datasheet audit: node, hub, camera pod](../datasheet-audit.md): each main IC against its datasheet | 2026-10-24<br>audit | Fixes applied 2026-10-25; the node's U9 section no longer matches the PCB | [Check each PCB](../build/check-the-pcbs/index.md) |
+| [Datasheet audit: DATA ×4](../datasheet-audit-data-x4-v2.md): the same for the DATA ×4 | 2026-10-24<br>audit | Fixes applied 2026-10-25 | [DATA ×4](../reference/pcbs/data-x4.md) |
+| [Schematic review](../schematic-review-2026-10-25.md): every board and lead, six findings | 2026-10-25<br>review | Applied in part; six items open | [Known issues, and what will not work](../reference/known-limitations.md) |
+| [Design review of the v1.0 PCBs](../pcb-review-2026-11-09.md), in French: 65 findings two days before fabrication, the cable pinouts verified | 2026-11-09<br>review | Current; four fixes went in before fabrication, the rest is open | [Known issues, and what will not work](../reference/known-limitations.md) |
 
 ## Fabs, parts and routing
 
+{.bb-dates}
 | Note | Date, kind | Standing | Today's answer |
 |---|---|---|---|
-| [Parts, prices and three fabs compared](../jlc-parts-audit.md): stock, prices, quotes, HASL or ENIG | 2026-10-19 to 10-23, audit | Superseded: an 8-bay rack, other PCBs; the order went to NextPCB | [Cost and time](../plan/cost-and-time.md) |
-| [Autorouting benchmark](../autorouting-benchmark.md): Freerouting runs as a portfolio, three routers compared | 2026-10-22/23, study | Applies; figures predate the DATA ×6 | [Change a PCB](change-a-pcb.md) |
+| [Parts, prices and three fabs compared](../jlc-parts-audit.md): stock, prices, quotes, HASL or ENIG | 2026-10-19 to 10-23<br>audit | Superseded: an 8-bay rack, other PCBs; the order went to NextPCB | [Cost and time](../plan/cost-and-time.md) |
+| [Autorouting benchmark](../autorouting-benchmark.md): Freerouting runs as a portfolio, three routers compared | 2026-10-22/23<br>study | Applies; figures predate the DATA ×6 | [Change a PCB](change-a-pcb.md) |
 
 ## Spikes
 
 Two throw-away programs, each written to answer one question, documented in READMEs of the repository rather
 than on this site.
 
+{.bb-dates}
 | Spike | Date | Standing |
 |---|---|---|
 | [firmware/spikes/usb-hub](../../firmware/spikes/usb-hub/README.md): an ESP32-S3, a hub off the shelf and several boards over USB/IP | 2026-10-16 | Its findings went into [multi-dut-node.md](../multi-dut-node.md) and into the patches of `zephyr/patches.yml` |

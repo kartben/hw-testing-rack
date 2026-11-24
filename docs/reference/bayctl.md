@@ -115,9 +115,11 @@ or a USB id that is not the analyzer's firmware.
 ### status and ports
 
 `ports` prints one line per port: its name, `VBUS on`, `off` or `FAULT`, its current, the USB device and
-its busid, and `USB/IP <address>` when a machine has it attached. `status` prints the node's line first
+its busid, and `USB/IP <address>` when a machine has it attached. Against a node the device is its VID and
+PID, then the busid: firmware 0.5 sends no product name there, and the simulated node does
+([Bay node HTTP API](node-api.md#routes-and-the-right-each-needs)). `status` prints the node's line first
 (host name, address, data path, the bay's supply, the counts of USB devices and USB/IP sessions), then
-the port lines, then every USB device with its maker, serial number and classes.
+the port lines, then every USB device with its name, maker, serial number and classes.
 
 ```{tool-help} tools/bayctl.py status
 ```
@@ -134,8 +136,9 @@ $ python tools/bayctl.py ports B3
 
 ### power
 
-`--ms` is how long a `cycle` stays off, 1000 ms by default. Once the action is done the command prints the
-port as the node reports it.
+`--ms` is the shortest time a `cycle` keeps the power off, 1000 ms by default; a port also stays off until
+its VBUS has fallen under 1 V, 2 s at most. Once the action is done the command prints the port as the node
+reports it.
 
 A power-on that the bay's power budget has no room for is refused: 409, exit code 1. `--when available`
 queues it instead: `queued, on as soon as the bay's budget has room`, exit code 0, and the port goes on by
@@ -292,7 +295,8 @@ is the board's own USB`, and every node of a v1.0 rack has ports.
 
 Writes a twister hardware map and one pre-script per board. By default `-o` is `rack-map.yaml` in the
 current directory, `--scripts` a folder `rack-scripts` beside the map, `--python` the interpreter that runs
-`hwmap`, by its full path ([Zephyr twister](../use/twister.md)).
+`hwmap`, by its full path ([Zephyr twister](../use/twister.md)). `--lease` is checked only when a
+pre-script runs: `hwmap --lease 5x` writes the map without a word, and every test then fails.
 
 ```{tool-help} tools/bayctl.py hwmap
 ```
@@ -421,7 +425,8 @@ other copies of `config/rack.yaml` and of `mechanical/boards/boards.yaml`. There
 $ python tools/bayctl.py --lab config/lab.example.yaml list
 ```
 
-The tool's own list of commands describes 7 of them and leaves the 16 others to the usage line:
+The tool's own list of commands describes 7 of its 24 commands, shows `power-port` as `==SUPPRESS==` and
+leaves the other 16 to the usage line:
 
 ```{tool-help} tools/bayctl.py
 ```
