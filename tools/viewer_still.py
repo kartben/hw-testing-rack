@@ -10,6 +10,10 @@ open=0..1 pulls every drawer, explode=0..1, xray hides the ladders, view=iso|fro
 view=custom&eye=x,y,z&look=x,y,z places the camera (millimetres, the rack's frame), camlight=1, preview=B2.
 `hideui`, `quality=low` and `debug` are added for you.
 
+--no-display hides the display in the drawers' fronts (the bay node has no connector for one, so a built bay
+has none); --bare also hides the development boards, their plates, cables and wires, and the laptop, to show a
+bay as it is before a board goes in.
+
 --dark takes the twin for the site's dark theme: save it as docs/_static/viewer-dark/<same name>.jpg and the
 page swaps it in (docs/_static/bitbunk.js).  Look at the picture before you use it: the first framing is rarely
 the right one.  The viewer's assets must be built (python tools/build.py web); it is served from site/ on a
@@ -47,6 +51,23 @@ RECOLOUR = """(bg) => {
 }"""
 
 
+HIDE = """(bare) => {
+  const v = window.__viewer;
+  const near = (x, y) => Math.abs(x - y) < 0.01;
+  v.scene.traverse((o) => {
+    const u = o.userData || {};
+    const p = (o.isMesh && o.geometry && o.geometry.parameters) || {};
+    // the drawer front's display: its lit status screen, its glass, its PCB (tools/webscene.py, rack.json)
+    if (near(p.width, 42.72) && near(p.height, 22.7)) o.visible = false;
+    if (near(p.width, 52.36) || (near(p.width, 51.0) && near(p.depth, 26.6))) o.visible = false;
+    if (bare && (['boards', 'dut', 'laptop', 'usb-pd', 'pc', 'jumper', 'dupont'].includes(u.zone) || u.layer === 'plates')) {
+      o.visible = false;
+    }
+  });
+  if (v.renderFrame) v.renderFrame();
+}"""
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("out", help="the picture to write (.jpg or .png)")
@@ -58,6 +79,8 @@ def main() -> None:
     ap.add_argument("--bg", help="another background colour")
     ap.add_argument("--crop", help="left,top,right,bottom in pixels of the shot")
     ap.add_argument("--chromium", help="path of a Chromium to use instead of Playwright's own")
+    ap.add_argument("--no-display", action="store_true", help="no display in the drawers' fronts")
+    ap.add_argument("--bare", action="store_true", help="no display, and no board, plate, board cable or laptop")
     a = ap.parse_args()
 
     from playwright.sync_api import sync_playwright      # noqa: PLC0415
@@ -83,6 +106,8 @@ def main() -> None:
         page.wait_for_timeout(a.wait)
         if not page.evaluate(RECOLOUR, a.bg or (DARK if a.dark else PAPER)):
             raise SystemExit("the viewer did not load: are its assets built? (python tools/build.py web)")
+        if a.no_display or a.bare:
+            page.evaluate(HIDE, bool(a.bare))
         page.wait_for_timeout(1500)
         clip = None
         if a.crop:
