@@ -360,6 +360,8 @@ def row_mouths():
 # ------------------------------------------------------------------ drag chain, DATA socket (run.py: rackcfg chain, drawer)
 CH, DATA = C.get("CHAIN"), C.get("DATA")
 CR = C.get("CRADLE") or {}                 # the DATA cradle's screws (run.py cradle_screws)
+FR = C.get("FRONT") or {}                  # the drawer front's two screws (run.py front_screws)
+D3_RAISE = 35.0                            # step d3: the DATA ×6 held this far over the cradle, its lead in J1
 if CH:                                         # chain_parts.scad / lib/carrier.scad names
     CHAIN_W, CHAIN_H = CH["outer"]             # across the side plates (vertical) x in the bend plane
     CHAIN_Z = CH["bottom"] + CHAIN_W / 2 + 0.6
@@ -508,7 +510,8 @@ def _data_lead_shape(part="full"):
     """The 5-wire PH DATA lead (tray coordinates): its plug in the node's vertical J7, up and into
     the chain's fixed mouth, along the chain, out of the moving mouth; "full": forwards, curled back
     and up through the drawer's cable window into the DATA board's PH from the rear; "free": its far
-    plug left hanging (the bench, the tray); "stub": only its last bit, up through the window."""
+    plug left hanging (the bench, the tray); "stub": only its last bit, up through the window; "up": its
+    last 55 mm with the board D3_RAISE over its seat (step d3), the lead stretched up to J1 from the window."""
     node = json.load(open(os.path.join(PARTS, "node.json")))
     j7 = next(c for c in node["ph"] if c["ref"] == "J7")            # the DATA header (vertical PH 5)
     o0 = V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"])
@@ -528,6 +531,18 @@ def _data_lead_shape(part="full"):
         to_board = [tuple(q) for q in ease([V(*q) for q in reversed(dl["to_board"])], r)]   # from the moving
         # mouth; along the rear wall it turns into the port board's PH tighter than the lead (ease)
         tail = to_board[1:]
+    if part == "up":                         # its last 55 mm, the part over the window's floor lifted with the board
+        keep = [(end.x + 1.5, end.y + 4, C["PLENUM"] - 9)] + tail[4:]
+        if dl:
+            keep, run = [to_board[-1]], 0.0
+            for a, b in zip(reversed(to_board[:-1]), reversed(to_board[1:])):
+                run += (V(*a) - V(*b)).Length
+                keep.insert(0, a)
+                if run > 55:
+                    break
+        z0, z1 = C["PLENUM"] + C["DRAWER_BOTTOM"], keep[-1][2]
+        keep = [(x, y, z + D3_RAISE * min(1.0, max(0.0, (z - z0) / (z1 - z0)))) for x, y, z in keep]
+        return Part.makeCompound([plug_back(pm + V(0, 0, D3_RAISE), pn), pipe(keep, r)])
     if part == "stub":
         if dl:                               # its last 30 mm, up through the window
             keep, run = [to_board[-1]], 0.0
@@ -716,6 +731,7 @@ def bay_chain_instances(inst, child, j, mt):
     inst[f"cx{j}"] = ("data_lead", mt)                     # the DATA lead, laid through the chain to the DATA board
     inst[f"cxf{j}"] = ("data_lead_free", mt)               # ... its far end still free (the bench, the tray)
     inst[f"dls{j}"] = ("data_lead_stub", mt)               # ... only its last bit, into the board (the drawer step)
+    inst[f"dlu{j}"] = ("data_lead_up", mt)                 # ... into the board held over its cradle (step d3)
     inst[f"cf{j}"] = ("chain_foot", mt.multiply(m_tr(mx, my, C["PLENUM"])))
     child[f"ce{j}"] = []
     for side, (x, mouth, head) in (("a", (x1 + LINK_B, fy, 1)), ("f", (mx + LINK_R - LINK_B, my, -1))):
@@ -730,6 +746,7 @@ def bay_chain_instances(inst, child, j, mt):
                       .multiply(R_x90()))
     inst[f"xc{j}"] = ("x4_cradle", dmt)                    # the cradle on the three bosses, the strip on its comb
     inst[f"xs{j}"] = ("x4_strip", dmt)
+    inst[f"bxs{j}"] = ("x6_slot", dmt)                     # the board's plain outline (x4_cradle.scad board()): the latch's cut
     child[f"dr{j}"] += [(f"dp{j}", None, "follow"), (f"xc{j}", None, "follow"), (f"xs{j}", None, "follow")]
     for n, (bx, by) in enumerate(CR.get("bosses", [])):     # inserts in the bosses, 3 x M3 x 8 down through the base
         inst[f"i_xc{j}_{n}"] = ("insert", dmt.multiply(m_tr(bx, by, CR["boss_top"])))
@@ -994,6 +1011,13 @@ def instances():
         # drawer end stop: M2.5 x 8 through the left guide lip, put in once the drawer is in
         inst[f"s_dr{j}"] = ("pt23x8", mt.multiply(m_tr(C["STOP_PIN_X"], C["STOP_Y"], 28.5)))   # lib/carrier.scad's stop
         child[f"dr{j}"] = [(f"s_dr{j}", NORMAL, "own")]
+        if FR:                                   # its front (drawer.scad front_in_place): a PT 2.3 x 8 either side, from
+            dmt = mt.multiply(m_tr(C["DRAWER_X0"], C["DRAWER_Y0"], C["PLENUM"]))   # inside through the post, into its boss
+            inst[f"df{j}"] = ("drawer_front", dmt)
+            child[f"dr{j}"].append((f"df{j}", None, "follow"))
+            for n, x in enumerate(FR["x"]):
+                inst[f"s_df{j}_{n}"] = ("pt23x8", dmt.multiply(m_tr(x, FR["y"], FR["z"])).multiply(R_to("y")))
+                child[f"dr{j}"].append((f"s_df{j}_{n}", None, "follow"))
         bay_chain_instances(inst, child, j, mt)
         pl = BAYS.get("plates", {}).get(str(j))
         if pl:                                   # the drawer's plate, its pegs, board and DUT cable: they follow it
@@ -1011,6 +1035,8 @@ def instances():
             child[f"dr{j}"] += [(f"db{j}", None, "follow"), (f"du{j}", None, "follow")]
         if j == 0:                               # the screwdriver on the node's front-left screw (through its guide hole)
             inst["sd0"] = ("screwdriver", inst["s_nd0_2"][1].multiply(m_tr(0, 0, 2.6)))
+            if CR.get("strip_x"):                # ... and on the strip's right screw (step d4)
+                inst["sdx0"] = ("screwdriver", inst[f"s_xs0_{len(CR['strip_x']) - 1}"][1].multiply(m_tr(0, 0, 1.6)))
         for bid, k in ((f"bb{j}", -1), (f"ba{j}", 0)):      # brace screws, into the rear-edge inserts
             z = brace_z(k)
             xl, xr = j * P + T / 2, (j + 1) * P + T / 2
@@ -1059,8 +1085,8 @@ def shape_of(iid):
         s = Part.makeCompound([chain_shape("closed"), chain_ends_shape()])
     elif name == "chain_ends":
         s = chain_ends_shape()
-    elif name in ("data_lead", "data_lead_free", "data_lead_stub"):
-        s = data_lead_shape({"data_lead": "full", "data_lead_free": "free", "data_lead_stub": "stub"}[name])
+    elif name in ("data_lead", "data_lead_free", "data_lead_stub", "data_lead_up"):
+        s = data_lead_shape({"data_lead": "full", "data_lead_free": "free", "data_lead_stub": "stub", "data_lead_up": "up"}[name])
     elif name == "lead_alone":
         s = lead_alone_shape()
     elif name == "data_port":
@@ -1253,6 +1279,41 @@ STEPS.update({
            + [i for i in ("kx0",) if i in INST],
            "add": {"kl0": (0, 0, 0)}, "arrows": False, "frame": {"at": at_tray(80, 140, 92), "size": 265}},
 })
+
+
+def at_drawer(x, y, z):
+    return at_tray(C["DRAWER_X0"] + x, C["DRAWER_Y0"] + y, C["PLENUM"] + z)
+
+
+if FR and CR.get("latch"):              # the documentation's own steps (docs/build/fit-out-a-tray.md, run.py DOCS): the
+    CRADLE0 = ["xc0"] + [f"s_xc0_{n}" for n in range(len(CR["bosses"]))]    # drawer at the bench, one action a drawing,
+    STRIP0 = ["xs0"] + [f"s_xs0_{n}" for n in range(len(CR["strip_x"]))]    # where the notice's a12s shows three at once
+    BENCH0 = PLATE[0] + ["s_dr0", "s_cf0"]                     # the plate later; the guide lips' screws in the tray
+    _lx, _ly, _lz = CR["latch"]
+    STEPS.update({
+        # the front onto the walls' ends, a PT 2.3 x 8 either side from inside, through the post into its boss
+        "d1": {"view": (-0.55, 1.0, 1.25), "old": A("dr0"), "add": {"df0": u_(-30), "s_df0_0": u_(18), "s_df0_1": u_(18)},
+               "hide": BENCH0 + CRADLE0 + ["dp0"] + STRIP0, "arrow_ids": ["df0"],
+               "frame": {"at": at_drawer(71, 2, 20), "size": 220}},
+        # the cradle onto the rear bay's three bosses, 3 x M3 x 8 into their inserts
+        "d2": {"view": (0.35, 1.1, 1.5), "old": A("dr0"), "add": {"xc0": n_(30), **{f"s_xc0_{n}": n_(52) for n in range(len(CR["bosses"]))}},
+               "hide": BENCH0 + ["dp0"] + STRIP0, "arrow_ids": [],
+               "arrows_at": [("xc0", (36, CR["bosses"][1][1] + 4, CR["head_z"] + 2.4), None, 0)],   # clear of the screws
+               "frame": {"at": at_drawer(60, 182, 45), "size": 215}},
+        # the lead up through the window into J1, then the board down into the cradle until both latches click
+        "d3": {"view": (0.6, 1.2, 1.0), "old": A("dr0"), "add": {"dp0": n_(D3_RAISE), "dlu0": (0, 0, 0)},
+               "hide": BENCH0 + STRIP0, "arrow_ids": ["dp0"], "clic": True, "detail": True,
+               "arrows_at": [("dlu0", tuple(data_port_ph()[0] + V(0, 6.0, D3_RAISE)), (0, 1, 0), 16, (-6, 0, 0))],
+               "frame": {"at": at_drawer(60, 182, 62), "size": 215}},
+        # ... a latch over the board's top edge: cut through its hook, from the left
+        "latch": {"view": (-1.0, -0.03, 0.03), "old": A("xc0"), "add": {"bxs0": (0, 0, 0)},
+                  "cut": {"at": at_drawer(_lx, _ly, _lz), "size": 24},
+                  "focus": {"at": at_drawer(_lx, _ly - 0.4, _lz + 0.2), "size": 9}, "arrows": False},
+        # the strip on the comb, 5 x PT 2.3 x 8 from above between the port wall and the board, the long screwdriver
+        "d4": {"view": (0.25, -1.0, 1.0), "old": A("dr0", "dls0"), "add": {"xs0": n_(25), "sdx0": n_(45),
+               **{f"s_xs0_{n}": n_(45) for n in range(len(CR["strip_x"]))}},
+               "hide": BENCH0, "arrow_ids": ["xs0"], "frame": {"at": at_drawer(60, 168, 45), "size": 220}},
+    })
 if PB:                                  # the power box, under A1
     BOX = ["pb", "hb", "pl"]
     _o, _s, _pd = PB["origin"], PB["size"], PB["pd"]
@@ -1271,9 +1332,10 @@ if PB:                                  # the power box, under A1
         "c_done": {"view": ISO, "old": [], "add": {i: (0, 0, 0) for i in BAY0 + BOX + ["feed"]},
                    "slot": "done"},
     })
-ORDER = ["cover", "a1", "a2", "a3", "pin", "a4", "hook", "t1", "a9b", "a10o", "t2", "a12s", "t3", "p1", "clip", "p2", "p3", "p4",
-         "t4", "a6", "a7", "b1", "b2", "pin_b", "b3r", "b3t", "b4", "b5a", "done", "c0", "c1", "c2", "c3", "c4", "c5", "c_done",
-         "k1", "k2", "k2m", "k3"]                # notice.yaml's: check.py finds each screw's first step in it
+ORDER = ["cover", "a1", "a2", "a3", "pin", "a4", "hook", "t1", "a9b", "a10o", "t2", "a12s", "d1", "d2", "d3", "latch", "d4", "t3", "p1",
+         "clip", "p2", "p3", "p4", "t4", "a6", "a7", "b1", "b2", "pin_b", "b3r", "b3t", "b4", "b5a", "done", "c0", "c1", "c2", "c3",
+         "c4", "c5", "c_done", "k1", "k2", "k2m", "k3"]   # notice.yaml's, with the documentation's d1-d4 where they happen:
+                                                         # check.py finds each screw's first step in it
 STEPS = {**{k: STEPS[k] for k in ORDER if k in STEPS}, **{k: v for k, v in STEPS.items() if k not in ORDER}}
 
 
@@ -1463,7 +1525,7 @@ KEYS = {("old", False): "old", ("old", True): "old_f", ("add", False): "add", ("
         ("old", "c"): "old_c", ("add", "c"): "add_c", ("old", "w"): "old_w", ("add", "w"): "add_w"}
 WIRE_K = 1.2                                   # a flat lead's wire, drawn as one line: its stroke, relative to a part's
 CABLE_KINDS = {"data_lead", "data_lead_free", "data_lead_stub", "feed", "pd_cable",   # round cables (flat leads: as parts)
-               "camera_lead", "camera_xh", "dut_cable0", "dut_cable1"}
+               "camera_lead", "camera_xh", "dut_cable0", "dut_cable1", "data_lead_up"}
 CABLE_K = 1.15                                 # a round cable's stroke, relative to a part's
 CACHE = os.path.join(OUT, "cache")
 

@@ -3,11 +3,13 @@
 
     python tools/notice/run.py                  # every drawing
     python tools/notice/run.py a3 pin hw:m3x8   # some of them (names: notice.py STEPS, thumb:<part>, hw:<fastener>)
+    python tools/notice/run.py d1 d2 d3 latch d4   # the documentation's own steps (DOCS), on no page of the notice
     python tools/notice/run.py --prep           # steps 1-3 only: the solids, for check.py
     python tools/notice/run.py --dry            # steps 1-3, then every scene built, nothing drawn: does the
                                                 # notice still build on this state? (minutes, exit 1 if not)
 
-1. the panel frame's constants (OpenSCAD probe, tools/panel_proto.py) -> <build>/constants.json;
+1. the panel frame's constants (OpenSCAD probe, tools/panel_proto.py) -> <build>/constants.json,
+   with the camera pod's, the DATA cradle's and the drawer front's screws (OpenSCAD echo probes);
 2. the printed parts of one bay -> OpenSCAD CSG -> exact solids (csg2part.py, in freecadcmd);
 3. the bay node: KiCad's STEP export and 3D coverage report, stand-ins for the parts without a
    body (node.py);
@@ -17,8 +19,9 @@
    publish the pages: README.md, Publishing.  A full run takes about 40 minutes here.
 
 <build> is mechanical/build/notice.  Needs FreeCAD 1.x with the Fasteners workbench
-(FREECADCMD=path/to/freecadcmd if it is not found), OpenSCAD, and kicad-cli (or Docker) for
-the bay node (without it, the node is drawn as a bare board).
+(FREECADCMD=path/to/freecadcmd if it is not found), OpenSCAD (an `openscad` on the path: without
+one, a three-line script of that name that runs it in Docker, README.md), and kicad-cli (or
+Docker) for the bay node (without it, the node is drawn as a bare board).
 
 Step 4 elsewhere: NOTICE_REMOTE is a command that runs its last argument in a shell on a
 machine with FreeCAD + Fasteners + shapely at <NOTICE_REMOTE_DIR>/env/bin/freecadcmd
@@ -60,6 +63,7 @@ PARTS = {
     "floor_plate": ("parts/tray.scad", {"PART": "floor_plate"}),
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
     "drawer_light": ("parts/drawer.scad", {}),
+    "drawer_front": ("parts/drawer.scad", {"PART": "front_in_place"}),   # its front, as assembled (drawer coordinates)
     "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
     "power_box_lid": ("parts/power_box.scad", {}, "lid();"),     # as assembled (it prints top face down)
     "chain_anchor": ("parts/chain_parts.scad", {"PART": "anchor"}),
@@ -78,6 +82,7 @@ PARTS = {
     "podpcb_parts": ("parts/camera_pod.scad", {"PART": "podpcb_parts"}),
     "x4_cradle": ("parts/x4_cradle.scad", {"PART": "cradle"}),          # the standing DATA board's cradle and the
     "x4_strip": ("parts/x4_cradle.scad", {"PART": "strip_in_place"}),   # strip over its receptacles (drawer coordinates)
+    "x6_slot": ("parts/x4_cradle.scad", {"PART": "board"}),             # and the board's plain outline (the latch's cut)
 }
 USB_PIECES = {"right": ("right", "mold"), "straight": ("straight", "mold"), "adapter": ("adapter", "mold"),
               "adapter_metal": ("adapter", "metal")}      # a DUT cable's ends: mold (+ the shell), or the 90° adapter
@@ -93,10 +98,13 @@ def usb_parts() -> dict:
             if style != "adapter" or "ATOP" in d:
                 out[f"usbplug_{t}_{k}"] = ("parts/usb_plugs.scad", {**d, "STYLE": style, "PIECE": piece})
     return out
+# the documentation's own steps (docs/build/fit-out-a-tray.md: the drawer at the bench, one action a drawing), drawn
+# with the notice's but on none of its pages: pages.py plan leaves them out; they go to docs/img/notice (README.md)
+DOCS = ["d3", "d4", "d2", "d1", "latch"]
 # heaviest first, dealt round-robin to the processes
 JOBS = ["done", "b3t", "b5a", "c_done", "t3", "p3", "t4", "b1", "c5", "b2", "t2", "c3", "c4", "b4", "cover", "a7", "a6",
         "k3", "p4", "t1", "a4", "k2", "k2m", "a12s", "a9b", "a10o", "p2", "p1", "k1", "b3r", "a3", "a2", "a1", "c0", "c1", "c2",
-        "pin", "pin_b", "hook", "clip"] \
+        "pin", "pin_b", "hook", "clip"] + DOCS \
        + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd", "pb", "pl", "hb", "ch",
                                   "an", "ft", "dc", "xt", "dp", "xc", "xs", "hx", "ps", "pc", "po", "pp", "kp", "kd", "kb", "km", "kl")] \
        + [f"hw:{h}" for h in ("m3x8", "m3x6", "pt26x8", "pt23x8", "pt26x14", "w25", "sp12", "mag", "insert", "jumper",
@@ -288,10 +296,12 @@ def rackcfg_boards() -> dict:
 
 def cradle_screws() -> dict:
     """The DATA cradle's 3 × M3 × 8 (down into the drawer's bosses) and the strip's 5 × PT 2.3 × 8, in drawer
-    coordinates: OpenSCAD's own numbers (parts/x4_cradle.scad)."""
+    coordinates: OpenSCAD's own numbers (parts/x4_cradle.scad).  And the left latch's hook over the board's top
+    edge (the documentation's detail `latch`)."""
     probe, echo = BUILD / "csg" / "_cradle_probe.scad", BUILD / "csg" / "_cradle_probe.echo"
     probe.write_text(f'include <{(MECH / "parts" / "x4_cradle.scad").as_posix()}>\n'
-                     'echo(CRADLE=[BOSSES, BASE, GUARD_SCREWS, GUARD_SY, STRIP_TOP, SEAT[1]]);\n', encoding="utf-8")
+                     'echo(CRADLE=[BOSSES, BASE, GUARD_SCREWS, GUARD_SY, STRIP_TOP, SEAT[1]]);\n'
+                     'echo(LATCH=[(X_L + OW + SLIT + V2_X0 + END) / 2, Y_R, TOP]);\n', encoding="utf-8")
     echo.unlink(missing_ok=True)
     subprocess.run(openscad_cmd() + ["-D", 'PART="none"', "-o", str(echo), str(probe)], cwd=MECH, capture_output=True)
     import json
@@ -300,8 +310,26 @@ def cradle_screws() -> dict:
     if not m:
         return {}
     bosses, base, xs, sy, top, seat = json.loads(m.group(1))
+    latch = re.search(r"LATCH = (\[.*\])", echo.read_text(errors="replace"))
     return {"bosses": bosses, "boss_top": base[0], "head_z": base[0] + base[1] - 2.4,   # its counterbores, 2.4 deep
-            "strip_x": xs, "strip_y": sy, "strip_head_z": top - seat}
+            "strip_x": xs, "strip_y": sy, "strip_head_z": top - seat, **({"latch": json.loads(latch.group(1))} if latch else {})}
+
+
+def front_screws() -> dict:
+    """The drawer front's 2 × PT 2.3 × 8, from inside through the walls' posts into its bosses, in drawer coordinates
+    (their heads on the posts' rear faces): OpenSCAD's own numbers (parts/drawer.scad).  The documentation's step d1."""
+    probe, echo = BUILD / "csg" / "_front_probe.scad", BUILD / "csg" / "_front_probe.echo"
+    probe.write_text(f'include <{(MECH / "parts" / "drawer.scad").as_posix()}>\n'
+                     'echo(FRONT=[[for (j = JOINTS) j[0]], JOINT_Y + JOINT_T, JOINT_Z]);\n', encoding="utf-8")
+    echo.unlink(missing_ok=True)
+    subprocess.run(openscad_cmd() + ["-D", 'PART="none"', "-o", str(echo), str(probe)], cwd=MECH, capture_output=True)
+    import json
+    import re
+    m = re.search(r"FRONT = (\[.*\])", echo.read_text(errors="replace") if echo.exists() else "")
+    if not m:
+        return {}
+    xs, y, z = json.loads(m.group(1))
+    return {"x": xs, "y": y, "z": z}
 
 
 def pod_screws() -> dict:
@@ -372,6 +400,7 @@ def main() -> None:
     csg()
     c["POD_SCREWS"] = pod_screws()
     c["CRADLE"] = cradle_screws()
+    c["FRONT"] = front_screws()
     (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
     conv = BUILD / "parts" / "convert_log.txt"
     conv.unlink(missing_ok=True)
@@ -415,6 +444,10 @@ def main() -> None:
           + (f", NOT written: {' '.join(fails)} (out/notice_log.txt)" if fails else ""))
     import pages
     pages.plan()
+    docs = [n for n in names if n in DOCS and n not in fails]
+    if docs:
+        print("for the documentation (on no page of the notice): " + " ".join(docs)
+              + ": out/<name>.svg -> docs/img/notice, minified (README.md)")
     print(f"{time.time() - t0:.0f} s.  Next: upload the drawings above to the canvas, pages.py record, "
           "pages.py build, publish the pages (tools/notice/README.md, Publishing)")
 

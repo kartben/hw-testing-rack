@@ -20,7 +20,26 @@ are generated from one data file.
 ```bash
 python tools/notice/run.py                 # every drawing → mechanical/build/notice/out/*.svg, then the upload list
 python tools/notice/run.py a3 pin          # some of them
+python tools/notice/run.py d1 d2 d3 latch d4   # the documentation's own steps (below)
 python tools/notice/run.py --dry           # does it still build? every scene, nothing drawn
+```
+
+Whatever the names, every run first remakes the constants, the solids and
+the boards (a minute or two), then draws only those.
+
+Without OpenSCAD installed, put on the path a script named `openscad`
+(say `~/bin/openscad-docker/openscad`, executable) that runs the
+`openscad/openscad` image with the repository mounted at its own path (`run.py` hands OpenSCAD absolute paths, so the `/work` mount of
+`tools/build.py`'s Docker fallback does not do here):
+
+```sh
+#!/bin/sh
+R=/path/to/hw-testing-rack
+exec docker run --rm -v "$R:$R" -w "$PWD" openscad/openscad:latest openscad "$@"
+```
+
+```bash
+PATH=~/bin/openscad-docker:$PATH FREECADCMD=~/claude-scratch/notice/env/bin/freecadcmd python tools/notice/run.py d1
 ```
 
 A full run takes about 40 minutes (four FreeCAD processes); it ends with
@@ -30,6 +49,48 @@ when the design is frozen (an order, a release) or on request, not on every
 change; in between, `--dry` (a few minutes) checks that it still builds on
 the current state: every step's and part's scene, and a job for every
 drawing `notice.yaml` names.
+
+### The documentation's drawings
+
+The documentation site (`docs/`) shows the notice's drawings beside its
+build steps: `docs/img/notice/<key>.svg`, named by `:drawing:` and
+`:detail:` in the `build-step` blocks of `docs/build/*.md` (and
+`docs/use/mount-a-board.md`), with the parts' chips and the hardware icons
+(`chip_<part>`, `hw_<fastener>`) that `docs/_ext/bitbunk.py` puts beside
+each step.
+
+Five drawings are the documentation's own: the drawer at the bench, one
+action a drawing, where the notice's step 9 (`a12s`) shows them all in one
+frame.
+
+| Drawing | What |
+|---|---|
+| `d1` | the drawer's front onto the walls' ends, a PT 2.3 × 8 either side from inside, through the post into its boss |
+| `d2` | the cradle onto the rear bay's three bosses, 3 × M3 × 8 into their inserts |
+| `d3` | the DATA lead up through the window into J1, then the DATA ×6 down into the cradle until both latches click |
+| `latch` | `d3`'s detail: a cut through the left latch's hook over the board's top edge |
+| `d4` | the strip on the comb, 5 × PT 2.3 × 8 from above, the long screwdriver |
+
+They are `run.py`'s `DOCS`: a full run draws them and `--dry` builds them
+like every other, but they are on no page of the notice, so `notice.yaml`
+does not name them and `pages.py plan` never lists them for the canvas.
+Their numbers (the front's screws, the latch) are OpenSCAD's own, read from
+`drawer.scad` and `x4_cradle.scad` by echo probes; without them `notice.py`
+has no such steps and `--dry` fails on them.
+
+From `out/` to the site, each drawing minified as the others are (one
+decimal; `svgo` from npm):
+
+```bash
+cp mechanical/build/notice/out/d1.svg docs/img/notice/ && npx --yes svgo -p 1 docs/img/notice/d1.svg
+```
+
+Redraw and copy the ones a page uses (`grep -rn -e ':drawing:' -e ':detail:'
+-e 'img/notice/' docs`) and the chips and icons of the parts and hardware
+its steps name, whenever the notice is redrawn; the site does not read the
+canvas.  Run `python tools/fetch_pcb_models.py` first: without its cache
+the boards' LCSC parts (the node's and the hub's connectors) are drawn as
+plain boxes.
 
 ### The drawings on another machine
 
@@ -108,6 +169,9 @@ line.  After `run.py`:
   logs any part left without a body.  Without the report: a stand-in for
   every footprint the table knows.  Run `python tools/fetch_pcb_models.py`
   first: the LCSC models the boards use are not in the repo.
+* **The drawer with its front** (`drawer.scad`, `PART="front_in_place"`),
+  screwed on from inside, a PT 2.3 × 8 either side: it rides with the
+  drawer, so every drawing with a drawer shows it.
 * **The power box** where `config/rack.yaml` › `power_box` puts it (under
   A1), the hub on its standoffs; the charger, its USB-C cable and the row
   feed are simple bodies (`notice.py`, `charger_shape`, `pd_cable_shape`,
@@ -137,6 +201,6 @@ line.  After `run.py`:
 tray's guide lip; fixed).
 
 Needs FreeCAD 1.x with the Fasteners workbench (`FREECADCMD=` if `freecadcmd`
-is not on the path), OpenSCAD, and Docker (or kicad-cli, without the coverage
-report) for the boards.  Projections are cached in
+is not on the path), OpenSCAD (or the Docker script under Regenerating), and
+Docker (or kicad-cli, without the coverage report) for the boards.  Projections are cached in
 `mechanical/build/notice/out/cache/`; `run.py` always recomputes them.
