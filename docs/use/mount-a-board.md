@@ -275,6 +275,6 @@ built (`python tools/build.py web`), as a warning: a BeaglePlay in lane 1 of C1 
 
 Take the battery off a board, or out of its chassis, before it goes into the rack. Each bay's DATA lead is
 limited to about 1.76 A and each port to 0.5 A. Four small boards without batteries take 0.3 to 0.8 A between
-them; a board charging its LiPo takes 0.6 to 1.2 A on its own (a Wio Terminal on its battery chassis about 1.0
+them, with radio peaks of 0.27 to 0.4 A each that last milliseconds; a board charging its LiPo takes 0.6 to 1.2 A on its own (a Wio Terminal on its battery chassis about 1.0
 to 1.2 A, a XIAO ESP32-C3 with a cell about 0.73 A), and a LiPo charging unattended in a closed drawer is a
 fire risk.

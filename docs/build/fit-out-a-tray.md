@@ -111,7 +111,7 @@ front end of each side wall into the front.  Each screw pulls the front onto the
 floor.
 
 The window on the front's right is for a 1.9″ display.  Node v1.0 has no connector for one
-([firmware/README.md](../../firmware/README.md#front-display-study)): leave the window empty.  No blank
+([Front display (study)](../firmware.md#front-display-study)): leave the window empty.  No blank
 exists for it, and the 48 M2 × 5 screws the bill counts are the display's.
 :::
 
@@ -129,8 +129,10 @@ before step 9 ([magnets for the detent](first-bay.md#a-rear-cover-and-detent-mag
 :::{build-step} 7
 :parts: DATA ×6 or DATA ×4=1
 
-The DATA lead first: from the chain's moving end up through the cable window at the drawer's rear right, and
-into the socket on the **DATA board**'s rear face (J1).  Then slide the board down into the cradle's slots,
+The DATA lead first.  Out of the chain's moving end it goes forwards and turns back at once in a flat U,
+between the chain's two runs: raise the U's front about 4 mm, so that with the drawer out it passes over the
+jumper lying on its tie anchors.  Then it runs back low over the tray's floor, up through the cable window at
+the drawer's rear right, and into the socket on the **DATA board**'s rear face (J1).  Then slide the board down into the cradle's slots,
 its receptacles towards the port wall, until both latches click over its top edge.  The receptacles drop into
 the U's of the cradle's comb.
 :::
@@ -178,6 +180,10 @@ today's.
 **Stop screw**: one PT 2.3 × 8 down through the left guide lip, the other screw of the drawing above.  Pulled
 out 140 mm, the drawer rests on it, its flange still under the lips.
 :::
+
+To carry a fitted tray with its drawer shut, two more PT 2.3 × 8 (the bill does not count them) go down
+through the guide lips at the holes a sled bay's port block takes, level with the closed drawer's rear
+flange.  Like the stop screw, they are out of reach once the tray is in the frame.
 
 The bay's printed label, or 12 mm tape, goes in the recess on the front's left once you know which place the
 tray takes.

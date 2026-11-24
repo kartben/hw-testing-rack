@@ -165,7 +165,7 @@ CAT = {
                "S6B-PH-SM4-TB(LF)(SN)", "JST", "C265405", 0.39, description="JST PH 6-pin, side entry, SMD",
                # EasyEDA models (tools/fetch_pcb_models.py): placed by their pins and nails on KiCad's pads
                model=("easyeda/C265405.step", (0, -2.9, 0), (0, 0, 0))),
-    # the DATA lead (docs/cabling.md): VBUS, GND, D−, D+, GND; 5 pins, so a 6-pin row cable can't go in
+    # the DATA lead (docs/reference/cables.md › DATA lead): VBUS, GND, D−, D+, GND; 5 pins, so a 6-pin row cable can't go in
     "ph5": Cat("Connector_Generic:Conn_01x05", "Connector_JST:JST_PH_S5B-PH-SM4-TB_1x05-1MP_P2.00mm_Horizontal",
                "S5B-PH-SM4-TB(LF)(SN)", "JST", "C265104", 0.34, description="JST PH 5-pin, side entry, SMD",
                model=("easyeda/C265104.step", (0, 0, 0), (0, 0, 0))),   # its file is centred like C265405 after that one's -2.9

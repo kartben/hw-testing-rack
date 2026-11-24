@@ -17,7 +17,7 @@ The steps below are worked out from the header of `boards.yaml` and from
 
 Check first that the board fits a bay at all:
 [What fits in a bay](../reference/board-library.md#what-fits-in-a-bay). Then work from the vendor's mechanical
-drawing, or from the board and a calliper. Every position is in millimetres from the bottom-left corner of the
+drawing or Gerber files, or from the board and a calliper. Every position is in millimetres from the bottom-left corner of the
 outline, as the drawing shows the board.
 
 | Measure | It becomes | Why it matters |
@@ -49,7 +49,7 @@ shortest:
 `name` and `size` are required; `usb` defaults to the middle of the top edge and `standoff` to 6 mm. Add
 `orient: side` for a small board, so that its USB faces the drawer's right wall and a straight cable lies flat
 into it. Set `verified: true` once the outline and the holes are measured or come from the vendor's own
-drawing. Every field: [The fields of boards.yaml](../reference/board-library.md#the-fields-of-boards-yaml).
+drawing or Gerbers. Every field: [The fields of boards.yaml](../reference/board-library.md#the-fields-of-boards-yaml).
 
 Eight boards of the library still have approximate outlines
 ([Unverified outlines](../reference/board-library.md#unverified-outlines)): a measured entry for one of them, or

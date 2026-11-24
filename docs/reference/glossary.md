@@ -31,7 +31,7 @@ AUX
   The bay node's connector J5: a UART, a RESET line and a BOOT line at 3.3 V levels, wired by hand to one
   board that has no USB serial of its own. A DATA board has no AUX UART of its own: a board on a DATA
   port uses its own USB as its console, and the bay node's AUX can still be wired by hand to one of them.
-  ([electronics.md](../electronics.md), [tools/bayctl.py](../../tools/bayctl.py))
+  ([Bay node › J5, AUX](pcbs/bay-node.md#j5-aux), [tools/bayctl.py](../../tools/bayctl.py))
 
 bay
   One place of the grid, named by its row letter and its column number: B3 is row B, third column from the
@@ -67,7 +67,7 @@ brace
 
 busid
   USB/IP's name for a device on a bay node: `1-1.` and the port of the DATA board's USB hub. On a DATA ×4
-  that port is the USB-C's number; on a DATA ×6 it is not. ([multi-dut-node.md](../multi-dut-node.md))
+  that port is the USB-C's number; on a DATA ×6 it is not. ([Bays, ports and addresses](../use/names.md#usbip-busids-on-a-data-6-and-on-a-data-4))
 
 camera pod
   The printed holder under a bay's ceiling with an Arducam Mega, four white LEDs and the pod's own PCB.
@@ -75,7 +75,7 @@ camera pod
 
 claim
   To give a bay node or the power hub its admin key, the 32-byte key that signs every admin request
-  afterwards. A press on the PCB's BOOT button confirms it. ([firmware/README.md](../../firmware/README.md))
+  afterwards. A press on the PCB's BOOT button confirms it. ([Access rules and security](../use/access.md))
 
 classic mode
   The boards' USB handed to a laptop on the bay's front port, as on a desk, in place of USB/IP. The bay node
@@ -139,12 +139,12 @@ fascia
   switch. ([mechanical.md](../mechanical.md))
 
 feed
-  The row cable from the power box to the first bay node of a row. ([can.md](../can.md))
+  The row cable from the power box to the first bay node of a row. ([Cables and pinouts](cables.md#row-cable-jumpers-and-feeds))
 
 grant
   The power the hub allows a bay on its DATA lead, sent every second over the rack bus: 5.4 W a bay with
   twelve bays on a 100 W charger. A port goes on only if the bay stays inside it.
-  ([rack-protocol.md](../rack-protocol.md), [multi-dut-node.md](../multi-dut-node.md))
+  ([rack-protocol.md](../rack-protocol.md), [Power budget](../use/power-budget.md#who-decides-how-much))
 
 hub
   Alone, the {term}`power hub`. The chip that fans USB out on a DATA board is always written
@@ -152,7 +152,7 @@ hub
 
 jumper
   A short row cable, 120 mm, from one bay node to the next. Jumper wires are something else: the Dupont
-  leads from a DATA ×4's pin header to a board's pins. ([can.md](../can.md))
+  leads from a DATA ×4's pin header to a board's pins. ([Cables and pinouts](cables.md#row-cable-jumpers-and-feeds))
 
 ladder
   A printed side wall between two columns, one per row, shared by the bays on both sides. The trays slide
@@ -160,7 +160,7 @@ ladder
 
 lease
   The API's and `bayctl`'s word for a reservation: one address holds a bay or some of its ports for 10 s to
-  24 h. These pages say "reserve". ([firmware/README.md](../../firmware/README.md))
+  24 h. These pages say "reserve". ([Reserve a bay](../use/reserve-a-bay.md))
 
 native_sim
   Zephyr's build for a PC. The firmware's tests run on it, against emulated PCBs.
@@ -178,11 +178,11 @@ one-time fuse
   The ESP32-S3 module's `DIS_USB_OTG_DOWNLOAD_MODE` bit, burnt once on each bay node and power hub that
   goes into a rack. It cannot be unburnt. Espressif calls it an eFuse; these pages keep that word for the
   protection chip.
-  ([firmware.md](../firmware.md))
+  ([Flash the hub and the nodes](../build/flash.md#the-modules-one-time-fuse))
 
 PCB
   One of the rack's own five: the power hub, the bay node, the camera pod, the DATA ×6 and the DATA ×4.
-  ([electronics.md](../electronics.md))
+  ([The five PCBs](pcbs/index.md))
 
 peg
   A printed part that clips into a hole of the board plate to hold a board: a stop, a cam on its base, a
@@ -213,7 +213,7 @@ power hub
 
 queued
   A port asked to switch on "when available": it waits its turn and goes on by itself once the bay's
-  grant has room. ([multi-dut-node.md](../multi-dut-node.md))
+  grant has room. ([Power budget](../use/power-budget.md#a-port-that-waits-a-port-that-is-queued))
 
 rack bus
   The CAN bus and the POS wire that run in the row cables, between the power hub and the bay nodes.
@@ -234,7 +234,8 @@ row cable
 same direction
   Sellers' name for a ready-made JST PH lead whose two plugs show the same face when it lies flat: pin n
   at one end is pin N + 1 − n at the other. The row cable, the DATA lead and the camera lead are all of
-  that kind. Not every seller uses the name that way: ring each lead out. ([can.md](../can.md))
+  that kind. Not every seller uses the name that way: ring each lead out. ([Cables and pinouts](cables.md),
+  [Make the row cables](../build/row-cables.md#ring-every-cable-out-the-bought-leads-too))
 
 SERVICE
   The slide switch on the fascia that hands the front USB-C port to the bay node itself, to flash it.
@@ -243,7 +244,7 @@ SERVICE
 shed
   To switch off, for lack of power, something that comes back by itself. The hub sheds a row when the rows
   draw more than the charger's contract leaves them; a bay node sheds the port it switched on last when
-  the bay goes over its grant. ([power.md](../power.md), [multi-dut-node.md](../multi-dut-node.md))
+  the bay goes over its grant. ([power.md](../power.md), [Power budget](../use/power-budget.md#when-a-bay-is-over-its-share))
 
 simulated node
   `dev_server.py`: the bay's real web page and API on a model of the bay node in Python, with no hardware.
@@ -277,7 +278,7 @@ tray
 
 USB hub
   The USB2517I chip on a DATA board, between the bay node's one USB port and the board's ports.
-  `usbip list` never shows it. ([multi-dut-node.md](../multi-dut-node.md))
+  `usbip list` never shows it. ([Bays, ports and addresses](../use/names.md#usbip-busids-on-a-data-6-and-on-a-data-4))
 
 v2
   In the design documents, "DATA ×4 v2" is the DATA ×4 these pages describe: its silkscreen reads v1.0.
@@ -289,11 +290,11 @@ VRACK
 
 VREF
   The pin of a DATA ×4 port's header that you wire to the board's I/O voltage. It sets the level of that
-  port's eight pins. ([electronics.md](../electronics.md))
+  port's eight pins. ([DATA ×4](pcbs/data-x4.md#the-pin-header-and-vref))
 
 waiting (port)
   A port that is wanted on and kept off until its bay's grant has room, or that was shed. It comes back
-  in its turn. ([multi-dut-node.md](../multi-dut-node.md))
+  in its turn. ([Power budget](../use/power-budget.md#a-port-that-waits-a-port-that-is-queued))
 
 waiting (row)
   A row that is wanted on and waits for the charger's contract: `waiting for PD` on the rack's page.

@@ -51,7 +51,8 @@ KiCad render of the DATA ×4 v1.0.  In the Quad it stands behind the front face,
 face and each 2 × 6 header under a window of its own.
 ```
 
-In the Quad the DATA ×4 stands in two side slots on the floor.  Its VBUS LEDs are behind windows, and D1 and
+In the Quad the DATA ×4 stands in two side slots on the floor.  A Dupont housing plugs into each header
+through its window.  Its VBUS LEDs are behind windows, and D1 and
 the SWD header J2 behind one more, so a debug probe's lead plugs in from the front.  The port numbers 1 to 4
 are debossed on the face.  The node lies on a shelf over it, front edge forward: the PC port, SERVICE and the
 status LED are at the top of the front face, as on a tray's fascia.  The shelf rests 0.5 mm over the DATA ×4's
@@ -99,7 +100,7 @@ The charger must offer 20 V at 30 W or more: a bay draws 13 W at most, camera in
   fallback is not documented.  The node then stays off and nothing is harmed.
 
 The seller gives no size.  The boxes are drawn for the largest board the photos allow, 30 × 21 × 1.6 mm, and a
-smaller one fits them as committed.  Measure the module you bought before the base is printed; a larger one
+smaller one fits them as committed, as long as its USB-C stands 0.6 to 2 mm proud of its PCB's edge.  Measure the module you bought before the base is printed; a larger one
 goes into `config/rack.yaml` › `standalone.pd_module` (its PCB's length and width, its thickness, the USB-C's
 axis off its back face), and the seat and the collar follow ([Measure before you print](../print/index.md)).
 
@@ -115,7 +116,8 @@ axis off its back face), and the seat and the collar follow ([Measure before you
 :parts: PD trigger module=1, Foam pad 1 mm=1
 
 **PD module**, its DIP switch at 20 V, on its long edge against its low wall at the rear left, its back face
-on the foam pad.  Its USB-C goes into the rear wall's collar, its far end behind the fence.
+on the foam pad.  Its USB-C goes into the rear wall's collar, its far end behind the fence.  The DIP switch
+faces into the box: it can be changed only while the lid is off.
 :::
 
 :::{build-step} 3

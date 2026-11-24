@@ -9,13 +9,14 @@ under A1 that holds the **power hub v1.0**:
   plug-in, then for 20 V when the controller asks over I²C (28 V EPR when the charger offers it, once
   opted in: `CONFIG_HUB_PD_EPR` or `hub pd epr`).  28 V is locked out for now
   (`CONFIG_HUB_EPR_ALLOWED` off): an FXL0630 buck inductor withstands 30 V and would see about 24 V plus
-  ringing ([datasheet-audit.md](datasheet-audit.md), U2).  The node's and the hub's L1 and the DATA ×6's L2 L3 are
-  Vishay IHLP2525CZ rated 75 V since 2026-11-01; still FXL0630: the ×4 v2's 3.3 µH L2
-  ([bom/sourcing.md](../bom/sourcing.md)).  28 V opens once every one is rated 60 V or more, and with a 140 W charger.
+  ringing ([datasheet-audit.md](datasheet-audit.md), U2).  Since 2026-11-01 the v1.0 bills of materials give
+  every buck inductor on VRACK (the node's and the hub's L1, the DATA ×6's L2 L3, the DATA ×4's 3.3 µH L2) a
+  Vishay IHLP2525CZ rated 75 V ([bom/sourcing.md](../bom/sourcing.md)); the switch is still off in the hub's
+  default build.  28 V also takes a 140 W charger.
   VBUS is the rack bus (VRACK): there is no input switch, the eFuses keep the
   rows off until the contract is final;
 * an **eFuse per row** (TPS26600, 1.6 A), off until the controller turns it on.  Four row outputs,
-  all fitted since 2026-11-01: a third row is coming (C and D were DNP from 2026-10-23,
+  all fitted since 2026-11-01: the default rack uses three (C and D were DNP from 2026-10-23,
   [electronics.md](electronics.md#power-hub-v10--4-layers-76--100-mm));
 * the **rack controller** (an ESP32-S3, CAN master; see [can.md](can.md) and
   [electronics.md](electronics.md#power-hub-v10--4-layers-76--100-mm)).  The box is
@@ -25,19 +26,16 @@ under A1 that holds the **power hub v1.0**:
 One 6-pin JST PH feed per row (VRACK, CAN, POS) runs from the box's left wall to
 the row's first node.  Box and lid: [mechanical.md](mechanical.md#power-box).
 
-![The power box, lid off: the hub v1.0, the charger's USB-C cable at the rear, the status LEDs at the front](img/power-box.jpg)
+![A render of the power box, lid off: the hub v0.5, the charger's USB-C cable at the rear, the status LEDs at the front](img/power-box.jpg)
 
-*Lid off, labels inlaid in white.  Left: from the rear, the charger's USB-C cable (PD IN) and the row outputs' windows (A–D).  Right: from the front, the status LEDs (ON / FAULT per row, PD, CTL) and the console USB-C.*
+*A render of hub v0.5 in its box, lid off, labels inlaid in white.  Left: from the rear, the charger's USB-C cable (PD IN) and the row outputs' windows (A–D).  Right: from the front, the status LEDs (ON / FAULT per row, PD, CTL) and the console USB-C.*
 
 ## The charger
 
-| | |
-|---|---|
-| **Default** (since 2026-10-21) | a **dedicated, single-port USB PD charger, 100 W** (20 V × 5 A), e.g. the Anker Nano 100 W (A2679, ≈ €46).  VRACK is then 20 V |
-| **Cable** | USB-C to USB-C, **5 A e-marked** (100 W or 240 W rated), 1–2 m.  It is required: above 3 A a charger only offers its full current through an e-marked 5 A cable, and a 3 A one gives 60 W |
-| **Option** | for racks full of hungry DUTs, a **single-port USB PD 3.1 EPR charger, 140 W** (28 V × 5 A), with a 240 W cable.  The Samsung EP-TB410 (≈ €84 without a cable) was the cheapest found in France; UGREEN Nexode and Anker 717 140 W are often €60–80 on sale (unverified).  The hub asks for 28 V EPR when it is offered once opted in (`hub pd epr`, saved), when 28 V is unlocked (above) |
-| **Also works** | a 65 W charger (20 V × 3.25 A): a light rack, with power budgeting ([below](#keeping-the-rows-inside-the-contract)) |
-| **Avoid** | sharing the charger: a multi-port charger can withdraw its full offer when another device is plugged in, and renegotiate the rack down |
+Which charger and cable to buy, and what the rows get from each: [Specifications](reference/specifications.md#chargers-and-what-each-feeds).
+The default since 2026-10-21 is a dedicated, single-port 100 W charger (20 V × 5 A).  For the 140 W EPR option,
+once 28 V opens: the Samsung EP-TB410 (≈ €84 without a cable) was the cheapest found in France; UGREEN Nexode
+and Anker 717 140 W are often €60–80 on sale (unverified).
 
 The hub never accepts 36 V or 48 V (EPR goes up to 48 V): the bay nodes' TVS
 stands off 33 V and the eFuses cut out at 31–34 V (typ 32.6 V).  20 V and 28 V are both fine,
@@ -51,17 +49,18 @@ the nodes start above 13.5 V.
    there, safe.
 2. **Controller.**  The ESP32-S3 runs from VRACK (a buck on from ≈ 4 V, a
    low-dropout LDO): it is alive from the first 5 V.  It reads the charger's
-   offers over I²C and asks for **28 V EPR** when the charger and the cable
-   offer it, otherwise for **20 V** (the default 100 W charger), then checks VRACK on its ADC.  Contracts
-   under 15 V never power the rows (the eFuses' UV).
+   offers over I²C and asks for **20 V**, then checks VRACK on its ADC.  It asks for **28 V EPR** only
+   once opted in (`CONFIG_HUB_PD_EPR` or `hub pd epr`) on a build that allows it, and then only when the
+   charger and the cable offer it; a 28 V request that VBUS does not follow falls back to 20 V.  Contracts
+   under 15 V never power the rows (the eFuses' UV, and `CONFIG_HUB_ROWS_MIN_MV` in the firmware).
 3. **Rows.**  Every row's eFuse is **off** until the contract is final (each
-   eFuse's SHDN is pulled low).  The controller then turns the rows on one
-   after the other, so each bay node sees one clean power-up instead of
-   5 → 20 → 28 V steps.
+   eFuse's SHDN is pulled low): 15 V or more, held 500 ms.  The controller then turns the rows on one
+   after the other, 300 ms apart, so each bay node sees one clean power-up instead of
+   5 → 9 → 20 V steps.
 4. **Contract drops** (a renegotiation, a hard reset, a multi-port charger
    reallocating power): the CH224A's PG goes high (an interrupt on the
-   controller), which **sheds rows in priority order** and turns them back on
-   once the contract is stable again.
+   controller).  Held high 20 ms, outside a request of the hub's own, it switches **every row off at
+   once**, not in the shed order, and turns them back on, staggered, with the next final contract.
 
 The CH224A keeps the contract, and the EPR keep-alive, by itself: an ESP32
 reboot does not drop the rack's power.  The firmware holds the row enables
@@ -75,7 +74,9 @@ doesn't renegotiate in normal use.
 
 ## Budget
 
-Two rows of four to start (2026-10-18), two of the bays with a camera:
+The table is the earlier 8-bay rack's (two rows of four, 2026-10-18, two of the bays with a camera), from
+before every DATA board carried a USB hub; the default 12-bay rack's figures follow it.  What a bay is
+granted today, and what that leaves its boards: [Power budget and queued ports](use/power-budget.md).
 
 | | per bay | 8 bays |
 |---|---|---|
@@ -91,7 +92,7 @@ The camera and its light are fed by the bay's own node (CAM_5V, behind its 0.5 A
 count in that bay's row.  The default 100 W charger (20 V) carries the realistic load
 (≈ 35–40 W with margins) more than twice over, and 8 bays' worst case (≈ 90 W) just.  At 20 V each
 row is capped at **≈ 32 W** by its eFuse (1.6 A): a typical row draws 8–15 W, four bays at their
-worst ≈ 44 W.  The 140 W EPR option (28 V) covers 12 bays' worst case (≈ 130 W), and caps a row at
+worst ≈ 44 W.  The 140 W EPR option (28 V, locked out today) would cover 12 bays' worst case (≈ 130 W), and caps a row at
 ≈ 45 W.
 A third row stays on the 100 W charger.  Twelve bays draw ≈ 45–75 W realistically (≈ 60 W midway):
 every bay's DATA board now carries a USB2517I hub, ≈ 2.1–2.6 W each with its converter, 25–31 W for
@@ -109,6 +110,9 @@ the charger trips.
 
 ### Keeping the rows inside the contract
 
+What the operator sees and can change (the shed order, the cap, the margin):
+[Power budget and queued ports](use/power-budget.md#when-the-rack-is-over-the-chargers).
+
 A PD charger in overload cuts its output, and the whole rack restarts: an
 eFuse only ever trips its own row.  So the hub keeps what the rows draw inside
 what the charger granted (`src/budget.c`, tested on native_sim with made-up
@@ -117,15 +121,10 @@ contracts in `tests/budget`):
 * **The budget comes from the contract**, not from constants: the current the
   CH224A reports as granted (register 0x50) at the voltage negotiated, less a
   **10 % margin** for the hub's own draw and IMON's error.  The rows' current
-  and the charger's limit are both currents at VRACK, so the same code covers:
-
-  | Contract | Granted | Budget for the rows |
-  |---|---|---|
-  | 140 W EPR charger, 5 A cable | 28 V × 5 A | 4.5 A, 126 W |
-  | 100 W charger without EPR (Anker Nano 100 W), 5 A cable | 20 V × 5 A | 4.5 A, 90 W |
-  | the same charger, a 3 A cable | 20 V × 3 A | 2.7 A, 54 W |
-
-  A multi-port charger that shares its power advertises less when another
+  and the charger's limit are both currents at VRACK, so the same code covers
+  every charger and cable: the budget each gives is in
+  [Specifications](reference/specifications.md#chargers-and-what-each-feeds) (a 140 W EPR charger at 28 V,
+  once allowed, 4.5 A, 126 W).  A multi-port charger that shares its power advertises less when another
   device is plugged in: the hub renegotiates and the budget follows.  One that
   advertises its full power but cuts at less takes a cap by hand,
   `hub budget cap <W>` (saved, in watts, so it follows the voltage).
@@ -143,12 +142,10 @@ contracts in `tests/budget`):
   oscillate.
 * **The eFuses stay at 1.6 A** whatever the voltage: the PH rows and their
   24 AWG leads take no more.  At 28 V a row may carry 45 W, at 20 V 32 W.
-* The page shows the budget (a mark on the rows' bar) and the rows shed;
-  `/metrics` has `hub_budget_amps`, `hub_rows_amps`, `hub_row_shed` and
-  `hub_row_sheds_total`; every shed and return is an event.  The margin,
-  the cap and the thresholds are Kconfig defaults (`CONFIG_HUB_BUDGET_*`,
-  `CONFIG_HUB_SHED_*`, `CONFIG_HUB_RESTORE_*`), the margin and the cap
-  settable at run time (`hub budget margin`, `hub budget cap`).
+* The margin, the cap and the thresholds are Kconfig defaults (`CONFIG_HUB_BUDGET_*`,
+  `CONFIG_HUB_SHED_*`, `CONFIG_HUB_RESTORE_*`), the margin and the cap settable at run time.  The page,
+  the events and the metrics that show the budget: [Power budget and queued ports](use/power-budget.md),
+  [Network ports, names, metrics](reference/network.md).
 
 What it cannot catch: a step faster than its 250–500 ms, beyond what the
 charger tolerates for that long (rows of bays all jumping to their 1.5 A at
@@ -160,13 +157,8 @@ per contact, on 24 AWG: the row cables are built from 24 AWG leads), so the limi
 (their gauge: [power-distribution-review.md](power-distribution-review.md)).  A
 shorted row sits at its limit while the others carry on.
 
-**No batteries on rack DUTs.**  Each bay's DATA lead is limited to ≈ 1.76 A of VIN
-(the node's TPS26600 eFuse), and a DATA board's ports to 0.5 A each.  Four small boards
-without batteries take 0.3–0.8 A between them, with millisecond radio peaks of
-0.27–0.4 A each; a board charging its LiPo takes 0.6–1.2 A on its own (a Wio
-Terminal on its battery chassis ≈ 1.0–1.2 A, a XIAO ESP32-C3 with a cell
-≈ 0.73 A), and a LiPo charging unattended in a closed drawer is a fire risk.
-Take the battery off (or out of the chassis) before a board goes into the rack.
+**No batteries on rack DUTs**: the rule and its figures are on
+[Put a board in a bay](use/mount-a-board.md#no-battery-on-a-board-in-the-rack).
 
 ## Options compared
 
@@ -239,7 +231,8 @@ USB PD charger (100 W at 20 V; 140 W EPR at 28 V as an option) → 5 A e-marked 
   what holds VBUS down when the eFuses cut a load: the ceramics alone keep only
   ≈ 15 µF at 28 V (DC bias), and the charger cable's ≈ 1 µH would ring VBUS
   ≈ 1.3 V up at a 5 A cut, toward the CH224A's 32 V; with C8, ≈ 0.5 V and
-  damped.  Bring-up checks it on two or three chargers (assembly.md); a charger
+  damped.  Bring-up checks it on two or three chargers
+  ([build/check-the-pcbs](build/check-the-pcbs/index.md#more-to-measure-on-the-first-pcbs-of-a-revision)); a charger
   that refuses it gets C8 left off.
 * A short on VRACK itself, ahead of the eFuses, is the charger's to catch
   (every PD source has its own OCP).  Above 28 V: the eFuses cut out at 31–34 V,

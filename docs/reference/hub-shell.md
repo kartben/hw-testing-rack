@@ -41,7 +41,7 @@ it; the prompt is `uart:~$`.
 | `radio [<dBm>]` | show, or set, the Wi-Fi transmit power, 2 to 20 dBm; 11 by default | yes |
 | `wifi cred add -s <ssid> -k 1 -p <password>`, `wifi cred auto_connect` | store the network the hub joins | yes |
 
-Read from `firmware/power-hub/src/shell.c` and `firmware/power-hub/README.md`. Everything a hub keeps across
+Read from `firmware/power-hub/src/shell.c`. Everything a hub keeps across
 a restart, the rows' on and off included, is listed on
 [Recover a node or a hub](../use/recover.md); a row cycle and the events are not kept.
 
@@ -74,7 +74,7 @@ Every refusal of the shell, with its meaning, is on
 
 ## Examples
 
-The first boot, as the hub's README gives it:
+The first boot ([stage 4 of the hub's checklist](../build/check-the-pcbs/power-hub.md#4-flash-and-ask)):
 
 ```console
 uart:~$ wifi cred add -s MyLab -k 1 -p secret

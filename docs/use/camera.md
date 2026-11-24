@@ -87,8 +87,7 @@ the shell.
 | `contrast`, `saturation` | −3 to 3 | |
 | `sharpness` | `auto`, 1 to 8 | 3 MP camera only |
 
-Read from [firmware/README.md](../../firmware/README.md) and
-[camera.c](../../firmware/bay-node/src/camera.c).
+Read from [camera.c](../../firmware/bay-node/src/camera.c).
 
 ```console
 $ curl -s bay-b2.local/api/camera

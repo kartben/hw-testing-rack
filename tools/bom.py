@@ -343,7 +343,7 @@ PH_LEAD_URL = "https://www.aliexpress.com/item/1005008045292937.html"
 # PH 6 cable states 24 AWG in that layout (AliExpress's are 26 AWG or don't say, Pololu's 24 AWG ones are 1:1).
 # Built from JST's own pre-crimped leads (SPH-002T-P0.5S at both ends, UL1007 24 AWG, black) clicked into
 # PHR-6 housings: no crimping.  They stop at 305 mm, so a longer feed is crimped.  Lead lengths:
-ROW_JUMPER_MM = 152                 # bay to bay: 120 mm routed (docs/cabling.md)
+ROW_JUMPER_MM = 152                 # bay to bay: 120 mm routed (docs/reference/cables.md)
 ROW_FEED_CM = [30.5, 60, 80]        # power box to rows A, B, C (≈ 0.25 / 0.45 / 0.6 m routed), then D...
 # JST's pre-crimped PH leads, by length (mm): part and Digi-Key FR price breaks, EUR (2026-10-21; Mouser FR
 # stocks them too).  JST makes 51, 102, 152, 203, 254 and 305 mm, nothing longer.
@@ -412,7 +412,7 @@ def bay_mounts(rack) -> tuple[int, int]:
 def _row_cables(rack) -> list[dict]:
     """The row cables (ROW_FEED_CM): a jumper between neighbouring bays, a feed from the power box to each row's
     first bay (row k gets ROW_FEED_CM[k], the last one beyond).  JST's pre-crimped leads where one is long
-    enough (JST_PH_LEADS), six a cable; a longer feed crimped; red and black housings (docs/cabling.md)."""
+    enough (JST_PH_LEADS), six a cable; a longer feed crimped; red and black housings (docs/build/row-cables.md)."""
     jumpers = sum(rack.units - 1 for _ in rack.rows)
     feeds = [ROW_FEED_CM[min(k, len(ROW_FEED_CM) - 1)] for k in range(len(rack.rows))]
     rows = [r["id"] for r in rack.rows]
@@ -438,7 +438,7 @@ def _row_cables(rack) -> list[dict]:
         {"category": "Cables", "item": "JST PH 6-pin housing PHR-6-R, red: a row cable's IN end (the node's J1)",
          "supplier": "LCSC C495652", "qty": cables + 2, "unit_eur": round(0.049 * USD_EUR, 4),
          "notes": f"{cables} cables and 2 spares; the cable works either way round, the colours only make it "
-                  "readable (docs/cabling.md)"},
+                  "readable (docs/reference/cables.md)"},
         {"category": "Cables", "item": "JST PH 6-pin housing PHR-6-BK, black: a row cable's OUT end (the node's J2, "
                                       "the hub's row outputs)",
          "supplier": "LCSC C495651", "qty": cables + 2, "unit_eur": round(0.043 * USD_EUR, 4),
@@ -1147,7 +1147,7 @@ def hardware(rack) -> list[dict]:
         # leads (ROW_FEED_CM)
         *_row_cables(rack),
         {"category": "Cables", "item": "Cable tie 2.5 × 100 mm: the row jumpers, 2 each, through the tray's two tie "
-                                      "anchors at its front right (docs/cabling.md)",
+                                      "anchors at its front right (docs/build/add-a-bay.md)",
          "supplier": "AliExpress (bulk)", "qty": 2 * sum(cols - 1 for _ in rack.rows), "unit_eur": 0.02},
     ]
     if r["drawer"].get("detent", "printed") == "magnet":     # drawer.detent (printed by default: no parts)
@@ -1249,7 +1249,7 @@ def hardware(rack) -> list[dict]:
 
 
 def standalone(rack) -> dict:
-    """The standalone bays (docs/standalone.md): what one Solo or one Quad takes beyond its boards (the node, the
+    """The standalone bays (docs/build/one-bay-on-a-desk.md): what one Solo or one Quad takes beyond its boards (the node, the
     single DATA port board or the DATA ×4 v2, from the rack's order), and the honeycomb plate's desk frame.
     Optional: outside the rack's totals."""
     import trimesh
@@ -1263,7 +1263,7 @@ def standalone(rack) -> dict:
 
     pd = {"item": "USB-C PD trigger module, CH224K with a DIP switch set to 20 V (a \"decoy\" board, ≤ 30 × 21 mm): "
                   "feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W "
-                  "(docs/cabling.md)",
+                  "(docs/build/one-bay-on-a-desk.md)",
           "supplier": "AliExpress 3256811726090162; its size goes in config/rack.yaml › standalone.pd_module",
           "qty": 1, "unit_eur": 2.0}
     foam = {"item": "Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module against its wall)", "supplier": "any",
@@ -1302,7 +1302,7 @@ def standalone(rack) -> dict:
 
 def standalone_md(units) -> list[str]:
     md = ["", "## Standalone bays (optional, outside the totals above)", "",
-          "One bay out of the rack, on a desk ([docs/standalone.md](../docs/standalone.md)): what a unit takes beyond "
+          "One bay out of the rack, on a desk ([docs/build/one-bay-on-a-desk.md](../docs/build/one-bay-on-a-desk.md)): what a unit takes beyond "
           "its boards (the node and its DATA board, from the boards' order above) and a USB-C PD charger offering "
           "20 V.  The printed parts at the estimate above (PETG, from the STL's volume)."]
     for u in units.values():

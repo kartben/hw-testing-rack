@@ -88,9 +88,7 @@ A reservation of one port, `B3.2`:
   ([Wires between boards](wires.md)).
 - The bay's other ports stay free.
 - USB/IP is not covered. Every board of a bay shares TCP 3240, and the node has no check at import time, so
-  another host can still attach `B3.2`. To keep a board's USB/IP to yourself, reserve the whole bay. (The
-  design note [One node, several boards](../multi-dut-node.md) describes that check as if it existed; it is
-  not written.)
+  another host can still attach `B3.2`. To keep a board's USB/IP to yourself, reserve the whole bay.
 
 Neither kind outlives a restart of the node: an update, a fatal error, its RESET, a power cut. Afterwards
 the bay is free, and whatever the job had switched off is on again

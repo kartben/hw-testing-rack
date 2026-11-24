@@ -75,8 +75,11 @@ After a capture the settings fold to one line and the viewer takes the room; **F
 window. The decoders are UART, I²C, SPI, WS2812B, PWM / clock (frequency and duty cycle), 1-Wire (standard
 speed), CAN (classic frames on a controller's TX or RX pin, before its transceiver; an FD frame is named and
 skipped) and SWD. The decoded data is also a table: search it, click a row or walk it with the arrows, and the
-viewer jumps there. A UART's bytes make one row per line of text, so a search finds a whole word. With the
-viewer focused, + and − zoom, ← and → pan, 0 fits and Esc clears the cursors.
+viewer jumps there. A UART's bytes make one row per line of text, or per burst of a binary protocol, so a
+search finds a whole word. 1-Wire reads resets, presence, ROM commands and codes with their CRC, and bytes;
+CAN, each frame's identifier, data, CRC and ACK; SWD, each request by name, its ACK and its data with their
+parity, line resets and the switch from JTAG: what to look at when a flash fails. Over a box, a tooltip gives
+its value. With the viewer focused, + and − zoom, ← and → pan, 0 fits and Esc clears the cursors.
 
 The card holds the analyzer only while it captures, for one page at a time: the same address takes it over
 (a reload), another is refused. Bus names, settings and decoders stay in the browser.

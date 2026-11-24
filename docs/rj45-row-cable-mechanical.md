@@ -140,13 +140,13 @@ plenum, x 147–162.  Between the boots the cord runs 46 mm straight, at y 20, z
 
 | Part | Change | Effort |
 |---|---|---|
-| `config/rack.yaml` | `drawer.travel` 140 → 128.  The tray's stop pin and deck slot follow; docs/mechanical.md and architecture.md mention 140 | 0.5 h |
+| `config/rack.yaml` | `drawer.travel` 140 → 128.  The tray's stop pin and deck slot follow; docs/mechanical.md and docs/plan/index.md mention 140 | 0.5 h |
 | `tray.scad` | drop the tie anchors (optional) | 0.5 h |
 | `ladder.scad` | the base ladder's diagonal reversed | 1–2 h with the checks |
 | `power_box.scad` | four RJ45 cut-outs, the row letters on the lid, rim notches | 2–3 h |
 | `tools/webscene.py` | RJ45 jumpers (straight, 12 cm), feeds in their lanes with their loops, jacks and plugs, the DATA lead's U-turn flat | ≈ 1 day |
 | `tools/bom.py` | the cords: 12 cm jumpers, one per hop; feeds of 0.25 / 0.5 / 0.75 / 0.75 m.  Drop the PH leads | 2 h |
-| docs | cabling.md, mechanical.md; the assembly notice goes in its backlog | 0.5 day |
+| docs | build/row-cables.md, reference/cables.md, mechanical.md; the assembly notice goes in its backlog | 0.5 day |
 | regeneration and checks | STLs (tray, base ladder, power box), the viewer, the tests, SolidCraft | 0.5 day |
 
 **About 3 days in all.**  It starts once the node's and the hub's RJ45 footprints are placed

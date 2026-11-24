@@ -108,8 +108,9 @@ $ python bootloader/mcuboot/scripts/imgtool.py keygen -t ecdsa-p256 -k ~/keys/ra
 $ export HWTR_SIGNING_KEY=$HOME/keys/rack-signing.pem
 ```
 
-`HWTR_SIGNING_KEY` is an absolute path, read by both builds.  After changing it, build pristine: add `-p` to
-the build lines below.
+`HWTR_SIGNING_KEY` is an absolute path, read by both builds.  A build line can take the path instead, after
+`--`: `-DSB_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"/path/to/key.pem\"`.  After changing it, build pristine: add `-p`
+to the build lines below.
 
 ## Build the two images
 

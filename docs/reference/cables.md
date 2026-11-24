@@ -1,8 +1,8 @@
 # Cables and pinouts
 
-Every lead between two PCBs of the rack is a JST PH lead wired "Same direction": pin n at one end meets pin
-N + 1 − n at the other (7 − n on six pins, 9 − n on eight), and both plugs show the same face when the lead
-lies flat on a table. A 1:1 lead, which sellers often call "reverse", fits the same sockets and works in none
+Every lead between two PCBs of the rack is a JST PH lead wired "Same direction" (some sellers say "same side",
+同向): pin n at one end meets pin N + 1 − n at the other (7 − n on six pins, 9 − n on eight), and both plugs
+show the same face when the lead lies flat on a table. A 1:1 lead, which sellers often call "reverse", fits the same sockets and works in none
 of them.
 
 :::{status} designed
@@ -71,7 +71,8 @@ no ready-made 6-pin cable states 24 AWG with this wiring
 
 A rack of c columns and r rows takes r × (c − 1) jumpers and r feeds: nine and three for the default 4 × 3.
 A row needs no plug at its end. Both terminations of the bus are in the hub, and the last node's J2 stays
-empty; it is live all the same ([What a wrong cable does](#what-a-wrong-cable-does)).
+empty; it is live all the same ([What a wrong cable does](#what-a-wrong-cable-does)). A row output with no row
+behind it, row D on the default rack, stays empty too.
 
 ```{bom-table}
 :category: Cables

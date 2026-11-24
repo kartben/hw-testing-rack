@@ -157,7 +157,9 @@ committed files, frozen with v1.0, carry none of the fixes. The first three are 
    reel, with a footprint and 4,222 in stock on 2026-11-09: order with it, unless JLCPCB confirms that it
    places C48009678.
 
-Check the preview for the four things the NextPCB order looked at, too. No row of the table of
+Check the preview for the four things the NextPCB order looked at, too, and for three corrections of the
+table: the power hub's ten side LEDs (D3, D8, D11 to D14, D21 to D24) and its U1, the CH224A; the bay node's
+SERVICE switch SW3, with the drills shown, its two pegs in their holes. No row of the table of
 corrections is marked confirmed: nobody has yet seen JLCPCB's preview show the v1.0 files right. The design
 log's tests for a part there: the body sits over its pads, centred; pin 1, the cathode bar or the + side
 lines up with the mark on the silkscreen; a side-entry connector opens towards the edge of the PCB.

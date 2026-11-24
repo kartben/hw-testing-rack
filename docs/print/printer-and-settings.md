@@ -33,7 +33,7 @@ A row ladder is as long as its row is high (`rows[].height` in
 
 | Printable area of the bed | What fits |
 |---|---|
-| 250 × 250 mm or more | Every part. The [mechanical design document](../mechanical.md) plans on 256 × 256 mm and names the Bambu Lab X1, P1, A1 and H2D |
+| 250 × 250 mm or more | Every part. The design plans on 256 × 256 mm: the Bambu Lab X1, P1, A1 and H2D |
 | 250 × 210 mm | Every part, each lying with its long side along the 250 mm. `ladder_a` and `ladder_b` then keep 5.6 mm at each end and 3.4 mm at each side. The tray and the cap plate are 210.0 mm long: the other way round they have no margin at all |
 | 220 × 220 mm | Every part but `ladder_a` and `ladder_b`: ten parts of the default rack |
 | 180 × 180 mm | Not the frame: the ladders, the floor and cap plates, the tray and the drawer are longer |
@@ -67,7 +67,7 @@ sliced. For the three heaviest lines of the bill, the slicer gives more:
 That is 0.47 kg on top of the bill's 3.9 kg before waste: 4.4 kg, and 4.8 kg with the same 10 %. Plan on
 4.8 kg, and on 0.6 kg more for the twelve optional covers (51 g each in the slicer). The tray's and the
 drawer's slicer figures are the mechanical design document's, undated; the plate's is the slicer review's
-of 2026-10-21 (the design document's "about 75 g" is older). Every part's grams, with their source:
+of 2026-10-21. Every part's grams, with their source:
 [Parts and quantities](parts-list.md).
 
 For a smaller rack, the same document gives three slicer figures: a bay on its own about 487 g, each bay

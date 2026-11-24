@@ -4,8 +4,9 @@
 # are THUMBS (chip_<key>, card_<key>); hardware icons are hw_<key>.  pages.py turns this file and
 # the uploaded drawings' addresses (assets.json) into the canvas's page files.  See README.md.
 #
-# The order is docs/assembly.md's: the frame (§2), each tray fitted at the bench (§4: node, chain,
-# drawer, plate) and slid in, the row jumper (§4.3), the power box (§5), a camera (§6).
+# The order is the build pages': the frame (docs/build/first-bay.md), each tray fitted at the bench
+# (docs/build/fit-out-a-tray.md: node, chain, drawer, plate) and slid in, the row jumper (docs/build/add-a-bay.md),
+# the power box (docs/build/power-box.md), a camera (docs/build/camera.md).
 
 canvas: https://claude.ai/artifact/4E2UyPydficBXMAkRwtYsr
 index:                 # the canvas's project/canvas.json: its title, and a row of artboards per title note

@@ -203,7 +203,7 @@ Cells: open links / copper DRC errors · vias, copper length · wall time.  KRT 
 | power-hub | 1 / 0 · 455 vias, 3518 mm · 246 s | 0 / 0 · 521 vias, 3460 mm · 842 s | 3 / 6 · 529 vias, 3359 mm · 56 s | no result in 5 min |
 | DATA ×4 v2 | 0 / 0 · 800 vias, 4782 mm · 40 min | 0 / 0 · 799 vias, 4782 mm · 90 min | 2 / 22 · 793 vias, 4826 mm · 52 s | no result in 5 min |
 
-The renders (each board's signal layers: before, the portfolio's best, KRT) are with the session's notes.
+The renders (each board's signal layers: before, the portfolio's best, KRT) were kept outside the repository.
 
 **Freerouting 2.5.0.**
 - Through the portfolio it is complete and clean on every board.  It is single-core, and takes minutes on the
@@ -275,7 +275,7 @@ scoring.  The same runs on both sides.
 
 ## Straight tracks
 
-After the user found staircases in routed copper: 45° and straight segments in turn, where one bend would do.
+Staircases found in routed copper: 45° and straight segments in turn, where one bend would do.
 
 - **Why Freerouting leaves them.**  Its search goes round each obstacle's clearance octagon, and its optimizer
   pulls a route tight one corner at a time.  A staircase between two points is exactly as long as the path
@@ -357,7 +357,7 @@ zephyrbox), 2026-10-22:
   plane, it made Freerouting take the RP2354B's 0.4 mm pins as joined through it, though they have no room for a
   via: 12–14 links open in every run.  A pin with no room would need a drawn link to its decoupling capacitor's
   via first.
-- **The rack's board since 2026-10-23** (the user's choice): `electronics/data-port-x4` on 4 layers, routed
+- **The rack's board since 2026-10-23**: `electronics/data-port-x4` on 4 layers, routed
   with `ripup30-order2`'s session (750 vias, 5194 mm, 1930 bends once imported), its order panel too.  The 6-layer
   board was kept as `electronics/data-port-x4-6l` until 2026-10-25 (removed; `X4V2_LAYERS=6` still builds
   that stack-up).  The comparison (cost, vias in pads, return paths) is in docs/electronics.md.
@@ -385,4 +385,4 @@ The cheap way to combine them, in order:
 - `tools/route_farm.py`, `electronics/tools/dsn.py` and `electronics/tools/octilinear.py` are in the repo; the tests
   are `tools/tests/test_dsn.py` and `tools/tests/test_octilinear.py`.
 - KRT, the hybrid flow and Topola ran from scratch scripts (`bench_krt.py`, `hybrid.py`, `topola_variants.py`).
-  They are kept with the renders in the session's notes, not in the repo.
+  They are kept with the renders, outside the repository.

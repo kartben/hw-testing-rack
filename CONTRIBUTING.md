@@ -42,9 +42,7 @@ revision's Gerbers, BOM or placement file differ from what was sent.
 
 ## Measuring a board
 
-Boards marked `verified: false` in `boards.yaml` have approximate outlines and
-get a fence plate.  If you own one, measure (or take the vendor's Gerbers),
-add `holes:`/`hole_d:` and set `verified: true`.
+How to measure a board and write its entry: [A board that is not in the library](docs/use/add-a-board.md).
 
 <!-- site:jlc-parts -->
 ## Looking up JLC parts

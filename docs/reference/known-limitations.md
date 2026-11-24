@@ -54,7 +54,7 @@ Keep the rack on a lab network or behind a VPN.
 | Limit | What it means |
 |---|---|
 | One bay wide | No double-width bay is designed: a board must fit one board plate, 134.5 × 159.4 mm, with its plug and its cable behind it |
-| Rows of 165 mm at most | A taller row is not designed: a 185 mm row would take a 261 mm ladder |
+| Rows of 165 mm at most | A taller row is not designed: a 185 mm row would take a 258.8 mm ladder |
 | Four rows | The hub has four row outputs |
 | A dense bay takes thin boards | Up to 19.8 mm thick, 86.5 mm long and 82 mm tall, standing on edge, and no jumper wires: a board that needs wires goes to a bay with a plate |
 | No battery on a board | A board that charges a LiPo draws 0.6 to 1.2 A by itself, and a cell charging unattended in a closed drawer is a fire risk: [Put a board in a bay](../use/mount-a-board.md) |

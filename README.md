@@ -1,160 +1,68 @@
-# hw-testing-rack
+# BitBunk
 
-**An all-printed, tilted test rack for development boards (12 in its default
-4 × 3 layout) — every board in its own sliding drawer, power-switched,
-current-metered and exposed over the network with USB/IP by a Zephyr-powered
-ESP32-S3 in each bay.**
+**A 3D-printed, tilted test rack for development boards, twelve bays in its default 4 × 3 layout: each bay a
+sliding drawer whose boards are power-switched, current-metered and exposed over the network with USB/IP by
+a Zephyr-powered ESP32-S3 under the drawer.**
 
-![The rack on a desk, a laptop wired to one bay's front port](docs/img/photo-desk.jpg)
+The repository is still called `hw-testing-rack` and will be renamed.
 
-**[▶ Interactive 3D model](https://kartben.github.io/hw-testing-rack/)** · [Logic analyzer](https://kartben.github.io/hw-testing-rack/analyzer/) · [BOM](bom/README.md) ·
-[Architecture](docs/architecture.md) · [Mechanics](docs/mechanical.md) · [Cabling](docs/cabling.md) ·
-[Power](docs/power.md) · [Electronics](docs/electronics.md) · [Assembly](docs/assembly.md) ·
-[Firmware](docs/firmware.md) · [Standalone bays](docs/standalone.md) · [CI](docs/ci.md)
+![The 3D model of the rack: three rows of four bays on a base, the drawers of B1, B3 and C2 pulled out](docs/img/viewer/rack.jpg)
 
-## Highlights
+The 3D model of the rack as it is designed today, not a photograph: no rack has been built.
+[Open the model](https://kartben.github.io/hw-testing-rack/viewer/) to turn it round.
 
-* **Printed panel frame, no aluminium** — side walls ("ladders") shared by
-  neighbouring bays, stacked row on row with snap hooks; trays slide into
-  their grooves and click in; a taut X brace behind every bay keeps it square.
-  Rows tilt 20° so every board, LED and label faces you, and the grid grows
-  in both directions.
-* **Drawers that stay connected** — each bay is a drawer sliding 140 mm along
-  the slope; a drag chain hidden in the floor carries the cable, so you can
-  pull a board out to probe it while it keeps running.
-* **One plate for every board** — a honeycomb plate in each drawer; clip-in
-  pegs (stops, cams, pins) hold any board on it, placed by a tool from a small
-  board library (UNO, Nucleo-64/144, Pico, nRF DKs, FRDM, …): up to four small
-  boards on one plate.
-* **One ESP32-S3 per bay** — switches the board's 5 V (current-limited,
-  default on), measures V/I (INA226), drives UART/RESET/BOOT lines, and
-  exports the board's USB with Zephyr's USB/IP host service.  Plug a laptop
-  into the bay's front port and the USB data path switches to it — the
-  "classic" way still works, even with no firmware.
-* **One USB-C charger** — a printed power box under the first column holds
-  the hub: a USB PD 3.1 sink (20 or 28 V from one charger, no mains in the
-  rack) and an eFuse per row; a 60 V-rated buck in every bay.  The same row
-  cables carry a CAN bus for the rack controller ([can.md](docs/can.md)).
-* **Cameras** — an optional Arducam Mega (SPI, ~120° M12 lens) and white LEDs behind a diffuser hang from a bay's ceiling, driven by the bay's own node.
-* **Everything is generated** from [`config/rack.yaml`](config/rack.yaml):
-  OpenSCAD parts, KiCad schematics *and* PCBs (schematic-as-code, Freerouting),
-  the BOM with LCSC part numbers, and the interactive viewer.
+## Status
 
-| | |
-|---|---|
-| ![drawer](docs/img/photo-drawer.jpg) | ![boards](docs/img/photo-boards.jpg) |
-| Bay B3 pulled out, still connected: a DATA ×4 at the back serves two XIAOs and two Pico 2s | The DATA ×4 up close: a USB-C lead per board, Dupont jumpers wiring a UART between two of them ([real models](docs/boards-3d.md)) |
-| ![row B](docs/img/photo-detail.jpg) | ![bay node](electronics/bay-node/docs/bay-node-iso.jpg) |
-| Row B: the GIGA's LVGL screen in B2, between two DATA ×4 bays | Bay node — ESP32-S3 (8 MB PSRAM), 2 USB muxes, TPS26600 eFuse, INA226, CAN, 60 V buck |
+Nobody has built a BitBunk yet.  On 2026-11-24:
 
-Neutral technical renders: [the rack](docs/img/hero.jpg), [one bay exploded](docs/architecture.md),
-[side view](docs/mechanical.md).
+- The printed frame is at v0.2 and has not been built: no part of it has been printed.  The mechanics are
+  printable and parametric, the power box included.  Still to design: a double-width bay, and a front
+  display on the drawers (the bay node v1.0 has no connector for one).
+- Five PCBs (bay node, power hub, DATA ×6, DATA ×4, camera pod) pass ERC and DRC and went through a
+  schematic review, a datasheet audit and a design review.  **Their v1.0 went to fabrication on
+  2026-11-11** and is frozen: a change to a PCB now takes a new revision
+  ([electronics.md › Revisions at the fab](docs/electronics.md#revisions-at-the-fab)).  None is on a bench
+  yet; what to check when they arrive: [Check each PCB](docs/build/check-the-pcbs/index.md).
+- The firmware (0.5.0, bay node and power hub) builds.  Its tests run on Zephyr's native_sim, and parts of
+  it have run on bought ESP32-S3 boards that stand in for the PCBs (a XIAO ESP32-S3, an M5Stack CoreS3).
+  It has never run on a bay node or on a power hub.
+
+Every size, mass and print time comes from CAD or a slicer, every voltage and current from a schematic or a
+datasheet.  Board outlines marked `verified: false` in `mechanical/boards/boards.yaml` are approximate.
+How far each part has been taken, line by line: [What exists today](docs/plan/status.md).
+
+## Documentation
+
+The documentation is a website: **<https://kartben.github.io/hw-testing-rack/>**
+
+| Section | On the site | Source on GitHub |
+|---|---|---|
+| Plan: how it works, choose a size, cost, what to order | [plan/](https://kartben.github.io/hw-testing-rack/plan/index.html) | [docs/plan/index.md](docs/plan/index.md), [status.md](docs/plan/status.md), [stages.md](docs/plan/stages.md) |
+| Print: measure, print settings, the parts | [print/](https://kartben.github.io/hw-testing-rack/print/index.html) | [docs/print/index.md](docs/print/index.md) |
+| Build: the PCBs, a bay, the rack, flashing | [build/](https://kartben.github.io/hw-testing-rack/build/index.html) | [docs/build/index.md](docs/build/index.md) |
+| Use: power, USB/IP, console, wires, analyzer, camera, CI | [use/](https://kartben.github.io/hw-testing-rack/use/index.html) | [docs/use/index.md](docs/use/index.md) |
+| Reference: every action, the PCBs, cables, `bayctl`, the APIs | [reference/](https://kartben.github.io/hw-testing-rack/reference/index.html) | [docs/reference/index.md](docs/reference/index.md) |
+| Engineering: why it is built this way, the design notes | [engineering/](https://kartben.github.io/hw-testing-rack/engineering/index.html) | [docs/engineering/index.md](docs/engineering/index.md) |
+
+The [interactive 3D model](https://kartben.github.io/hw-testing-rack/viewer/) and the
+[logic analyzer page](https://kartben.github.io/hw-testing-rack/analyzer/) run in a browser.  With nothing
+on the desk, a simulated bay serves the firmware's page and API:
+[Try it without hardware](docs/plan/try-it-without-hardware.md).
 
 ## Repository layout
 
 ```
-config/rack.yaml          single source of truth (rows, bays, tilt, dimensions, population)
-mechanical/               OpenSCAD: lib/, parts/, boards/boards.yaml, generated/ (from the config)
-electronics/
-  tools/                  schematic-as-code (eda.py), PCB builder (pcbgen.py), catalogue, LCSC resolver
-  bay-node/               design.py + generated KiCad project, fab/, docs/
-  power-hub/              design.py + generated KiCad project, fab/, docs/
-  data-port-x6/           the drawer's DATA ×6, six USB-C, power only (the default): design.py + KiCad, fab/, docs/
-  data-port-x4/           the DATA ×4 v2, four USB-C and the logic, for bays with wires: design.py + KiCad, fab/, docs/
-  data-port/              the single-port board, retired from the rack, kept for the standalone Solo box
-  camera-pod/             the camera pod's board (lead, camera header, 3.3 V, LEDs): design.py + KiCad, fab/, docs/
-  lib/                    custom symbol(s), cached JLC basic passives
-site/                     GitHub Pages: three.js viewer + BOM page (assets generated)
-bom/                      full rack BOM (CSV + summary)
-render/                   Blender scene + photoreal renders
-tools/                    build.py (config/STL/web), kicad.sh, bom.py, jlc_mcp.py, notice/ (FreeCAD line art)
-docs/                     design documentation
+config/       rack.yaml, the single source of truth (rows, bays, tilt, dimensions, population); lab.example.yaml
+mechanical/   OpenSCAD parts, the board library (boards/boards.yaml), the committed STL files
+electronics/  the five PCBs as schematic-as-code (design.py), their KiCad projects and fab/ outputs; the generators
+firmware/     Zephyr applications of the bay node and the power hub, their boards, drivers and tests
+zephyr/       this repository as a Zephyr module, and the patches to the Zephyr that firmware/west.yml pins
+tools/        build.py, bom.py, plate_layout.py, bayctl, kicad.sh, the render and drawing scripts
+site/         the three.js 3D model, published at /viewer/
+bom/          the rack's bill of materials (generated by tools/bom.py) and sourcing notes
+render/       Blender scenes for the renders
+docs/         the documentation site (Sphinx, MyST Markdown) and the design notes
 ```
-
-## Building
-
-Prerequisites: Python ≥ 3.10 with `pyyaml numpy trimesh` (`pip install -r tools/requirements.txt`),
-Docker (for KiCad 10, Freerouting and — if not installed locally — OpenSCAD).
-
-```bash
-python tools/build.py all                    # config → STLs → web viewer assets
-tools/kicad.sh bay-node --route --fab        # schematic, PCB, autoroute, Gerbers/BOM/CPL, renders
-tools/kicad.sh power-hub --route --fab
-tools/kicad.sh data-port-x6 --fab            # fab outputs of the routed board, no re-route
-tools/kicad.sh data-port-x4 --fab
-tools/kicad.sh camera-pod --route --fab
-python tools/bom.py                          # full rack BOM
-python -m http.server -d site 8000           # open http://localhost:8000
-```
-
-Generated outputs (STLs, Gerbers, renders, PDFs, GLBs, the BOM) are committed with the change that alters
-them, never for a date: `python tools/keep_unchanged.py` puts back every regenerated file whose content didn't
-change (`tools/kicad.sh … --fab` runs it on its board).
-
-For screenshots the viewer takes URL parameters: `?bay=B4&openbay=1&view=dut&hideui`
-pulls bay B4's drawer out and frames its DUT cable (DATA port to board), with no UI.
-`?bay=B2&view=camera&camlight=1&preview=B2` looks into a camera bay with its LEDs on and opens what
-its camera sees (an Arducam Mega with a ~120° lens: fisheye, noise, auto-exposure and JPEG, at 5 fps).
-
-The viewer lights the rack like the photos: a real room (Poly Haven's "Small Empty Room 1", CC0, cut to
-512 × 256 in `site/assets/env/`), AgX with Blender's "Medium High Contrast" look, PETG with its layer lines.
-Its *High quality* box (on by default on a desktop GPU, off on phones and small GPUs, and dropped by itself
-under 25 fps) adds ambient occlusion (GTAO), a glow on the status LEDs and the camera lights, 4× MSAA through
-the post-processing and 4096² sun shadows; `?quality=high` or `?quality=low` forces one for screenshots.
-
-Photoreal renders (Blender + Cycles) start from `render/assembly.glb`, baked
-from the same scene as the viewer by `python tools/assembly_glb.py --hq` (`--hq`:
-full-resolution part meshes instead of the viewer's lighter ones).  Either
-render headless in Docker (`tools/render.sh hero`) or drive a Blender you
-already have open — GPU and all — through the Blender MCP add-on's socket:
-
-```bash
-python tools/blender_live.py exec render/live_scene.py                    # (re)build the scene
-python tools/blender_live.py exec render/live_render.py hero              # → docs/img/hero.jpg
-python tools/blender_live.py exec render/live_render.py drawer:B3 docs/img/drawer.jpg
-
-python tools/assembly_glb.py --hq --explode-bay B2 --out render/bay-exploded.glb   # one bay, layers apart
-python tools/blender_live.py exec render/live_scene.py render/bay-exploded.glb
-python tools/blender_live.py exec render/live_render.py exploded
-```
-
-The photo shots (`docs/img/photo-*.jpg`) use their own scene: a small office
-lit through a window, PETG with 0.2 mm layer lines and
-rounded edges, scanned oak and plaster (CC0 textures from Poly Haven), a laptop
-showing a Zephyr shell, wired to bay B4 by a USB-C cable that hangs as a real
-one would (a catenary), depth of field, bloom and a vignette, rendered at 2× and averaged down:
-
-```bash
-python tools/fetch_render_assets.py                     # CC0 textures + vendor board models → render/assets/
-python tools/board_models.py                            # normalise the board models (docs/boards-3d.md)
-python render/screen_terminal.py                        # the laptop's screen → render/assets/
-node tools/lvgl_frame.mjs music 480 800                 # B2's GIGA display: one frame of the viewer's LVGL demo
-                                                        # (the drawer fronts' status screens: assembly_glb.py draws them)
-python tools/assembly_glb.py --hq --with-pc-cable --open-bays B3 --out render/assembly-photo.glb
-python tools/blender_live.py exec render/live_photo.py build
-python tools/blender_live.py exec render/live_photo.py shot desk          # desk, drawer, detail → docs/img/photo-*.jpg
-```
-
-Change the rack in `config/rack.yaml` (tilt, rows, columns, panel thickness,
-which bays get cameras, which board sits where) and rebuild.
-
-## Status
-
-v0.2 — the printed panel frame replaces the aluminium frame, **not yet
-built**.  Mechanics are printable and parametric, the power box included;
-still to design: double-width bays (see [mechanical.md](docs/mechanical.md)).
-Each drawer front carries the node's 1.9" touch display, waiting on the
-module to check its fit before a test print.  Five PCBs (bay node, power hub,
-DATA ×6, DATA ×4, camera pod) pass ERC and DRC, are routed and smoothed,
-and went through a schematic review
-([schematic-review-2026-10-25.md](docs/schematic-review-2026-10-25.md)) and a
-datasheet audit.  **Their v1.0 went to fabrication on 2026-11-11** and is
-frozen: a change to a board now takes a new revision
-([electronics.md › Revisions at the fab](docs/electronics.md#revisions-at-the-fab)).
-None is on the bench yet; what to check when they arrive:
-[bring-up.md](docs/bring-up.md).  The node firmware:
-[firmware.md](docs/firmware.md).
-Board outlines marked `verified: false` in `boards.yaml` are approximate.
 
 ## License
 

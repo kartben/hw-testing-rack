@@ -66,10 +66,10 @@ Where the data comes from:
 `export lab` saves the nodes' targets (with the device each is pinned to) for a backup; `import lab`
 puts them back.
 
-The nodes speak plain HTTP/JSON (firmware/README.md, "Web page and API") and USB/IP on TCP 3240.
-Each node only serves the addresses its access rules allow (firmware/README.md, "Access
-control"); admin requests (rules, kicks) are signed with the rack's admin key, taken from the
-BAYCTL_KEY environment variable, never from a file in the repository.  `attach`/`detach` call
+The nodes speak plain HTTP/JSON (docs/reference/node-api.md) and USB/IP on TCP 3240.
+Each node only serves the addresses its access rules allow (docs/use/access.md); admin requests
+(rules, kicks) are signed with the rack's admin key, taken from the BAYCTL_KEY environment
+variable, never from a file in the repository.  `attach`/`detach` call
 the Linux `usbip` tool (package linux-tools / usbip; needs root, so bayctl prefixes `sudo -n`).
 """
 
@@ -730,7 +730,7 @@ def wait_for(cond, timeout: float, step: float = 0.5) -> bool:
 
 def node_ports(bay: Bay) -> list[dict]:
     """GET /api/ports: one object per port, `slot`, `port`, `hub_port`, `power`, `fault`, `usb`, `usbip`,
-    `lease` (docs/multi-dut-node.md); a one-port node lists its DUT as port 1."""
+    `lease` (docs/reference/node-api.md › Ports of a DATA board); a one-port node lists its DUT as port 1."""
     doc = api(bay, "/api/ports")
     return doc if isinstance(doc, list) else doc.get("ports", [])
 
@@ -885,7 +885,7 @@ def detach(bay: Bay) -> int:
 
 def follow(targets: list[Bay], step: float = 2.0, say=print, stop: threading.Event | None = None) -> None:
     """Keep boards attached: a reset or a power cycle ends their USB/IP session, and each comes back under
-    the same busid (docs/multi-dut-node.md); attach it again then.  Until Ctrl-C, or `stop`."""
+    the same busid (docs/use/names.md › USB/IP busids); attach it again then.  Until Ctrl-C, or `stop`."""
     while stop is None or not stop.is_set():
         for b in targets:
             try:

@@ -1,9 +1,9 @@
 # Power distribution review: the row wiring, and the hub in 100 mm (2026-10-20/21)
 
-The user's question: can the power hub fit in 100 mm, maybe with other connectors, and do the row
+The question: can the power hub fit in 100 mm, maybe with other connectors, and do the row
 cables carry enough current?  VRACK is 20 V or 28 V (the CH224A's contract), not 24 V.
 
-**Decided on 2026-10-20: option B1.**  The user adopted it after its routing trial: the hub is
+**Decided on 2026-10-20: option B1**, after its routing trial: the hub is
 76 × 100 mm with its four rows, the power box 84 × 108 ([the result](#result-b1-routed)).
 
 **Decided on 2026-10-21: fix 1, real AWG 24 leads** ([the decision](#decision-real-awg-24-leads)).  The
@@ -103,7 +103,7 @@ if a row ever has to carry four heavy bays at 20 V.
 
 ### Decision: real AWG 24 leads
 
-The user's pick on 2026-10-21, after VH was weighed against PH 8 and AWG 24:
+Picked on 2026-10-21, after VH was weighed against PH 8 and AWG 24:
 - **VH:** 10 A a contact, but 23.7–25.6 mm wide.  The hub at 100 mm takes 2 such rows, not 4.
 - **PH 8:** 3 rows at most on the hub.
 
@@ -113,7 +113,7 @@ The decision:
 - **No ready-made cable fits.**  The AliExpress PH 6 cables are 26 AWG or don't say.  Pololu's 24 AWG
   ones are 1:1, and the rows need pin n ↔ pin 7−n.
 - **So each row cable is six single leads in two PHR-6 housings,** red at the IN end and black at the
-  OUT end.  How to make and check them is in [cabling.md](cabling.md#row-power), and the BOM carries the
+  OUT end.  How to make and check them is in [build/row-cables.md](build/row-cables.md), and the BOM carries the
   parts (`_row_cables()` in `tools/bom.py`).
   - **Leads:** JST's own pre-crimped leads, SPH-002T-P0.5S at both ends on UL1007 24 AWG.
     ASPHSPH24K152 (152 mm) makes the jumpers and ASPHSPH24K305 (305 mm) row A's feed.  Digi-Key FR
@@ -162,7 +162,7 @@ With the PH 8 rows of fix 2, B1 no longer fits (4 × 21 mm); B2 and B3 (B8B vert
 4th row; but three rows is what was planned, and the 140 W charger covers 12 bays' worst case (≈ 130 W),
 not 16 (≈ 175 W).  B2 keeps today's row layout.  Keeping a 4th output means B1 or B3.  Then
 re-place, re-route and re-check the hub (ERC/DRC, the CPL audit, the design-review rules, the power pads),
-and Mechanics shortens the power box.
+and the power box gets shorter.
 
 ### Result: B1, routed
 

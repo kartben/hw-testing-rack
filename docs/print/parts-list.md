@@ -115,7 +115,7 @@ its display shield. For your boards, run the layout tool first: it says which pe
 
 | Part | Which way up | Sliced |
 |---|---|---|
-| ![The honeycomb plate, its rows numbered on the rims](../img/viewer/part-plate.jpg){width=80px} `plate`: the honeycomb plate | flat, 2 or 3 walls | 3 h 09, 56 g; *design document*: about 75 g |
+| ![The honeycomb plate, its rows numbered on the rims](../img/viewer/part-plate.jpg){width=80px} `plate`: the honeycomb plate | flat, 2 or 3 walls | 3 h 09, 56 g |
 | ![A stop](../img/notice/card_ps.svg){.bb-lineart width=80px} `peg_stop_h<H>`: a stop | upright, flange down | 0 h 13, 0.8 g |
 | ![A cam on its base](../img/notice/card_pc.svg){.bb-lineart width=80px} `peg_base_h<H>` and `peg_cam`: a cam on its base | both flange down | 0 h 11, 0.7 g; the cam 0 h 04, 0.3 g |
 | ![A pin](../img/notice/card_pp.svg){.bb-lineart width=80px} `peg_pin_d<hole>_h<H>`: a pin through a mounting hole | upright, flange down | 0 h 13, 0.7 g |

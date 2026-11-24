@@ -120,10 +120,10 @@ closed or open, are on [LEDs, buttons and switches](../leds-and-buttons.md).
 | Row input, J1 | 20 V; built for 28 V as well (a TVS that stands off 33 V, capacitors rated 50 V). Reverse polarity blocked |
 | Through the node, J1 to J2 | the whole row's current: JST PH, 2 A per contact; the hub limits a row to 1.6 A |
 | 5 V buck | starts above 13.5 V, stops below 10.8 V; 5.24 V; the node and its camera take under 0.8 A of it |
-| DATA lead supply, J7 pin 1 | VIN through a TPS26600 eFuse: limit 1.76 A (1.67 to 1.85 A), retried by itself; off under 15 V and over 31 to 34 V; off without firmware |
+| DATA lead supply, J7 pin 1 | VIN through a TPS26600 eFuse: limit 1.76 A (1.67 to 1.85 A), retried by itself; off under 15 V and over 31 to 34 V; soft start about 3.8 ms at 20 V; off without firmware |
 | DATA lead meter | INA226 on a 50 mΩ shunt: full scale 1.64 A |
 | Camera supply, J6 pin 3 | the 5 V rail through a 0.75 A resettable fuse (it trips at 1.5 A); the camera takes up to 317 mA, its four LEDs up to 102 mA |
-| Camera SPI | 3.3 V, mode 0, 4 MHz, 33 Ω in series at the node |
+| Camera SPI | 3.3 V, mode 0, 4 MHz, 33 Ω in series at the node. For a camera fed 5 V that drives MISO at 5 V, change R33 to 330 Ω and fit R35 (680 Ω): 3.37 V at the pin |
 | AUX | 3.3 V levels, 1 kΩ in series on TX and RX; RESET and BOOT open drain; pin 2 is a level reference through 1 kΩ, not a supply |
 | USB | USB 2.0. High-Speed from the PC port to the DATA lead in classic mode; Full-Speed to the ESP32 |
 | POS | each way through 10 kΩ and a clamp: VRACK on it from a wrong cable costs about 2.5 mA at 28 V |

@@ -235,7 +235,7 @@ The hub keeps its last 32 events in RAM, newest first; a restart of the hub lose
 | `row` | `row <X> back: the budget has room for it again` | a shed row returns |
 | `row` | `budget margin <n> %`, `budget capped at <n> W`, `budget cap off: the contract's` | `hub budget` |
 | `row` | `rows kept on across the controller reset: 0x<mask>` | the hub restarted with rows on (bit 0 is A) |
-| `fault` | `row <X>: eFuse fault (current limit or over-temperature)` | a row's FLT on a row that is on |
+| `fault` | `row <X>: eFuse fault (current limit or over-temperature)` | a row's FLT on a row that is on, from 50 ms after it was switched on (past the eFuse's soft start) |
 | `fault` | `node <bay>: DUT switched off by a fault (<n> mA)`, `node <bay>: DUT in current limit (<n> mA)` | a node's alert |
 | `fault` | `admin key forgotten (BOOT held 10 s): the hub can be claimed again`, `admin key forgotten (local shell)` | BOOT held, or `hub access reset` |
 | `can` | `enumeration: <n> node(s)` | the hub numbered the rack bus |

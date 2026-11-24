@@ -31,8 +31,8 @@ The per-board records are local and git-ignored, in `.pcba-workflow/<board>/`:
 
 Severity: **critical** = wrong assembly or a damaged board · **major** = fails a rating, a datasheet
 requirement or the board's own budget · **minor** = works, below what a reviewer accepts ·
-**info** = noted.  Owners: **Électronique** = the electronics session (hub, node, DATA port,
-camera pod), **DATA ×4** = the DATA ×4 session.
+**info** = noted.  Owners: **Électronique** = the electronics design (hub, node, DATA port,
+camera pod), **DATA ×4** = the DATA ×4 design.
 
 ## Gates
 
@@ -155,7 +155,7 @@ text only).
 ## DATA ×4 v1.0
 
 Circuit **USER_REVIEW**, layout **BLOCKED**, CPL **PASS** on main's geometry (87/87; the U3
-change voids it), sourcing **BLOCKED**.  U3 is reviewed as the AP2112K the owner is reverting to.
+change voids it), sourcing **BLOCKED**.  U3 is reviewed as the AP2112K the design is reverting to.
 
 **Checked and correct:**
 - USB2514B pinout, RBIAS, CRFILT/PLLFILT and CFG_SEL.
@@ -190,7 +190,7 @@ to end (node J7 n ↔ J2 9 − n on a "same direction" PH lead).
 | D1 | VBUS | major | No netclass on the board: VBUS is 0.25 mm for 55 mm and 0.19 mm for 7 mm, F.Cu only, no pour. ≈ 0.13 Ω: 0.18 V lost at the DUT's 1.4 A against the 4.75 V budget (`electronics.md:100`); an IPC-2221 estimate of +30–47 °C | ≥ 0.8 mm or an F.Cu pour from J2.8 to J1's VBUS pads; a Power netclass | Électronique |
 | D2 | C1 | minor | Only 100 nF at J1 (`design.py:69`); the node's bulk is 45 cm away | 10–22 µF at J1 (C15850, basic) | Électronique |
 | D3 | R1, R2 22k | minor | Rp 22k advertises 1.5 A; the node limits at 1.34–1.52 A | Accept, or 56k as on the DATA ×4 | user |
-| D4 | all PH leads | minor | A "same direction" PH lead maps pin n ↔ 9 − n (`cabling.md:34`); a 1:1 lead puts the node's SCL on GND (and MOSI/CS on GND on the camera lead) | Check each lead with a meter before first use | user |
+| D4 | all PH leads | minor | A "same direction" PH lead maps pin n ↔ 9 − n (`reference/cables.md`); a 1:1 lead puts the node's SCL on GND (and MOSI/CS on GND on the camera lead) | Check each lead with a meter before first use | user |
 | D5 | J1 | info | The USB-C mouth stands 0.28 mm past the board edge | Check against the port wall | Électronique |
 
 ## Camera pod v1.0
@@ -221,7 +221,7 @@ audit re-run on both boards (below).  The data port and the camera pod went to t
 | H8 | D2 BZT52C12 gate → common source | At turn-off from a contract the source sits at VBUS while PWR_EN pulls the gates low: −28 V against ±20 V.  One part type more |
 | H9 | hardware: each red LED fed from its row's ROW_EN; firmware: FLT read only with ROW_EN high, after the soft start | the LEDs no longer show "fault" for rows that are simply off |
 | H10 | D41–D44 B5819W, GND → each row output, at the connector | the board's own Schottky type |
-| H11 | bring-up measurement (docs/assembly.md) | the module's pins already have their own vias to In1/In2 |
+| H11 | bring-up measurement (docs/build/check-the-pcbs/index.md) | the module's pins already have their own vias to In1/In2 |
 | H12 | In2 VRACK band 8 mm wide (was 5 mm) | room above it, nothing else needed In2 there |
 | H13 | USB pair hand-routed on F.Cu over In1, 0.25 / 0.2 mm, U5's channels swapped to its order; C115 at EN (pin 45) | CC1/CC2: left as routed: BMC at 300 kbit/s, a cable's CC runs metres |
 | H14 | C2, C10, R3, C11–C14: the same connection on both pads.  Since 2026-10-20 the generator decides it (`power_pads()`): solid on both where both ends sit on pours (C1, C2, C11–C14), reliefs where one is a track (R3) | |
@@ -287,7 +287,7 @@ The suite's method found:
 
 ## Not covered
 
-- JLC's placement preview, the final arbiter for H1, H2 and N1.  It needs the user's account.
+- JLC's placement preview, the final arbiter for H1, H2 and N1.  It needs a JLC account.
 - Real temperatures, the H5 overshoot, I²C rise times, USB HS eye and antenna performance: all bench
   measurements.
 - USBLC6 internal pin pairs (ST's site timed out) and the Arducam Mega's own pinout (403): taken

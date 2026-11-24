@@ -114,7 +114,8 @@ with an interrupt line on pin 1: that was before v1.0 ([Cables and pinouts](../c
 ## The SWD header
 
 J2, a 1 × 5 header (2.54 mm) on the top edge of the front face, on a PCB with its logic only, is the
-co-processor's debug port, reachable from above with the PCB in its cradle. Its names are printed at the
+co-processor's debug port, reachable from above with the PCB in its cradle once the drawer's rear cover
+(`cover_box4`), if fitted, is lifted off. Its names are printed at the
 header, pin 1 on the left as you face the front.
 
 | Pin of J2 | Signal |
@@ -149,6 +150,7 @@ a DATA ×6 by the expander at 0x21.
 | Drawn from the lead | 0.92 A at 20 V at most, 1.22 A at 15 V |
 | 5 V | one converter: 5.08 V (4.94 to 5.22 V), 3.09 A at most with every port at its limit |
 | A port's limit | 0.52 to 0.64 A; the switch latches off and raises its fault flag |
+| Back-feeding | a port is a source only: a board that feeds its VBUS from outside trips the switch, which latches off |
 | A port's VBUS | 4.82 to 5.22 V |
 | 3.3 V | AP2114H, 0.51 A at most |
 | Pins P1 to P8 | 0.95 to 3.6 V logic as specified; 100 Ω in series |

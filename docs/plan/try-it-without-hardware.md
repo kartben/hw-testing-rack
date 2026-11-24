@@ -260,7 +260,9 @@ row D  ON          0 mA    0.0 W
 ```
 
 `/dev/restore` brings the first charger back, `/dev/fault?row=B` trips a row's eFuse and
-`/dev/lose?node=0x13` silences a bay. The two simulators do not know each other: the hub's bays have made-up
+`/dev/lose?node=0x13` silences a bay. `/dev/image?version=0.6.0` gives an image to try **Update firmware…**
+with (laid out as `zephyr.signed.bin`, unsigned), and `/dev/rollback` makes the next update roll back. Every
+hook is listed at the top of [the hub's dev_server.py](../../firmware/power-hub/web/dev_server.py). The two simulators do not know each other: the hub's bays have made-up
 addresses, so keep `BAYCTL_HUB=none` for the commands that talk to the simulated bay. The page itself:
 [Rows and the rack's page](../use/rack-page.md).
 

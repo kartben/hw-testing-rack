@@ -231,7 +231,7 @@ better choice.  No connection failed to be set up.
 
 ## What it changes in our recommendations
 
-Today's ([firmware/README.md › Wi-Fi in the rack](../firmware/README.md#wi-fi-in-the-rack)):
+Today's ([Wi-Fi in the rack](use/wifi.md#what-the-nodes-do-by-themselves)):
 11 dBm, HT20, channel 6 or 11.  In the light of the model:
 
 - **8 dBm by default: yes.** It brings idle from 95 to 97–98 % and does not

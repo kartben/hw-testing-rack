@@ -3,8 +3,10 @@
 The bay nodes and the power hub run **Zephyr** — the shelf doubles as a
 dogfooding rig for Zephyr's new USB host stack.  The firmware lives in
 [`firmware/`](../firmware/): the bay node
-([`firmware/README.md`](../firmware/README.md): build, flashing, shell, pin
-map), the power hub ([`firmware/power-hub/README.md`](../firmware/power-hub/README.md)),
+([`firmware/README.md`](../firmware/README.md): source layout, pin map; build:
+[Build or download the firmware](build/get-the-firmware.md), flashing:
+[Flash the hub and the nodes](build/flash.md), shell: [Bay node shell](reference/node-shell.md)),
+the power hub ([`firmware/power-hub/README.md`](../firmware/power-hub/README.md): source layout, pin map),
 and what they share ([`firmware/common`](../firmware/common/)): the rack bus
 protocol ([rack-protocol.md](rack-protocol.md)), the CH224A and CH446Q
 drivers, Wi-Fi, the web pages' CSS, helpers and tooling.
@@ -40,7 +42,7 @@ drivers, Wi-Fi, the web pages' CSS, helpers and tooling.
 | Application | `firmware/bay-node/` |
 | Power hub | `power_hub/esp32s3/procpu` in `firmware/boards/hwtr/power_hub/`, application `firmware/power-hub/`, bindings `hwtr,power-hub`, `hwtr,rack-rows`, `wch,ch224a` |
 | Shared | `zephyr/module.yml` at the repository's root makes it a Zephyr module (the boards, bindings and `firmware/common/`): west finds it in the workspace made from `firmware/west.yml` (sysbuild too), and each application adds it for other workspaces |
-| Host side | [`tools/bayctl.py`](../tools/bayctl.py): power, reset, USB/IP, consoles, twister hardware map, labgrid / PDUDaemon configs ([ci.md](ci.md)) |
+| Host side | [`tools/bayctl.py`](../tools/bayctl.py): power, reset, USB/IP, consoles, twister hardware map, labgrid / PDUDaemon configs ([Set up a CI host](use/ci-host.md)) |
 | Build | `west build --sysbuild -b bay_node/esp32s3/procpu hw-testing-rack/firmware/bay-node` in a workspace made from `firmware/west.yml` (MCUboot, then the application signed for it) |
 
 ## Node application
@@ -60,24 +62,24 @@ drivers, Wi-Fi, the web pages' CSS, helpers and tooling.
 | Identity | written | `bay id <id>` (settings) → hostname `bay-<id>.local` over mDNS; without an id, the rack position from the hub (`bay-c3.local`) |
 | Discovery | written, tested on native_sim | DNS-SD under the hostname: `_http._tcp`, `_usbip._tcp` while the DUT is on the S3's USB, `_rfc2217._tcp` while it listens; TXT `id`, `pos`, `fw`, `mode`, `slots` (DATA ×4); kept in step every 2 s (`firmware/common/lib/dnssd.c`).  The hub: `_http._tcp` |
 | Rack bus | written, tested on a simulated rack | CAN (IO18/IO17) + POS (IO16 in, IO42 out): position from the hub (`C3` = node 0x23), STATUS every second, INFO, ALERT on DUT faults, the hub's commands (refused while the bay is reserved); [rack-protocol.md](rack-protocol.md) |
-| Access control | written, tested on native_sim | per node: which address may use status, control, console, USB/IP, shell, camera (Zephyr packet filter for TCP, a check per HTTP request); a CI reservation (lease); kicks and a refusal log; admin key claimed with a press on BOOT, admin requests signed (HMAC).  See [`firmware/README.md`](../firmware/README.md#access-control) |
-| Board targets | written, tested on native_sim | per slot, in NVS: the Zephyr board, west runner, probe id and console twister uses, saved for the USB device in the slot (another board is flagged); set on the page from suggestions by USB ID (`mechanical/boards/boards.yaml`), read by `bayctl hwmap`.  See [`firmware/README.md`](../firmware/README.md#board-targets) |
+| Access control | written, tested on native_sim | per node: which address may use status, control, console, USB/IP, shell, camera (Zephyr packet filter for TCP, a check per HTTP request); a CI reservation (lease); kicks and a refusal log; admin key claimed with a press on BOOT, admin requests signed (HMAC).  See [Access rules and security](use/access.md) |
+| Board targets | written, tested on native_sim | per slot, in NVS: the Zephyr board, west runner, probe id and console twister uses, saved for the USB device in the slot (another board is flagged); set on the page from suggestions by USB ID (`mechanical/boards/boards.yaml`), read by `bayctl hwmap`.  See [Board targets](use/board-targets.md) |
 | Control interface | written | `bay …` shell on the UART test pads and over telnet; status page, serial console and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`, `/api/aux`) |
 | Updates | written, tested on native_sim; update and rollback run on the bench XIAO (2026-11-03), not on a bay node yet | over Wi-Fi: MCUboot (sysbuild), signed images sent with the admin key, a test boot, the new firmware confirms itself once Wi-Fi and the rack bus are back, else MCUboot goes back; the page, `bayctl update`.  [Programming › Over the network](#over-the-network); USB through the front port in SERVICE mode |
-| Camera | written, simulated, not on hardware | optional Arducam Mega on J6 (`arducam,mega` on SPI2, 4 MHz) and its light (`pwm-leds` on LEDC, 25 kHz): snapshots and an MJPEG stream on TCP 8081 for every client at once, frames in PSRAM cut at their JPEG end, the light only while someone watches; per-bay settings (resolution, quality, exposure and gain auto or manual, white balance, brightness, contrast, saturation, sharpness, display rotation) applied between frames; its own access right; STATUS tells the hub.  [`firmware/README.md`](../firmware/README.md#camera) |
+| Camera | written, simulated, not on hardware | optional Arducam Mega on J6 (`arducam,mega` on SPI2, 4 MHz) and its light (`pwm-leds` on LEDC, 25 kHz): snapshots and an MJPEG stream on TCP 8081 for every client at once, frames in PSRAM cut at their JPEG end, the light only while someone watches; per-bay settings (resolution, quality, exposure and gain auto or manual, white balance, brightness, contrast, saturation, sharpness, display rotation) applied between frames; its own access right; STATUS tells the hub.  [Camera](use/camera.md) |
 
 ![The node's status page (simulated node): live V/I/P, power and reset actions, USB/IP state](img/web-ui-dark.png)
 
 *The status page at `http://bay-<id>.local/`, here with a USB/IP client
 attached and the node not claimed yet (open).  More states and the API in
-[`firmware/README.md`](../firmware/README.md#web-page-and-api), access
-control in [its own section](../firmware/README.md#access-control).*
+[Bay node HTTP API](reference/node-api.md), access
+control in [Access rules and security](use/access.md).*
 
 ![Screencast of the web console: a Zephyr shell on the DUT, tab completion, a baud rate change, RESET rebooting the DUT](img/web-console.webp)
 
 *The DUT's serial console in the same page, recorded on native_sim (the
 node's real console code, Zephyr's shell sample as the DUT); details in
-[`firmware/README.md`](../firmware/README.md#serial-console).*
+[Serial console](use/serial-console.md).*
 
 ### The DATA lead's power-on rule (node v1.0)
 
@@ -140,60 +142,44 @@ board makes its own 5 V from it.  The eFuse is **off** until the firmware turns 
 
 *The hub's page at `http://rack-<id>.local/`; the rows and the bays link
 to each bay's own page.  More in
-[`firmware/power-hub/README.md`](../firmware/power-hub/README.md).*
+[Rows and the rack's page](use/rack-page.md) and [Power hub HTTP API](reference/hub-api.md).*
 
 ## Programming
 
-Both boards are flashed over USB through the ESP32-S3's own
-**USB-Serial-JTAG**: it shows up as a serial port (`/dev/ttyACM*` on Linux,
-`/dev/cu.usbmodem*` on macOS, `COMx` on Windows) and resets the chip into its
-ROM loader by itself when esptool asks (DTR/RTS handled in silicon).  Neither
-board needs an auto-reset circuit, nor a BOOT press in normal use.  Build in
-the workspace made from `firmware/west.yml`, then:
+How to flash both boards, the first flash and recovery: [Flash the hub and the nodes](build/flash.md) and
+[Recover a node or a hub](use/recover.md).
 
-```bash
-west flash -d build                               # the port found by itself, or:
-west flash -d build --esp-device /dev/ttyACM0
-```
-
-With `--sysbuild` (the default from here on) that writes MCUboot and the
-signed application ([Over the network](#over-the-network)); without it, the
-application alone at 0 (simple boot), with no update over the network.
-
-`west flash --erase` once on a module that ran other firmware (settings).
+Both boards are flashed over USB through the ESP32-S3's own **USB-Serial-JTAG** (DTR/RTS handled in silicon),
+so neither needs an auto-reset circuit, nor a BOOT press in normal use.
 
 ### Bay node
 
-The node runs from its row (VRACK), never from the USB port: its row must be
-on (the hub turns rows on by itself; `hub row <A–D> on` otherwise).  On a
-desk, feed 15–30 V on J1 (pin 1 +, pins 2 / 5 GND): the buck starts above 13.5 V.
+Procedure: [Flash a node](build/flash.md#flash-a-node), and for a wedged node
+[Recover a node or a hub](use/recover.md#a-node-whose-firmware-is-wedged).
 
-| | How | Bay closed? |
-|---|---|---|
-| **First flash** (blank module) and **updates** | slide **SERVICE** on (fascia, LED yellow), laptop on the front **PC** USB-C, `west flash`, SERVICE off.  SERVICE routes the PC port to the ESP32's USB pins in hardware (MUX_PC); the running firmware then stops its USB host and gives the PHY to the USB-Serial-JTAG.  A blank module has no USB host: the port is there at once | yes: the PC port and SERVICE are on the fascia |
-| **Wedged firmware** (it takes the PHY for its USB host and crashes before letting it go) | SERVICE on, laptop plugged, pull the drawer out (the tray is open above the node), **hold BOOT** and either tap **RESET** or power-cycle the row from the hub's page (the row's other bays restart too): the ROM loader starts with the PHY on the USB-Serial-JTAG; `west flash`, release | no: drawer out.  BOOT is clear; RESET sits partly under the drawer's left ledge (use BOOT and the row cycle) |
-| **Last resort** | UART0 test pads TP1–TP4 (bottom side, under the module) with a 3.3 V USB-UART, BOOT held at reset | no: node off its standoffs |
-
-After a flash the port drops for a second (reset), comes back, and the node
-picks SERVICE up again; `bay status` and the LED show it.
-
-**Once, at the first flash (irreversible):** burn the eFuse that disables USB-OTG download (`espefuse.py --port <port> burn_efuse DIS_USB_OTG_DOWNLOAD_MODE 1`).  In USB-OTG download boot the ROM drives IO40 high and IO39 / IO38 low (ESP32-S3 Hardware Design Guidelines §1.3.13, Table 12).  On the node IO40 is DUT_FLT_N, the TPS26600's open-drain ~FLT, low whenever the eFuse is off (its default): the ROM would drive it high against that.  R43 (1k in series, the PCB review's BN-01, 2026-11-09) holds the current to 3.3 mA, under the pin's 10 mA; burning `DIS_USB_OTG_DOWNLOAD_MODE` removes the conflict.  We never use OTG download: UART0 and USB-Serial-JTAG download, our two flashing paths, stay.  An eFuse can't be unburnt; never burn `STRAP_JTAG_SEL` (GPIO3 floats).  Datasheet audit F5.
+**Why the one-time fuse** ([The module's one-time fuse](build/flash.md#the-modules-one-time-fuse) for the
+step).  In USB-OTG download boot the ROM drives IO40 high and IO39 / IO38 low (ESP32-S3 Hardware Design
+Guidelines §1.3.13, Table 12).  On the node IO40 is DUT_FLT_N, the TPS26600's open-drain ~FLT, low whenever
+the eFuse is off (its default): the ROM would drive it high against that.  R43 (1k in series, the PCB
+review's BN-01, 2026-11-09) holds the current to 3.3 mA, under the pin's 10 mA; burning
+`DIS_USB_OTG_DOWNLOAD_MODE` removes the conflict.  We never use OTG download: UART0 and USB-Serial-JTAG
+download, our two flashing paths, stay.  Never burn `STRAP_JTAG_SEL` (GPIO3 floats).  Datasheet audit F5.
 
 ### Power hub
 
-| | How | Box closed? |
-|---|---|---|
-| **First flash and updates** | laptop on the hub's **console USB-C** (front wall, under A1, engraved "USB"), `west flash`.  That port also powers the controller (not the rows), so a hub with no PD charger, or on a desk, can be flashed too | yes |
-| **Wedged firmware** | the console USB-C is wired straight to the ESP32's USB pins and the hub's firmware never takes the PHY: esptool resets it into the ROM loader whatever the firmware does, short of firmware that reconfigures IO19/IO20 | yes |
-| **Last resort** | **BOOT** (SW2) and **RESET** (SW1), rear-left corner, top side: a pin through the lid's two holes (RST, BOOT, debossed beside them), down a guide tube onto each button; UART0 pads TP1–TP4 on the bottom side (lid off, 4 × M3×8, and the hub off its spacers) | yes, with a pin |
+Procedure: [Flash the hub](build/flash.md#flash-the-hub), and
+[A hub that does not answer](use/recover.md#a-hub-that-does-not-answer).
 
-**Once, at the first flash (irreversible):** burn the eFuse that disables USB-OTG download (`espefuse.py --port <port> burn_efuse DIS_USB_OTG_DOWNLOAD_MODE 1`).  In USB-OTG download boot the ROM drives IO40 high and IO39 / IO38 low (ESP32-S3 Hardware Design Guidelines §1.3.13, Table 12).  On the hub IO40 is PD_SCL: it would back-feed an unpowered CH224A through SCL, which I2C_PU exists to avoid.  We never use OTG download: UART0 and USB-Serial-JTAG download, our two flashing paths, stay.  An eFuse can't be unburnt; never burn `STRAP_JTAG_SEL` (GPIO3 floats).  Datasheet audit F5.
+**Why the one-time fuse**, as on the node: on the hub IO40 is PD_SCL, and the ROM driving it high would
+back-feed an unpowered CH224A through SCL, which I2C_PU exists to avoid.  Datasheet audit F5.
 
 The row enables are held across the controller's resets (pad hold), so
 flashing the hub should not power-cycle the rack: to be checked on the first
 hub.
 
 ### Over the network
+
+How to update one node, every node and the hub: [Update the firmware](use/update-firmware.md).
 
 > **Status:** written; tested on native_sim (`firmware/common/tests/update`:
 > the upload into slot 1, the test boot request, the trial, the rollback),
@@ -213,14 +199,6 @@ and the signed application in slot 0 (`0x20000`); every board needs that
 one USB flash before its first update over the network (a board flashed
 before, with simple boot, too).
 
-```bash
-west build --sysbuild -b bay_node/esp32s3/procpu -d build-bay hw-testing-rack/firmware/bay-node
-west flash -d build-bay                  # MCUboot, then the signed application
-# without west: esptool ... write-flash 0x0 build-bay/mcuboot/zephyr/zephyr.bin \
-#                                      0x20000 build-bay/bay-node/zephyr/zephyr.signed.bin
-# what an update sends: build-bay/bay-node/zephyr/zephyr.signed.bin
-```
-
 | Step | What happens |
 |---|---|
 | Begin | an admin request, `POST /api/update/begin` with the image's size and SHA-256, signed with the device's admin key like every other admin action (`X-Bay-Auth`, [`firmware/common/lib/admin.c`](../firmware/common/lib/admin.c)), gets a single-use ticket (one minute, this address).  Refused while the running firmware is on trial; a reserved bay only with `force` |
@@ -235,27 +213,6 @@ a protected TLV (0xa0) the signature covers ([`firmware/common/sysbuild.cmake`](
 the firmware refuses an image built for another application or board, so
 a hub image cannot land on a bay.  An image flashed over USB has no trial:
 it is confirmed as it is.
-
-**From a browser.**  The hub's page: *Rack bus › Update firmware…*; a bay's
-page: *Manage access › Firmware › Update…* (admin).  The page reads the
-image before sending it (version, image id) and follows the four steps.
-
-![The firmware dialog on the hub's page: 0.5.0 → 0.6.0 sent, the hub back after a restart, on trial until the rack bus answers](img/hub-ui-update.png)
-
-**From the command line** ([`tools/bayctl.py`](../tools/bayctl.py), with the
-rack's admin key in `BAYCTL_KEY`):
-
-```bash
-python tools/bayctl.py update build-bay/bay-node/zephyr/zephyr.signed.bin B3
-python tools/bayctl.py update build-bay/bay-node/zephyr/zephyr.signed.bin --all
-python tools/bayctl.py update build-hub/power-hub/zephyr/zephyr.signed.bin --hub
-```
-
-`--all` takes the nodes the hub lists, one after the other, and stops at
-the first one whose new firmware does not stay: a firmware that fails on
-one node does not go to the next.  Reserved bays are skipped (`--force`
-updates them anyway).  The hub is `rack.local` unless `BAYCTL_HUB` or `config/lab.yaml`
-says `hub:`.
 
 **Cost.**  MCUboot: 48 KB of its 64 KB partition.  The images: 1.07 MB (bay,
 camera included), 0.79 MB (hub), in 3.62 MB slots (the bay node: Zephyr's 8 MB layout
@@ -274,29 +231,14 @@ first.  The hub: 66.5 %.
 
 #### Signing key
 
-MCUboot boots only images signed with the key it was built with; the key
-stays out of the repository.
+Making a key, keeping it and building with it: [Sign with your own key](build/get-the-firmware.md#sign-with-your-own-key);
+which key a board trusts: [Test key or your own key](use/update-firmware.md#test-key-or-your-own-key); a lost
+key: [A lost signing key](use/recover.md#a-lost-signing-key).
 
-* **By default, MCUboot's public test key** (`bootloader/mcuboot/root-ec-p256.pem`):
-  the build warns, the page shows *test key*.  Anyone can sign an image
-  these boards boot (sending it still needs the admin key).  Fine on a desk
-  and in CI (the CI artifacts are named `firmware-<board>-test-key`), not
-  for a rack.
-* **Your own:** make one once, keep it (and a backup) outside the
-  repository, and point the build at it:
-
-  ```bash
-  python bootloader/mcuboot/scripts/imgtool.py keygen -t ecdsa-p256 -k ~/keys/rack-signing.pem
-  export HWTR_SIGNING_KEY=$HOME/keys/rack-signing.pem     # an absolute path
-  west build --sysbuild -p -b bay_node/esp32s3/procpu -d build-bay hw-testing-rack/firmware/bay-node
-  ```
-
-  (or `-- -DSB_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"/path/to/key.pem\"`).  Build
-  pristine (`-p`) after changing it.  MCUboot gets the public half, the
-  image its signature: every board takes one USB flash with that MCUboot,
-  and from then on only images signed with that key.  Lose the key and
-  every board needs a USB flash again; moving from the test key to your own
-  is such a flash too.
+MCUboot boots only images signed with the key it was built with; the key stays out of the repository.
+`HWTR_SIGNING_KEY` sets sysbuild's `BOOT_SIGNATURE_KEY_FILE` (`firmware/common/Kconfig.sysbuild`); unset,
+MCUboot's public test key signs, `firmware/common/sysbuild.cmake` warns and sets `CONFIG_HWTR_UPDATE_TEST_KEY`,
+which the page shows as *test key*.
 
 ### Later: over the rack bus, from the hub
 
@@ -313,8 +255,9 @@ stay as they are.
 * **No auto-reset circuit is needed** on either board: the USB-Serial-JTAG
   does it.
 * **Bay node:** fine for flashing with the bay closed.  Recovering a wedged
-  node needs the drawer out; with BOOT clear of the ledge and the row cycle
-  from the hub, RESET is not needed.  A firmware fix would avoid even that
+  node takes BOOT and RESET, pressed with a pin through the drawer's floor and
+  the board plate (drawer in), or the drawer out, where BOOT is clear of the
+  ledge and the row cycle from the hub replaces RESET.  A firmware fix would avoid even that
   in most cases: read SERVICE before the USB host starts, and leave the PHY
   to the USB-Serial-JTAG when it is on.
 * **Power hub:** the console USB-C is reachable with the box closed and
@@ -322,10 +265,40 @@ stay as they are.
   corner, box (15.1, 127.1) and (15.1, 133.6)) are reached with a pin through
   two holes in the lid, each with a guide tube down to 1 mm above its button.
 
-First boot (Wi-Fi credentials, bay or rack id): [`firmware/README.md`](../firmware/README.md#first-boot)
-and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot).
+First boot (Wi-Fi credentials, bay or rack id): stage 4 of
+[the node's checklist](build/check-the-pcbs/bay-node.md#4-flash-and-ask) and of
+[the hub's](build/check-the-pcbs/power-hub.md#4-flash-and-ask).
+
+## Front display (study)
+
+A Waveshare 1.9" touch LCD (ST7789V2, 320 × 170; CST816 touch on I²C) with the bay's status in LVGL, for a
+later revision of the node: node v1.0 has no connector for it, and the drawer's front keeps its window empty
+([Fit out a tray](build/fit-out-a-tray.md)).  Built with the `front-display` snippet
+([`firmware/snippets/front-display`](../firmware/snippets/front-display/)) on the application only:
+
+```console
+$ west build -b bay_node/esp32s3/procpu firmware/bay-node --sysbuild -- -Dbay-node_SNIPPET=front-display
+```
+
+The panel shares SPI2 with the camera (CS on IO5, DC on IO6, two of the node's free pins), its reset and the
+touch controller's are tied to EN, the backlight stays on and the touch controller is polled (no INT pin).
+LVGL's heap, render buffer and state go to PSRAM: in internal RAM the node overflows by 15 KB.  `display` in
+the shell prints the refresh times.
+
+| On bay_node | Without | With the display |
+|---|---|---|
+| Image | 1059 KB | 1307 KB (+247 KB, of a 3712 KB slot) |
+| Internal RAM (dram0) | 345424 B, 90.7 % | 351136 B, 92.2 % (+5.7 KB: LVGL's thread stack, touch queue) |
+| PSRAM, static | | +44.5 KB (27 KB render buffer, 16 KB LVGL heap) |
+
+On the XIAO, SPI at 10 MHz without DMA: a full frame in 132 ms, one value redrawn in 15 ms, a status refresh
+with nothing changed in 0.1 ms.
 
 ## Open items
+
+* **Rack bus not on hardware.**  The node's and the hub's protocol code passes the simulated rack
+  (`firmware/common/tests/rack_bus`: enumeration, reboots, dead and lost nodes, retries); the TWAI, the
+  TJA1462AT and the POS chain over real row cables are untested.
 
 * **The matrix expander (U10, TCA9534A at 0x38), through its driver since 2026-11-03** — the CH446Q
   drivers drive P0–P4 (DAT, CK, STB, RST) through the `ti,tca9538` driver, and `coproc reload` will drive
@@ -346,11 +319,11 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   per pin and bus, break-before-make, a port off and on, a DUT_5V cycle, MARK toggling during a 16-pin
   change (nothing garbled), POST's body.  From a laptop: `bayctl wire B3 A=2:P1,3:P2 --name A="UART B3.2 TX"`
   (`bayctl wire B3` shows it, `--open-all` clears it); the bay page's Wires card
-  ([firmware/README.md › Wires](../firmware/README.md#wires)) stages pins and names and applies them
+  ([Wires between boards](use/wires.md)) stages pins and names and applies them
   together; `dev_server.py --ports 4` simulates the matrix, with made-up VREF readings
   (`/dev/vref?port=4&mv=200` holds a port open).  **Not tried on hardware.**  **No VREF reading** on the v1.0: only
   U11's ADC sees VREF (GPIO40–43), and gusmanb's analyzer does not report it, so the 0.65 V hold waits on a
-  reading (`"vref_mv": null`); which way to get one is the user's choice.  **On the bench, when the boards
+  reading (`"vref_mv": null`); which way to get one is still to choose.  **On the bench, when the boards
   arrive:**
   1. The crosspoint map: each port pin (P1–P8 of each header) on each bus, read with the analyzer or a
      meter, against `port_pins` in `data-x4.dtsi` (the X lines) and the bus order D C B A E F G H (the Y
@@ -394,7 +367,7 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   capture of the node's AUX UART (2 MS/s, triggered on its start bit) in 1.05 s, 367 KB/s, decoded intact,
   nothing dropped (278 KB/s when each read waited for the page).  Switched to USB/IP, it was on offer as
   1-1.3 and the WebSocket was refused; switched back, the next capture came through.  **The bay page's
-  card** ([firmware/README.md › Logic analyzer](../firmware/README.md#logic-analyzer)): the node serves it
+  card** ([Logic analyzer](use/logic-analyzer.md)): the node serves it
   with the analyzer page's modules (`/analyzer/*.mjs`, gzipped: +224 bytes of DRAM for their resources,
   bay_node 91.34 %); "Capture and reset" triggers on MARK's fall.  From the card on the bench XIAO, a
   capture of a line sent to its AUX UART came back decoded.  MARK and "Capture and reset" are checked on
@@ -452,8 +425,58 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
 * **Serial console on hardware**: the RFC 2217 server is tested on the host
   against pyserial and the web console against the simulated node; on a
   StampS3 the firmware boots with its listeners up and the UART path works
-  in loopback, but the WebSocket and TCP paths have not run over Wi-Fi yet.
-* Updates over the network on hardware (swap time, rollback, power loss during a swap), then over the rack bus ([Programming](#over-the-network));
+  in loopback; on a XIAO ESP32-S3 over Wi-Fi the web console connects, but
+  RFC 2217 and raw TCP have not run over Wi-Fi yet.  What the runs found:
+  - On native_sim (the screencast, over host sockets rather than the node's Wi-Fi/TCP stack) a browser's
+    keep-alive connections could hold every HTTP client slot (the server then stops accepting, the
+    console's WebSocket waits), hence the 3 s idle timeout in `prj.conf`; on native_sim the idle timeout
+    cannot free a slot at all, so the simulation uses 8 slots.
+  - On the XIAO over Wi-Fi, 3 slots were too few: a browser loading the page opens up to 6 connections at
+    once and one over the limit is closed unanswered (the page came up without its CSS).  So 6 slots, with
+    `ZVFS_POLL_MAX` at 2 + 6 (the server polls its eventfd, listener and clients in one call; the hub's
+    default of 3 made every second client drop them all).  There the node's and the hub's pages load whole
+    and the web console connects.
+  - On the StampS3 (no Wi-Fi credentials yet): the HTTP, RFC 2217, raw TCP and telnet listeners are up, the
+    AUX settings persist, and with `bay aux loopback on` every byte sent comes back at 115200 and 921600,
+    also with the DUT "off"; 22 KB of system heap free before Wi-Fi connects, the console thread at 768 of
+    3072 bytes of stack with no client.
+  - To check on a DevKitC with a USB-UART adapter on IO47/IO21: throughput at 921600 baud, the console
+    thread's stack under load, BREAK and the TX release on power off with a scope, two browsers plus
+    miniterm at once, esptool flashing an ESP32 DUT through RFC 2217.
+  - Not written: RFC 2217 line and modem state notifications (the server answers polls with CTS, DSR and
+    CD up).
+* **USB/IP service** is experimental upstream.  The rack patches it (`zephyr/patches.yml`, until Zephyr has
+  it): bus ids by port, no hubs on offer, a DUT that resets or goes ends its session cleanly (tested on
+  native_sim, `firmware/common/tests/usbip`, not yet on a node).  It has no access control of its own: the
+  node's packet filter applies the access rules in front of it.
+* **Access control: tested off the board only.**  The rules engine passes its host test
+  (`firmware/bay-node/tests/acl`, against Python's `hashlib` and `hmac`); claim, signed requests, rules,
+  tickets, kicks, leases, persistence across a restart and the local reset passed on native_sim
+  (`tests/console_sim/test_access.py`, from several loopback addresses) and against `dev_server.py`.  The
+  packet-filter path (USB/IP, telnet, the AUX ports dropped before accept) has only been built, not run:
+  host sockets bypass Zephyr's IP stack on native_sim.  Check on a node that a refused host's `usbip
+  attach` and `telnet` time out, that a kick ends a USB/IP session (shutdown of a socket that the USB/IP
+  thread owns), and the BOOT presses.  The code: the rules, the lease, the refusal log and HMAC-SHA256 are
+  plain C without Zephyr (`firmware/common/lib/acl.c`); the admin key, its nonces, the signature check and
+  the claim are `firmware/common/lib/admin.c`, shared with the hub; `bay-node/src/access.c` applies them
+  (packet filter, settings `access/rules` and `access/key`, kicks, connections).
+* **Power hub bring-up**: nothing has run on a hub yet.  The CH224A driver is
+  compile-tested only (register map from the datasheet).  To check on the
+  first hub: the SRCCAP layout at 0x60 (message header, then the PDOs; for
+  EPR an extended header first, as two community drivers read it), whether
+  PG goes high while the chip moves from 9 to 28 V, how long the 28 V EPR
+  entry takes (`CONFIG_HUB_PD_REQUEST_MS`), and what the chip asks for after
+  a hard reset.  Also the pad hold across a reset, the IMON calibration and
+  the shedding thresholds.
+* **The hub's budget from the worst case**: shedding follows the measured
+  row currents; rows whose bays all jump to their 1.5 A at once can trip a
+  charger that tolerates no overload for the 250–500 ms the hub takes past
+  the contract.  A static budget (bays × worst case) would be safer but
+  sheds rows a 100 W charger could carry.  The thresholds are untried on a
+  real charger ([bench.md](bench.md), the XIAO's hub steps 10–14).
+* Bay names on the hub's page: INFO carries the IPv4 address, not the
+  name; the page shows addresses (`name` is empty in `/api/status`).
+* Updates over the network on hardware, on a node and on the hub (swap time, rollback, power loss during a swap, the hub's rows through its restart): the hub's tested on native_sim and against the simulated hub only; then over the rack bus ([Programming](#over-the-network));
   shell on the USB-Serial-JTAG in SERVICE mode.
 * Upstream nits seen while dogfooding: the Prometheus library needs exactly
   one label per metric and rejects negative gauge values; the HTTP server
@@ -462,8 +485,10 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
 
 ## Bay camera
 
+Using it (the page, the snapshot and stream addresses, the light, the settings): [Camera](use/camera.md).
+
 Each bay's own node runs its camera (an Arducam Mega SPI on J6, see
-[`firmware/README.md`](../firmware/README.md#camera)); the XIAO ESP32S3
+[Camera](use/camera.md)); the XIAO ESP32S3
 Sense pods are gone.  What has run: the build for the three boards, the
 JPEG end finder on the host against real JPEGs cut every way, the page
 against the simulated camera.  Not yet: a Mega on SPI (the DevKitC with
@@ -472,4 +497,14 @@ light's PWM, the upstream driver's behaviour under the work-queue plug
 (`src/camera.c`).  Upstream items seen on the way: `video_stream_stop()`
 does not stop the Mega's capture (its `set_stream(false)` returns early),
 its work item resubmits itself in a loop while no buffer is queued, and its
-work-queue stack is a fixed 4 KB in DRAM.
+work-queue stack is a fixed 4 KB in DRAM.  The node plugs that work queue
+between frames and runs it at the lowest priority.  Frames land in two 512 KB
+buffers in PSRAM, read whole from the camera's FIFO (no SPI DMA), and are cut
+at their JPEG end (`common/lib/jpeg.c`), since the FIFO may run past it.  Two
+quirks of the `arducam,mega` controls are handled in `src/camera.c`: for the
+driver 1 means automatic exposure (Zephyr's enum says 0), and the control
+framework skips a value equal to the one it has cached, a cache that starts
+without the camera being written, so each control is first written through
+another value.  Its exposure compensation is broken (every value ends as the
+default) and it has no mirroring: neither is offered.  The hub learns which
+bays have a camera from byte 6 of the rack bus STATUS.

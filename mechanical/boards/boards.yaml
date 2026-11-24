@@ -20,7 +20,7 @@
 # fence        = true → hole-less corner-fence mounting
 # orient: side = turn the debug USB towards the drawer's right wall; the board then sits to the
 #                left of its plate.  For a board too long for a plug behind it, and for a small
-#                one: its cable is then straight at both ends and lies flat (docs/cabling.md)
+#                one: its cable is then straight at both ends and lies flat (docs/use/mount-a-board.md)
 # pegs         = the honeycomb plate's pegs (tools/plate_layout.py): `keepout`, [edge, from, to] in the drawing
 #                frame (edge and positions as usb counts them), spans of the outline no peg may touch: a header
 #                or a connector at the edge, pins under it.  The debug USB's plug is kept out by itself.

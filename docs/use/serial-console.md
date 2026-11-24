@@ -127,8 +127,9 @@ UART pads ([Bay node shell](../reference/node-shell.md)).
 
 ### Over RFC 2217 and raw TCP
 
-RFC 2217 takes one client on TCP 4001. Its settings last for its session, and the saved ones come back when it
-disconnects; mark and space parity, 1.5 stop bits and flow control are refused.
+RFC 2217 takes one client on TCP 4001. The client sets the baud rate, data bits, parity none, odd or even,
+1 or 2 stop bits, BREAK, DTR and RTS, and purges; mark and space parity, 1.5 stop bits and flow control are
+refused. Its settings last for its session, and the saved ones come back when it disconnects.
 
 ```console
 $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200
@@ -177,7 +178,7 @@ where the board breaks them out.
 
 The lead is a JST PH 6 ending in flying leads. The bill of materials has no line for it and no source gives
 its length. The design runs it beside the DATA lead through the drag chain, up the drawer's cable window and
-over the port wall; nobody has checked that both leads fit the chain ([Cables and pinouts](../reference/cables.md#aux-lead)).
+through a free slot of the port wall; nobody has checked that both leads fit the chain ([Cables and pinouts](../reference/cables.md#aux-lead)).
 J5 is on the node, in the tray: [Take out a tray, a node or a DATA board](service-a-bay.md) says how to
 reach it and what to unplug first.
 

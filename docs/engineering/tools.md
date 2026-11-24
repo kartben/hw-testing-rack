@@ -78,6 +78,12 @@ The viewer is the `site/` directory, as it is: three.js 0.170.0 from jsDelivr, a
 | `boards/<board>.glb` | `python tools/board_models.py`, for the boards whose model's licence allows it ([Licences and credits](licences-and-credits.md)) |
 | `lvgl/lvgl-demo.wasm` | `tools/lvgl_wasm/build.sh` |
 
+It is lit as the photo renders are: a real room, Poly Haven's "Small Empty Room 1" cut to 512 × 256 in
+`site/assets/env/`, and AgX with Blender's "Medium High Contrast" look. Its *High quality* box adds ambient
+occlusion (GTAO), a glow on the status LEDs and the camera lights, 4× MSAA through the post-processing and
+4096² sun shadows instead of 2048². The box is on by default, off on a phone, a tablet or a small GPU, drops
+by itself to low when the first seconds run under 25 fps, and the browser remembers a choice made in it.
+
 To look at it locally, serve the directory and open <http://localhost:8000>; opening `index.html` from the disk
 does not work:
 
@@ -101,7 +107,7 @@ The viewer reads them once, at load; the address bar never changes as you move.
 | `explode=0..1` | the parts spread apart |
 | `xray` | ladders and braces hidden, drawers and plates seen through |
 | `camlight` | every camera's light on |
-| `preview`, `preview=<bay>` | opens a bay camera's preview |
+| `preview`, `preview=<bay>` | opens a bay camera's preview: an Arducam Mega behind its ~120° lens, with fisheye, noise, auto-exposure and JPEG, 640 × 480 at 5 fps |
 | `hideui` | no top bar, controls, hint, panel or selection outline |
 | `quality=high`, `quality=low` | forces the rendering quality |
 | `debug`, `capture` | `window.__viewer` for scripts; a drawing buffer kept for screenshots |
@@ -154,7 +160,7 @@ $ SAMPLES=256 tools/render.sh hero
 ```
 
 With no argument it renders `hero`, `side`, `drawer` and `exploded` into `docs/img/`. Its exploded bay is C3;
-the committed `exploded.jpg`, and the README's commands, explode B2.
+the committed `exploded.jpg` explodes B2, with the commands of the next block.
 
 In a Blender you already have open, with its GPU, through the Blender MCP add-on listening on `127.0.0.1:9876`:
 
@@ -164,7 +170,17 @@ $ python tools/blender_live.py exec render/live_render.py hero
 $ python tools/blender_live.py exec render/live_render.py drawer:B3 docs/img/drawer.jpg
 ```
 
-The photo set, a small office lit through a window, rendered at 2× and averaged down:
+One bay laid flat, its layers pulled apart (`--gap`, 45 mm by default):
+
+```console
+$ python tools/assembly_glb.py --hq --explode-bay B2 --out render/bay-exploded.glb
+$ python tools/blender_live.py exec render/live_scene.py render/bay-exploded.glb
+$ python tools/blender_live.py exec render/live_render.py exploded
+```
+
+The photo set, a small office lit through a window: an oak desk against a plaster wall, PETG with 0.2 mm
+layer lines, a laptop wired to bay B4 by a USB-C cable that hangs as a catenary, depth of field, bloom and a
+vignette, rendered at 2× and averaged down:
 
 ```console
 $ python tools/fetch_render_assets.py
@@ -176,7 +192,8 @@ $ python tools/blender_live.py exec render/live_photo.py build
 $ python tools/blender_live.py exec render/live_photo.py shot desk
 ```
 
-`shot` takes `desk`, `drawer`, `boards` or `detail`, written to `docs/img/photo-<shot>.jpg`. The textures and the
+`shot` takes `desk`, `drawer`, `boards` or `detail`, written to `docs/img/photo-<shot>.jpg`. `lvgl_frame.mjs`
+draws the GIGA's screen in B2; the drawer fronts' status screens are drawn by `assembly_glb.py`. The textures and the
 board models that `fetch_render_assets.py` downloads stay in `render/assets/`, which git ignores; how the board
 models are normalised: [boards-3d.md](../boards-3d.md). The KiCad renders of the PCBs are written by
 `tools/kicad.sh <pcb> --fab`.

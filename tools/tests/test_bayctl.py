@@ -819,7 +819,7 @@ class MultiNodeApi(unittest.TestCase):
     def test_queued(self):
         """A power on the bay's budget has no room for fails (409); `--when available` queues it ("queued",
         exit 0) and the port goes on by itself once there is room; `--wait` blocks until then, or cancels it
-        and fails; `cancel` withdraws it (docs/multi-dut-node.md, Power budget)."""
+        and fails; `cancel` withdraws it (docs/use/power-budget.md, Ask for power as soon as there is room)."""
         b4 = self.bays["B3.4"]
         draw = f"http://127.0.0.1:{self.port}/dev/draw?port=1&ma="
 

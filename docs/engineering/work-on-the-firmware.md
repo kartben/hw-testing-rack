@@ -105,7 +105,7 @@ page against its development server, then regenerate this site's screenshots fro
 | Board target | Application | What it can test |
 |---|---|---|
 | `esp32s3_devkitc/esp32s3/procpu` | node | the node's own GPIO map on a DevKitC-1; the board on its USB port through an OTG adapter; the camera, with an Arducam Mega on jumpers |
-| `m5stack_stamps3/esp32s3/procpu` | node | the console and the network side, no USB host; `bay aux loopback on` loops the AUX UART back |
+| `m5stack_stamps3/esp32s3/procpu` | node | the console and the network side, no USB host: its USB-C carries the node's shell and logs, the AUX UART is on G1 (TX) and G2 (RX), RESET and BOOT on G4 and G5 ([the overlay](../../firmware/bay-node/boards/m5stack_stamps3_procpu.overlay)); `bay aux loopback on` loops the AUX UART back |
 | `m5stack_cores3/esp32s3/procpu` | node, hub | USB host and USB/IP on its USB-C, the board's power switched; the hub's CH224A on a breakout |
 | `xiao_esp32s3/esp32s3/procpu` | node, hub | the node's octal PSRAM, its buttons; the hub's IMON, so the shedding |
 

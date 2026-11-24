@@ -26,7 +26,7 @@ under CERN-OHL-P-2.0, software under Apache-2.0: [Licences and credits](licences
 
 What each script does and needs: [Regenerate the site, the viewer, the renders, the drawings](tools.md); the
 three that a builder runs: [build.py, plate_layout.py, bom.py](../reference/tools.md). A board marked
-`verified: false` in `mechanical/boards/boards.yaml` has an approximate outline and gets a fence plate; to
+`verified: false` in `mechanical/boards/boards.yaml` has an approximate outline; to
 measure it and write its entry: [A board that is not in the library](../use/add-a-board.md).
 
 ## Change a source, run its generator

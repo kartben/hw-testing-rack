@@ -161,9 +161,9 @@ power_box:                # mechanical/parts/power_box.scad: the power hub's enc
     # Anker 717 140 W often €60–80 on sale, unverified).  The hub asks for 28 V EPR whenever it is offered:
     # no hardware change, a 240 W e-marked cable
 
-standalone:               # mechanical/parts/standalone.scad, docs/standalone.md: one bay out of the rack, on a desk
+standalone:               # mechanical/parts/standalone.scad, docs/build/one-bay-on-a-desk.md: one bay out of the rack, on a desk
   pd_module:              # the USB-C PD trigger module, a CH224K set to 20 V with its DIP switch (bought: AliExpress
-                          # 3256811726090162; docs/cabling.md), feeding the node's J1 instead of the power hub.  It stands on
+                          # 3256811726090162; docs/build/one-bay-on-a-desk.md), feeding the node's J1 instead of the power hub.  It stands on
                           # its long edge in the boxes.  The seller gives no size: these are the largest the photos allow;
                           # measure the board bought.  The rear wall centres its USB-C's shell, any board
     size: [30, 21]        # its PCB: length (from the edge its USB-C sits on), width (it stands on this edge)

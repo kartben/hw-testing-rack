@@ -98,6 +98,8 @@ A board whose console is `aux` gets `serial_pty` in place of `serial`: the comma
 which joins the pty twister gives it to the node's raw AUX port. Only a node with one board can have that
 console, so no entry of a v1.0 rack carries it ([Board targets](board-targets.md#which-console)). Twister
 splits the command on spaces and commas: keep the paths of Python and of the checkout free of both.
+`bayctl pty` sets no baud rate and uses the AUX settings saved on the node: set the baud rate once, on the
+web console or with `bay aux <baud>` ([Serial console](serial-console.md)).
 
 ## What the pre-script does, and when it fails
 

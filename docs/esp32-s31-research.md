@@ -1,7 +1,7 @@
 # ESP32-S31 for the bay node v1.0? (research)
 
-**Status (2026-10-22): research only, nothing changed.**  The user asked for a feasibility check of
-Espressif's ESP32-S31, "puisqu'il y a déjà des draft PRs pour ajouter le support dans Zephyr".  The question
+**Status (2026-10-22): research only, nothing changed.**  A feasibility check of
+Espressif's ESP32-S31, asked for "puisqu'il y a déjà des draft PRs pour ajouter le support dans Zephyr".  The question
 is whether a v1.0 bay node (and maybe the power hub) should move from the ESP32-S3-WROOM-1-N8R8 to an S31
 module.  It follows [mcu-alternatives.md](mcu-alternatives.md), which looked at the BL616 for the same
 reasons: a high-speed USB host, and cheaper assembly.
@@ -106,7 +106,7 @@ isochronous.  Our channel-sharing patch matters less with 16 channels, but stays
     four boards sharing one 12 Mbit/s bus;
   - HS devices run at their own speed;
   - the S3's 8-channel starvation goes away with 16 ([multi-dut-node.md](multi-dut-node.md)).
-- The limits in [ci.md](ci.md) (no interrupt OUT, no isochronous, on-board hubs) are the driver's, not the
+- The limits in [reference/known-limitations.md](reference/known-limitations.md#by-design-usb) (no interrupt OUT, no isochronous, on-board hubs) are the driver's, not the
   chip's, and stay.
 
 **Wired networking through the MAC.**
@@ -129,7 +129,7 @@ isochronous.  Our channel-sharing patch matters less with 16 channels, but stays
 **802.15.4.**  Thread and Zigbee DUT tests (sniffer, RCP or border router for the bay) from the node itself.
 It shares the 2.4 GHz radio with Wi-Fi by time slicing, so it works best with a wired uplink.
 
-**Radio.**  Still 2.4 GHz only: [architecture.md](architecture.md) › Radio stays as it is.  Wi-Fi 6's
+**Radio.**  Still 2.4 GHz only: [use/wifi.md](use/wifi.md) stays as it is.  Wi-Fi 6's
 OFDMA and target wake time help in a crowded rack only with a Wi-Fi 6 access point.
 
 ## What it would cost

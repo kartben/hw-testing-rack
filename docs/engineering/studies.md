@@ -34,8 +34,8 @@ Five things in the notes mean something else today:
   2026-11-03.
 - Rack sizes, counts and prices are often those of an 8-bay rack of two rows, and of JLCPCB in October 2026. The
   v1.0 PCBs were made by NextPCB.
-- They were written as reports of a working session: "the user" is the project's owner, and "the session",
-  "Mechanics" or "Électronique" name who did a piece of work. Quotes in French are the owner's.
+- They were written as reports while the work went on. Where one still names "Mechanics" or "Électronique",
+  that is the mechanical or the electronics design. Quotes in French are the project owner's.
 - Several studies name scripts or results that are not in the repository. Only the two Wi-Fi studies
   ([tools/ns3-wifi-capacity](../../tools/ns3-wifi-capacity/README.md),
   [tools/bsim-wifi-coex](../../tools/bsim-wifi-coex/README.md)) and the printed-parts prototypes

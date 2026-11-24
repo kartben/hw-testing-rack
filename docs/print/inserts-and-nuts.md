@@ -76,8 +76,8 @@ These take none in the default rack:
 - The camera square under a tray of row A: the bill counts no insert there, as no bay hangs a pod from it.
 - The chain anchor's two bosses in the tray of a sled bay: it has no chain.
 
-[The mechanical design document](../mechanical.md#printing) also lists M2.5 and M2 inserts. They are for
-the former per-board plates (`plate: boards`); the default rack buys none.
+M2.5 and M2 inserts are for a board's own plate (`plate: boards`,
+[If pegs cannot hold it](../use/add-a-board.md#if-pegs-cannot-hold-it)); the default rack buys none.
 
 ## One bay, and a plain 2 × 2 rack
 

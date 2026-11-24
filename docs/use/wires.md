@@ -25,7 +25,8 @@ Each port has a 2 × 6 header: VREF, P1 to P4 and BOOT on the upper row, GND, P5
 The P pins go to the matrix; RESET and BOOT are the port's own lines
 ([Power-cycle or reset a board](power-and-reset.md#reset-and-bootloader)). Wire a board to the header of its
 own port with female to female Dupont jumpers, 20 cm (30 cm where that does not reach), torn off the strip as
-a small ribbon, onto the board's own pin headers, soldered pins up. Wire only its signals, each to a P pin,
+a small ribbon, onto the board's own pin headers, soldered pins up. Peel the wires apart at their ends only,
+about 2 cm, more where the board's pins spread. Wire only its signals, each to a P pin,
 and VREF (below); no GND wire, the USB cable carries it.
 
 The viewer colours VREF red, RESET brown, BOOT green and GND black (the bill names the same colours for GND,

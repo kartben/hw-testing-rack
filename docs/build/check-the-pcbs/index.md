@@ -96,7 +96,7 @@ electronic load, and serve the next revision: a rack runs without them.
 
 | PCB | Measure |
 |---|---|
-| Power hub | the negotiation at plug-in on two or three chargers (a 140 W EPR one, a 100 W, a 65 W); the VHV pin of the PD controller, rated 32 V, at plug-in and when a loaded row is cut; the 3.3 V regulator's temperature through a long Wi-Fi transfer in the closed box; the VRACK copper's temperature at the full 5 A, with a thermal camera on the bottom face; a row shorted at the end of its lead: its output not below −0.3 V, the other rows unaffected |
+| Power hub | the negotiation at plug-in on two or three chargers (a 140 W EPR one, a 100 W, a 65 W), which see the hub's ≈ 150 µF on VBUS: a charger that refuses it gets C8, the 100 µF can, left off; the VHV pin of the PD controller, rated 32 V, at plug-in, through the step to 28 V on a build that asks for EPR, and when a loaded row is cut: stay at 20 V if it passes 31 V; the 3.3 V regulator's temperature through a long Wi-Fi transfer in the closed box; the VRACK copper's temperature at the full 5 A, with a thermal camera on the bottom face; a row shorted at the end of its lead: its output not below −0.3 V, the other rows unaffected |
 | Bay node | the margin of F1, the camera's fuse, in a warm rack with the camera and its light on; the 3.3 V load step; the I²C rise time with a DATA ×4 on the lead.  Under 300 ns, the bus can be built at 400 kHz ([i2c-400k.overlay](../../../firmware/bay-node/i2c-400k.overlay)); it runs at 100 kHz by default |
 | Camera pod, DATA ×6, DATA ×4 | the stage *Later* of each checklist |
 

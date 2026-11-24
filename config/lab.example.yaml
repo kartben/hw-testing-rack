@@ -31,7 +31,7 @@ domain: local          # node hosts the hub does not give: bay-<id>.<domain> (mD
 # aux_port: 4000       # node raw AUX UART port (CONFIG_BAY_AUX_TCP_PORT)
 # rfc2217_port: 4001   # node AUX UART with RFC 2217 (CONFIG_BAY_RFC2217_PORT)
 
-# Who may use the bays (firmware/README.md, "Access control"): `bayctl access push` writes these
+# Who may use the bays (docs/use/access.md): `bayctl access push` writes these
 # rules to every node, signed with the rack's admin key from the BAYCTL_KEY environment variable
 # (never put the key in this file).  Services: status, control, console, usbip, shell, camera, or all.
 # A node holds 8 sources; an address gets what every source it matches allows, plus `everyone`.

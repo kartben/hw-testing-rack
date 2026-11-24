@@ -497,7 +497,7 @@ JLC DFM 0 findings, 6 parts with a model.
 
 ## Bay node: the bay's camera on J6, the WROOM-1-N8R8, 64 × 90 mm (2026-10-18)
 
-The user chose a camera per bay wired to the bay's own node: an Arducam Mega 3MP SPI (M12, ≈ 120°)
+Chosen: a camera per bay wired to the bay's own node: an Arducam Mega 3MP SPI (M12, ≈ 120°)
 and white LEDs on one PH 8 lead, and the ESP32-S3-WROOM-1-N8R8 for its 8 MB octal PSRAM
 ([electronics.md](electronics.md#bay-node-1-per-unit--4-layers-74--90-mm), Camera, WROOM-1 and
 the longer board).  The board grew 10 mm at the rear (the whole layout moved with it, holes
@@ -574,7 +574,7 @@ B5B, the data port the S5B.
 ## Third round: bay node 74 × 90, the DUT on the DATA lead (2026-10-19)
 
 The node grew 10 mm on the right, so that the leads that leave it to the right start from one place:
-AUX and DATA go to the drag chain, CAM to the rear slot.  The user then dropped the DUT receptacle J4
+AUX and DATA go to the drag chain, CAM to the rear slot.  The DUT receptacle J4 was then dropped
 ([electronics.md](electronics.md#bay-node-1-per-unit--4-layers-74--90-mm)).
 - **Right edge.**  J7 (DATA, S8B) and J5 (AUX, S6B) are side entry, facing the chain, pin 1 to the
   front.  J2 (ROW OUT) is on the new edge too, and the right holes are at x 70.5.
@@ -582,7 +582,7 @@ AUX and DATA go to the drag chain, CAM to the rear slot.  The user then dropped 
   keep-out.
 - **The DUT pair.**  U8 (USBLC6) is the last part before J7, and the hand-drawn High-Speed chain now
   ends on J7's pads.  J7 takes D+ on pin 3 and D− on pin 4, so that D− lies north on U8 and J7 both:
-  the pair runs straight, no via.  The user chose that over a B.Cu crossover with two vias.  The data
+  the pair runs straight, no via.  That was chosen over a B.Cu crossover with two vias.  The data
   port's J2 5 / 6 and U1's channels swap with it, and its copper stays as it was.  The DUT power block
   took J4's place.
 - **Unchanged.**  The front half and the left holes did not move: the tray drills a Ø6.4 access hole

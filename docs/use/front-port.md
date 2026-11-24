@@ -22,7 +22,9 @@ firmware in between: the SERVICE slide switch, and the 5 V of a laptop on the fr
 | on | either | nowhere; the laptop talks to the node's own USB: **SERVICE** | yellow |
 
 In all three the node keeps the boards' power: it switches each port, measures it and cuts it on a fault.
-The laptop's 5 V is only sensed, never used. Where the port, the switch and the LED are:
+A DATA ×4's reset and boot lines and the node's AUX UART work in all three as well
+([Power-cycle or reset a board](power-and-reset.md#reset-and-bootloader)). The laptop's 5 V is only sensed,
+never used. Where the port, the switch and the LED are:
 [What a bay can do](index.md#a-bay-from-the-front); every colour:
 [LEDs, buttons and switches](../reference/leds-and-buttons.md).
 
@@ -38,7 +40,8 @@ for classic mode. The screens on the drawer fronts are not on a v1.0 bay.
 Plug a USB-C cable from the laptop into the PC port. The switches turn at once, the LED goes magenta, and
 the laptop enumerates the DATA board's USB hub with every board of the bay behind it: classic mode moves
 the whole bay, not one board. Flash and debug with the tools you would use on a desk. Unplug, and the
-boards are back on USB/IP.
+boards are back on USB/IP. To take one board to the laptop on its own, unplug its short cable from the DATA
+port and use your own cable: the rack then no longer powers or measures it.
 
 The path is analog and passes high speed, 480 Mbit/s, where USB/IP is held to full speed by the node's USB
 controller. By design none of the limits listed on [USB/IP and flashing](usb-and-flashing.md) applies to

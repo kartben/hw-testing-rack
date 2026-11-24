@@ -79,8 +79,8 @@ The bill's filament is PETG ([Printer, filament, settings](../print/printer-and-
 and which). How much has two answers.
 
 ```{include} ../print/printer-and-settings.md
-:start-after: "How much has two answers."
-:end-before: "The tray's and the drawer's slicer figures are those"
+:start-after: "nobody has tried it."
+:end-before: "The tray's and the"
 ```
 
 (time-what-is-known)=

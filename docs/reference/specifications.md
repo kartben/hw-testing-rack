@@ -26,7 +26,7 @@ One is a measurement, taken on a bench stand-in. Nothing has been measured on a 
 <!-- /site:size-and-mass -->
 
 The mass of the default three rows was not computed: it lies between the two. The height is 619 mm with the
-default rows; the mechanical design note still gives 664 mm, which is three rows of 165 mm. A rack this light
+default rows. A rack this light
 tips when a top drawer is pulled: [Screw the rack to the bench](../build/screw-the-rack-to-the-bench.md).
 
 ## Chargers and what each feeds
@@ -164,7 +164,7 @@ and what halves it, are on [Wi-Fi in the rack](../use/wifi.md). Ports, names and
 
 | | Value | Kind, and where it comes from |
 |---|---|---|
-| P1 to P8 of a port | the board's own logic level, 0.95 to 3.6 V, set by the port's VREF pin | design, [electronics.md](../electronics.md) › The VREF rule |
+| P1 to P8 of a port | the board's own logic level, 0.95 to 3.6 V, set by the port's VREF pin | design, [DATA ×4](pcbs/data-x4.md#the-pin-header-and-vref) |
 | VREF | the board's I/O supply, 1.8 or 3.3 V; a 5 V board with TTL inputs gives its own 3.3 V pin | design |
 | In series with each pin | 100 Ω | design |
 | The buses A to H inside the DATA ×4, and its analyzer | 3.3 V, each bus pulled up by 10 kΩ | design |

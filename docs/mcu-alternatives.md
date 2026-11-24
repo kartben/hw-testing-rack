@@ -12,7 +12,7 @@ job. This note records why, and what a v2 prototype has to prove first.
 
 ## What the MCU has to do
 
-The node is a USB/IP host over Wi-Fi ([architecture.md](architecture.md)).
+The node is a USB/IP host over Wi-Fi ([plan/index.md](plan/index.md#where-a-boards-usb-goes)).
 The firmware ([firmware.md](firmware.md)) needs:
 
 * a Zephyr **USB host controller (UHC) driver**, `zephyr_uhc0`. Zephyr's own

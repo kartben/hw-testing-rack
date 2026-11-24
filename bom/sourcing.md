@@ -124,7 +124,7 @@ from the stock lens.  A shorter focal length can need a shorter holder to focus:
 ## DUT cables at the standing port wall (2026-11-01)
 
 The DATA ×6 (and v2) receptacles stand, 15.5 mm apart: the drawer end of a DUT cable is a straight USB-C (an angled
-one only if its cable leaves upwards), its overmold within the USB-IF 12.35 × 6.5 mm ([docs/cabling.md](../docs/cabling.md)).
+one only if its cable leaves upwards), its overmold within the USB-IF 12.35 × 6.5 mm ([docs/reference/cables.md](../docs/reference/cables.md#the-cable-to-your-board)).
 No listing gives the overmold: the ends below were sized on the photos.  Measure the first cable on arrival.
 
 <!-- site:dut-cables -->

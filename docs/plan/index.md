@@ -78,23 +78,8 @@ with the position wire and each bay node takes its place in turn, so the third b
 The DATA board gathers its ports on a USB hub, and the DATA lead takes them to the bay node, where two analog
 USB switches decide who gets them.
 
-```mermaid
-flowchart TB
-  B["Your boards"] -- "one USB cable each" --> D["DATA board<br/>USB hub, a switch and<br/>a meter per port"]
-  subgraph Node["Bay node"]
-    MUXD["USB switch"]
-    MUXP["USB switch"]
-    ESP["ESP32-S3<br/>USB host, 12 Mbit/s"]
-    SW["eFuse and meter"]
-  end
-  D -- "USB, on the DATA lead" --> MUXD
-  MUXD -- "USB/IP" --> ESP
-  MUXD -- "classic mode" --> MUXP
-  PC["Laptop on the<br/>front port"] --> MUXP
-  MUXP -- "SERVICE" --> ESP
-  PC -. "its 5 V, sensed only" .-> MUXD
-  ESP -. "Wi-Fi: USB/IP, the bay's page, its API" .-> LAN(("Network"))
-  ROW["Row cable"] -- "20 V" --> SW -- "20 V, on the DATA lead" --> D
+```{raw} html
+:file: ../img/diagrams/usb-path.svg
 ```
 
 By default the boards go to the bay node's ESP32-S3, which is their USB host and exports each of them over

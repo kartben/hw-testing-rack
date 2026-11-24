@@ -101,7 +101,8 @@ holds BOOT low, pulses RESET and releases BOOT 200 ms later: the ROM bootloader 
 column is for a board whose reset pin is not wired: BOOT is held across a power cycle of the port instead.
 
 While a port is off the node holds both lines low, so that their pull-ups put no voltage on an unpowered
-board; a reset asked of a port that is off is refused (503).
+board; a reset asked of a port that is off is refused (503). When the port goes on, the node releases BOOT,
+then RESET, 5 ms after its switch.
 
 A DATA ×6 has neither line. Its rows have no such buttons, and the request is refused; to restart a board on
 a DATA ×6, cycle its port.

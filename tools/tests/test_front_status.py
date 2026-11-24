@@ -45,7 +45,7 @@ class FrontStatus(unittest.TestCase):
         self.assertEqual(len(addrs), len(self.st))
 
     def test_docs_listing(self):
-        # docs/ci.md's bayctl listing: the same addresses
+        # the bayctl listing of docs/use/set-up-your-machine.md: the same addresses
         for bid, addr in (("A1", "192.168.1.61"), ("A2", "192.168.1.62"), ("B2", "192.168.1.78"), ("B3", "192.168.1.79")):
             if bid in self.st:
                 self.assertEqual(self.st[bid]["addr"], addr)

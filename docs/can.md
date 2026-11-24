@@ -34,10 +34,7 @@ a cable whose two plugs show the **same face** when it lies flat on a table.
   ladder.  The bundle turns as one: the CAN pair stays together, between its
   GND pins.
 
-Sellers usually call this type **"same direction"** or "same side" (同向),
-and the 1:1 one "reverse"; not all of them do, so check that both plugs show
-the same face, and that pin 1 rings through to pin 6.  The BOM names a listing
-that offers every length (checked 2026-10-18).  A 1:1 cable
+How the cables are made and rung out: [Make the row cables](build/row-cables.md).  A 1:1 cable
 (plugs on opposite faces, e.g. Pololu's) burns nothing if used by mistake:
 VRACK lands on the POS pins (10k + BAT54S, ≈ 2.5 mA at 28 V), CAN_H and CAN_L
 swap, and the next node simply stays off.
@@ -55,9 +52,8 @@ swap, and the next node simply stays off.
 
 <!-- /site:row-pinout -->
 
-* Bay-to-bay jumpers: 120 mm.
-* Feeds from the power box: ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C.  Give
-  the CAN pair 2–3 twists per 10 cm on the feeds; the jumpers don't need it.
+The lengths of the jumpers and feeds, and the twist of the feeds' CAN pair:
+[Make the row cables](build/row-cables.md).
 
 ## Bus
 
@@ -82,7 +78,7 @@ CAN TVSs stop at 27 V stand-off (PESD2CANFD27, 28 V breakdown), none stays off a
 (pin 6) from CAN (pins 3/4).  The real fix is ±58 V transceivers (the TCAN1462V, once stocked) with
 a ≥ 33 V TVS.  TI's TCAN1462V (C7399456,
 SIC, bus pins ±58 V) was the first choice; LCSC had none on 2026-10-18 and 19, so both
-boards switched (the user, 2026-10-19).  It stays an alternate, with the TCAN1044AV (no SIC,
+boards switched (decided 2026-10-19).  It stays an alternate, with the TCAN1044AV (no SIC,
 ±58 V): the same SOIC-8 pinout, VIO on pin 5, STB on pin 8.
 
 **Why a star is fine here.**  ISO 11898-2 describes a line terminated at both

@@ -226,7 +226,10 @@ Served by a node built to drive a DATA ×4.
 
 A port is 1 to 4, a pin 1 to 8, a bus `A` to `H`; a pin goes on one bus. `vref_mv` is `null` on a v1.0
 DATA ×4, which has no VREF reading. `upload` is `idle`, `ready` or `receiving`; `load.state` is `idle`,
-`loading`, `started`, `loaded`, `failed` or `left to USB/IP`. How to use them:
+`loading`, `started`, `loaded`, `failed` or `left to USB/IP`. An upload erases the stored image as its
+first bytes arrive, so a failed upload leaves the node with none. The node refuses (400) an image that is not
+for an RP2350 in Arm mode or does not lie wholly in its SRAM: `image outside the RP2350's SRAM (a no_flash
+build is needed)`. How to use them:
 [Wires between boards](../use/wires.md), [Logic analyzer](../use/logic-analyzer.md).
 
 ## Access and reservations
