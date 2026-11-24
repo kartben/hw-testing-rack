@@ -9,7 +9,8 @@ installed Chrome (--channel msedge for Edge, or --channel chromium after
 for the sparkline (and of the fake board's log for the console), then
 shoots each state, then access control (web-ui-access*.png): the node
 claimed with a key made up for the run, rules, a CI job holding the bay;
-then a DATA x4 bay's ports, a board target's dialog, the Wires card and the logic analyzer card.
+then a DATA x4 bay's ports (the card, and two crops of its rows), a board target's dialog, the Wires card and
+the logic analyzer card.
 The browser and server plumbing is firmware/common/web/shots.py.
 """
 
@@ -27,7 +28,7 @@ WEB = Path(__file__).resolve().parent
 sys.path.insert(0, str(WEB.parents[1] / "common" / "web"))
 
 import dev_server  # noqa: E402
-from shots import DESKTOP, DOCS_IMG, POLL_S, Shots  # noqa: E402
+from shots import DESKTOP, DOCS_IMG, POLL_S, Shots, quantise  # noqa: E402
 
 
 def main() -> None:
@@ -144,6 +145,31 @@ def main() -> None:
         time.sleep(max(POLL_S, min(args.warmup, 60)))
         shoot(dark, "web-ui-ports", "#usb-card")
         shoot(dark, "web-ui-budget", "#power-card")
+
+        # The same card cropped to the rows a page talks about, in a narrow window so that its text is large
+        # enough to read in a page's column: B3.1 and B3.2 (a board attached, one free), then B3.2 to B3.4 with
+        # B3.4 off and not queued (its Power on and As soon as possible)
+        narrow = s.page("dark", {"width": 760, "height": 1400})
+        time.sleep(3 * POLL_S)
+
+        def shoot_rows(name: str, first: int, last: int, pad: int = 6) -> None:
+            narrow.evaluate("scrollTo(0, 0)")
+            items = narrow.locator("#usb-list > li")
+            a, b = items.nth(first).bounding_box(), items.nth(last).bounding_box()
+            card = narrow.locator("#usb-card").bounding_box()
+            path = args.out / f"{name}.png"
+            narrow.screenshot(path=path, full_page=True, animations="disabled", clip={
+                "x": card["x"], "y": a["y"] - pad, "width": card["width"],
+                "height": b["y"] + b["height"] - a["y"] + 2 * pad})
+            quantise(path)
+            print(f"wrote {path}")
+
+        shoot_rows("web-ui-ports-attach", 0, 1)
+        dev_server.ports[3].update(on=False, waiting=False, queued=False)
+        time.sleep(3 * POLL_S)
+        shoot_rows("web-ui-ports-power", 1, 3)
+        dev_server.ports[3].update(on=False, waiting=True, queued=True)
+        narrow.close()
 
         # A XIAO ESP32-C6 in B3.4: its board target, picked from the suggestions for 303a:1001
         poke("/dev/usb?preset=xiao&port=4", wait=0)

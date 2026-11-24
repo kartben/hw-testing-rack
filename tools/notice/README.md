@@ -12,6 +12,7 @@ are generated from one data file.
 | `notice.py` | the drawings: scenes (`STEPS`), thumbnails (`THUMBS`), hardware icons (`hw_shape`) |
 | `pages.py` | `notice.yaml` + the drawings' canvas addresses (`assets.json`) → the page files and the canvas index (`canvas.json`) |
 | `run.py` | everything up to the drawings, then the list of drawings to upload |
+| `pdf.py` | the built pages and the local drawings → one A4 PDF, `mechanical/build/notice/<name>.pdf` (Edge or Chrome, headless) |
 | `jobs.py` | on another machine (`NOTICE_REMOTE`): the drawings, within its memory |
 
 ## Regenerating
@@ -19,31 +20,7 @@ are generated from one data file.
 ```bash
 python tools/notice/run.py                 # every drawing → mechanical/build/notice/out/*.svg, then the upload list
 python tools/notice/run.py a3 pin          # some of them
-python tools/notice/run.py d1 thumb:xc     # a step, a part's card and chip
 python tools/notice/run.py --dry           # does it still build? every scene, nothing drawn
-```
-
-The names are `notice.py`'s steps and details (`a1`, `pin`, `t3`, `done`,
-the drawer at the bench `d1` to `d4` with the latch's detail `latch`, and so
-on), `thumb:<part>` for a part's card and chip (`card_<part>`, `chip_<part>`;
-today's drawer adds `df` its front, `xc` the cradle, `xs` its strip and `x6`
-the DATA x6), and `hw:<fastener>` for a hardware icon; `run.py`'s `JOBS`
-lists them all.  Whatever the names, every run first remakes the constants,
-the solids and the boards (a few minutes), then draws only those.
-
-Without OpenSCAD installed, put on the path a script named `openscad` that
-runs the `openscad/openscad` image with the repository mounted at its own
-path (`run.py` hands OpenSCAD absolute paths, so the `/work` mount of
-`tools/build.py`'s `RACK_OPENSCAD_DOCKER` does not do here):
-
-```bash
-mkdir -p ~/bin/openscad-docker && cat > ~/bin/openscad-docker/openscad <<'EOF'
-#!/bin/sh
-R=$(git rev-parse --show-toplevel)
-exec docker run --rm -v "$R:$R" -w "$PWD" openscad/openscad:latest openscad "$@"
-EOF
-chmod +x ~/bin/openscad-docker/openscad
-PATH=~/bin/openscad-docker:$PATH python tools/notice/run.py d1
 ```
 
 A full run takes about 40 minutes (four FreeCAD processes); it ends with
@@ -107,6 +84,9 @@ line.  After `run.py`:
    canvas is overwritten, so port it into `notice.yaml` or `pages.py` first
    (`pages.py check <dir of the read copy>` shows the differences).
 4. Commit `assets.json`.
+5. The PDF: `python tools/notice/pdf.py` builds the pages again and prints
+   them, with the drawings of `out/`, one A4 page per artboard in the
+   canvas's order (the canvas's own Export PDF gives the same pages).
 
 ## How the drawings are made
 
@@ -117,8 +97,8 @@ line.  After `run.py`:
 * **Real fasteners.**  ISO 7045 pan-head Phillips screws and heat-set inserts
   from FreeCAD's Fasteners workbench, threads included.
 * **The boards as the viewer has them** (the bay node, the power hub, the
-  DATA port board on the drawer floor, and the DATA x6 standing in today's
-  drawer's cradle).  KiCad's STEP export of each board,
+  DATA ×6 standing in its cradle at the back of the drawer, `x4_cradle.scad`
+  with its strip; the camera pod's board is `camera_pod.scad`'s stand-in).  KiCad's STEP export of each board,
   its 3D models resolved from KiCad's library and `electronics/lib/3dmodels`
   (`${KIPRJMOD}`), in the `kicad/kicad:10.0-full` image.  Where
   `electronics/tools/build_board.py` has `export_3d_coverage`, the same run
@@ -135,10 +115,10 @@ line.  After `run.py`:
 * **Bought parts in the bay**: the drag chain (Olimex 7 × 7) is drawn with
   `chain_parts.scad`'s link and removable bar at its size, pinned along the
   centre line `config/rack.yaml` › `chain` gives between its two rigid end
-  pieces (closed, open, or its bars pulled out); the 5-wire PH DATA lead from
-  the node's vertical J7 through the chain into the DATA board's side-entry
-  PH, its connectors' positions from the two `.kicad_pcb` (`chain_shape`,
-  `chain_ends_shape`, `data_lead_shape`).  Cables are swept splines (`pipe`:
+  pieces (closed, open, or its bars pulled out); the PH 8 DATA lead from
+  the node's vertical J7 through the chain into the DATA ×6's J1 on its rear
+  face, along the viewer's route (`chain_shape`, `chain_ends_shape`,
+  `data_lead_shape`).  Cables are swept splines (`pipe`:
   one sweep, or a few fused end to end where OpenCASCADE refuses the whole).
 * **The row cable from the board.**  `notice.yaml` › `row_cable` names the two
   connectors (node 0's out, node 1's in); their pin count and position come
@@ -157,10 +137,6 @@ line.  After `run.py`:
 tray's guide lip; fixed).
 
 Needs FreeCAD 1.x with the Fasteners workbench (`FREECADCMD=` if `freecadcmd`
-is not on the path), OpenSCAD (or the Docker script under Regenerating), and
-Docker (or kicad-cli, without the coverage report) for the boards.  The
-numbers of today's drawer (its front's joint, the cradle's bosses, its
-strip's screws and latch) are OpenSCAD's own, read from `drawer.scad` and
-`x4_cradle.scad` by an echo probe; if one is missing, `run.py` says so,
-`notice.py` has no steps `d1` to `d4` and `latch`, and `--dry` fails on them.  Projections are cached in
+is not on the path), OpenSCAD, and Docker (or kicad-cli, without the coverage
+report) for the boards.  Projections are cached in
 `mechanical/build/notice/out/cache/`; `run.py` always recomputes them.

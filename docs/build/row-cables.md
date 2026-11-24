@@ -54,8 +54,8 @@ feeds, six leads each. Spares are counted in: four 152 mm leads, two 305 mm lead
 colour, and as many contacts again as the two crimped feeds take. Where to order: the
 [Shopping list](../plan/shopping-list.md).
 
-Beside the parts, a multimeter with a continuity beeper and a few small cable ties for each cable's six leads.
-The bill counts only the two ties that hold each jumper to its tray.
+Beside the parts, a multimeter with a continuity beeper. The bill's metre of 6.4 mm heat-shrink makes the
+10 mm bands that hold each cable's six leads in a bundle: three a cable, one more every 15 cm on a feed.
 
 ## Make a jumper
 
@@ -71,18 +71,31 @@ Hold both housings the same way: latch up, mating faces away from you, the red o
 :::{build-step} 2
 :name: jumper-2
 
-Push one end of a lead into the **outermost left** position of the red housing until it clicks, then tug it.
-Its other end goes into the **outermost right** position of the black housing. The five other leads follow,
-working inwards, each from a position of the red housing to the mirrored one of the black. Tug every contact.
+Fill the **red** housing: push one end of each lead into a position until it clicks, then tug it.
 :::
 
 :::{build-step} 3
 :name: jumper-3
-:drawing: hw_jumper
-:alt: A six-wire lead lying flat, a plug at each end, both plugs the same face up
+:parts: 10 mm band of 6.4 mm heat-shrink=3
 
-Lay the cable straight on the table. It lies flat with no twist, and both plugs show the same face. Hold the
-six leads together with a few small cable ties.
+Slip three bands of heat-shrink over the six leads now. A band does not pass over a housing.
+:::
+
+:::{build-step} 4
+:name: jumper-4
+
+Fill the **black** housing, mirrored: the lead in the red housing's **outermost left** position goes into the
+black one's **outermost right**, and so on, working inwards. Tug every contact.
+:::
+
+:::{build-step} 5
+:name: jumper-5
+:drawing: hw_jumper
+:alt: A six-wire lead laid straight, a plug at each end, both plugs the same face up
+
+Lay the cable straight on the table: both plugs show the same face. Shrink one band 2 cm from each housing and
+one in the middle. The six leads close into a round bundle about 4.5 mm across. Small cable ties or a turn of
+tape do instead of bands.
 :::
 
 The leads are all black. To tell them apart later, plug the red end into a node's J1 and put a red stripe
@@ -91,7 +104,8 @@ needs no twist.
 
 ## Make the feeds
 
-Row A's feed is a jumper made of six 305 mm leads (ASPHSPH24K305). JST makes no longer lead, so the feeds to
+Row A's feed is made as a jumper, of six 305 mm leads (ASPHSPH24K305), with its CAN pair twisted as in step 5
+below before the black housing is filled. JST makes no longer lead, so the feeds to
 rows B and C are crimped: six wires of 60 cm for row B, six of 80 cm for row C, a contact at each end.
 
 :::{build-step} 1
@@ -122,16 +136,22 @@ a wire than these lengths.
 :name: feed-4
 :parts: red housing PHR-6-R=2, black housing PHR-6-BK=2
 
-Insert them as a jumper's leads: outermost left of the red housing to outermost right of the black one, and so
-on inwards. Tug every contact.
+Fill the red housing as a jumper's.
 :::
 
 :::{build-step} 5
 :name: feed-5
 
-Twist the two middle leads, the CAN pair, 2 to 3 turns per 10 cm, then hold the six together with cable ties.
-On its way up the rack's side a feed takes a half turn: the bundle turns as one, the CAN pair between its GND
-leads.
+Twist the two middle leads, the CAN pair, 2 to 3 turns per 10 cm now, while the other end is still free. Then
+slip the bands on: one for each end and one for every 15 cm or so in between.
+:::
+
+:::{build-step} 6
+:name: feed-6
+
+Fill the black housing, mirrored as a jumper's: outermost left of the red housing to outermost right of the
+black one, and so on inwards. Tug every contact. Shrink one band 2 cm from each housing and the others every
+15 cm or so. On its way up the rack's side a feed takes a half turn: the bundle turns as one.
 :::
 
 Row D's feed has no measured length (`tools/bom.py` counts row C's 80 cm for it): measure the route on the
@@ -158,7 +178,7 @@ Ring every row cable with a meter before a PCB sees it:
 - [ ] Each position of the red housing rings to its mirror in the black one. Counting both from the left,
   latch up and mating faces away from you: 1 to 6, 2 to 5, 3 to 4, 4 to 3, 5 to 2, 6 to 1.
 - [ ] No position rings to its neighbour in the same housing.
-- [ ] Laid flat, both plugs show the same face.
+- [ ] Laid straight, both plugs show the same face.
 
 The DATA leads and the camera leads are bought ready-made (JST PH 8, 50 cm, sold as "Same direction"), and
 sellers do not all use that name the same way. Ring each of them out too:

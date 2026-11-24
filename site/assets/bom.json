@@ -4661,7 +4661,7 @@
 "supplier": "LCSC C495652",
 "qty": 14,
 "unit_eur": 0.0451,
-"notes": "12 cables and 2 spares; the cable works either way round, the colours only make it readable (docs/reference/cables.md)",
+"notes": "12 cables and 2 spares; the cable works either way round, the colours only make it readable (docs/reference/cables.md).  Mouser FR has the red one on special order only: the natural PHR-6 does, the IN end then being the light one",
 "unit": "pcs",
 "ext_eur": 0.63
 },
@@ -4674,6 +4674,16 @@
 "notes": "12 cables and 2 spares",
 "unit": "pcs",
 "ext_eur": 0.55
+},
+{
+"category": "Cables",
+"item": "Heat-shrink tube 2:1, Ø 6.4 mm, black, 1 m: 10 mm bands holding each row cable's six leads in a bundle",
+"supplier": "AliExpress (bulk)",
+"qty": 1,
+"unit": "m",
+"unit_eur": 1.0,
+"notes": "3 bands a cable, one more every 15 cm on a feed: ≈ 47 bands; slip them on before filling the second housing (they do not pass over one).  A turn of tape does instead",
+"ext_eur": 1.0
 },
 {
 "category": "Cables",
@@ -4836,12 +4846,13 @@
 },
 {
 "category": "Cameras",
-"item": "M12 lens, 1/4\", ≈ 120° diagonal (the stock 90° is too narrow for a NUCLEO-144 / nRF DK)",
-"supplier": "AliExpress",
+"item": "Arducam LN018 M12 lens (M40160M12), 1/4\", 1.6 mm, 145° diagonal, 118° × 92° (the stock 90° is too narrow for a NUCLEO-144 / nRF DK)",
+"supplier": "Welectron (8.90 € TTC)",
 "qty": 2,
-"unit_eur": 3.0,
+"unit_eur": 7.48,
+"notes": "focus it on the first camera: a wide lens can need a shorter holder (bom/sourcing.md)",
 "unit": "pcs",
-"ext_eur": 6.0
+"ext_eur": 14.96
 },
 {
 "category": "Cameras",
@@ -4868,12 +4879,12 @@
 "Printed parts": 86.0,
 "Fasteners": 14.76,
 "Motion": 29.36,
-"Cables": 176.9,
+"Cables": 177.9,
 "Analyzer": 7.0,
 "Power": 58.0,
-"Cameras": 64.1
+"Cameras": 73.06
 },
-"total_eur": 1451.98,
+"total_eur": 1461.94,
 "prints": [
 {
 "part": "bay_label_a1",

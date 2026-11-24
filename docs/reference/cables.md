@@ -29,7 +29,7 @@ lengths come from the 3D model. No cable has been made or plugged yet.
 :alt: Line drawing of a six-wire lead, a plug at each end, both plugs the same face up
 :width: 260px
 
-A row cable lies flat, each wire on its own side, both plugs the same face up.
+A row cable laid straight shows both plugs the same face up. Heat-shrink bands hold its six leads in a round bundle.
 ```
 
 JST PH, 2.0 mm pitch, 6 pins. The socket is the side-entry S6B-PH-SM4-TB: J1 (ROW IN) on a node's left edge,

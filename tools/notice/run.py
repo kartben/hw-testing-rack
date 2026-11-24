@@ -7,20 +7,18 @@
     python tools/notice/run.py --dry            # steps 1-3, then every scene built, nothing drawn: does the
                                                 # notice still build on this state? (minutes, exit 1 if not)
 
-1. the panel frame's constants (OpenSCAD probe, tools/panel_proto.py) -> <build>/constants.json,
-   with the camera pod's screws and today's drawer's numbers (OpenSCAD echo probes);
+1. the panel frame's constants (OpenSCAD probe, tools/panel_proto.py) -> <build>/constants.json;
 2. the printed parts of one bay -> OpenSCAD CSG -> exact solids (csg2part.py, in freecadcmd);
-3. the boards (the bay node, the power hub, the DATA port and the DATA x6): KiCad's STEP export
-   and 3D coverage report, stand-ins for the parts without a body (node.py);
+3. the bay node: KiCad's STEP export and 3D coverage report, stand-ins for the parts without a
+   body (node.py);
 4. the drawings: notice.py in four freecadcmd processes -> <build>/out/*.svg, or on another
    machine (below);
 5. pages.py plan: the drawings the canvas doesn't have yet.  Then upload, record, build and
    publish the pages: README.md, Publishing.  A full run takes about 40 minutes here.
 
 <build> is mechanical/build/notice.  Needs FreeCAD 1.x with the Fasteners workbench
-(FREECADCMD=path/to/freecadcmd if it is not found), OpenSCAD (an `openscad` on the path; without
-it, a script of that name that runs it in Docker: README.md), and kicad-cli (or Docker) for the
-boards (without it, the node is drawn as a bare board).
+(FREECADCMD=path/to/freecadcmd if it is not found), OpenSCAD, and kicad-cli (or Docker) for
+the bay node (without it, the node is drawn as a bare board).
 
 Step 4 elsewhere: NOTICE_REMOTE is a command that runs its last argument in a shell on a
 machine with FreeCAD + Fasteners + shapely at <NOTICE_REMOTE_DIR>/env/bin/freecadcmd
@@ -62,10 +60,6 @@ PARTS = {
     "floor_plate": ("parts/tray.scad", {"PART": "floor_plate"}),
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
     "drawer_light": ("parts/drawer.scad", {}),
-    "drawer_front": ("parts/drawer.scad", {"PART": "front_in_place"}),   # today's drawer: its front, as assembled,
-    "x4_cradle": ("parts/x4_cradle.scad", {"PART": "cradle"}),             # the cradle on the rear bay's bosses,
-    "x4_strip": ("parts/x4_cradle.scad", {"PART": "strip_in_place"}),      # its strip over the receptacles,
-    "x6_slot": ("parts/x4_cradle.scad", {"PART": "board"}),                # and the board's plain outline (the latch)
     "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
     "power_box_lid": ("parts/power_box.scad", {}, "lid();"),     # as assembled (it prints top face down)
     "chain_anchor": ("parts/chain_parts.scad", {"PART": "anchor"}),
@@ -82,6 +76,8 @@ PARTS = {
     "mega_camera": ("parts/camera_pod.scad", {"PART": "mega"}),
     "podpcb": ("parts/camera_pod.scad", {"PART": "podpcb"}),
     "podpcb_parts": ("parts/camera_pod.scad", {"PART": "podpcb_parts"}),
+    "x4_cradle": ("parts/x4_cradle.scad", {"PART": "cradle"}),          # the standing DATA board's cradle and the
+    "x4_strip": ("parts/x4_cradle.scad", {"PART": "strip_in_place"}),   # strip over its receptacles (drawer coordinates)
 }
 USB_PIECES = {"right": ("right", "mold"), "straight": ("straight", "mold"), "adapter": ("adapter", "mold"),
               "adapter_metal": ("adapter", "metal")}      # a DUT cable's ends: mold (+ the shell), or the 90° adapter
@@ -99,11 +95,10 @@ def usb_parts() -> dict:
     return out
 # heaviest first, dealt round-robin to the processes
 JOBS = ["done", "b3t", "b5a", "c_done", "t3", "p3", "t4", "b1", "c5", "b2", "t2", "c3", "c4", "b4", "cover", "a7", "a6",
-        "k3", "p4", "t1", "d3", "d4", "d2", "d1", "a4", "k2", "k2m", "a12s", "a9b", "a10o", "p2", "p1", "k1", "b3r", "a3", "a2",
-        "a1", "c0", "c1", "c2", "pin", "pin_b", "hook", "clip", "latch"] \
+        "k3", "p4", "t1", "a4", "k2", "k2m", "a12s", "a9b", "a10o", "p2", "p1", "k1", "b3r", "a3", "a2", "a1", "c0", "c1", "c2",
+        "pin", "pin_b", "hook", "clip"] \
        + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd", "pb", "pl", "hb", "ch",
-                                  "an", "ft", "dc", "xt", "dp", "hx", "ps", "pc", "po", "pp", "kp", "kd", "kb", "km", "kl",
-                                  "df", "xc", "xs", "x6")] \
+                                  "an", "ft", "dc", "xt", "dp", "xc", "xs", "hx", "ps", "pc", "po", "pp", "kp", "kd", "kb", "km", "kl")] \
        + [f"hw:{h}" for h in ("m3x8", "m3x6", "pt26x8", "pt23x8", "pt26x14", "w25", "sp12", "mag", "insert", "jumper",
                               "usbc", "tie")]
 
@@ -137,8 +132,7 @@ def csg() -> None:
         subprocess.run(cmd + [str(src)], cwd=MECH, check=True, capture_output=True)
 
 
-BOARDS = {"bay-node": "bay_node", "power-hub": "hub", "data-port": "data_port",    # KiCad board -> its solid in <build>/parts
-          "data-port-x6": "data_x6"}
+BOARDS = {"bay-node": "bay_node", "power-hub": "hub", "data-port-x6": "data_port"}   # KiCad board -> its solid in <build>/parts
 
 
 def node_step(NODE: str = "bay-node") -> None:
@@ -269,8 +263,15 @@ def viewer_bays(rack) -> dict:
 
         def local(q):
             return [round(q[0] - xb, 3), q[1], q[2]]
+        parts = []
+        for i in scene["instances"]:
+            if i.get("bay") == bay and i.get("layer") == "cameras":
+                if i["part"] == "podpcb_dupont":    # the viewer's pod board is its KiCad model, with only the
+                    parts += [("podpcb", local(i["pos"])), ("podpcb_parts", local(i["pos"]))]   # Dupont left;
+                else:                               # the notice draws camera_pod.scad's board and parts (the
+                    parts.append((i["part"], local(i["pos"])))                                  # Dupont in them)
         out["camera"] = {
-            "parts": [(i["part"], local(i["pos"])) for i in scene["instances"] if i.get("bay") == bay and i.get("layer") == "cameras"],
+            "parts": parts,
             "lead": next(({"points": [local(q) for q in c["points"]], "radius": c.get("radius", 1.5),
                            "ends": [{**e, "at": local(e["at"])} for e in c.get("ends", [])]}
                           for c in scene["cables"] if c.get("bay") == bay and "Camera lead" in c.get("label", "")), None),
@@ -283,6 +284,24 @@ def viewer_bays(rack) -> dict:
 def rackcfg_boards() -> dict:
     import rackcfg
     return rackcfg.load_boards()
+
+
+def cradle_screws() -> dict:
+    """The DATA cradle's 3 × M3 × 8 (down into the drawer's bosses) and the strip's 5 × PT 2.3 × 8, in drawer
+    coordinates: OpenSCAD's own numbers (parts/x4_cradle.scad)."""
+    probe, echo = BUILD / "csg" / "_cradle_probe.scad", BUILD / "csg" / "_cradle_probe.echo"
+    probe.write_text(f'include <{(MECH / "parts" / "x4_cradle.scad").as_posix()}>\n'
+                     'echo(CRADLE=[BOSSES, BASE, GUARD_SCREWS, GUARD_SY, STRIP_TOP, SEAT[1]]);\n', encoding="utf-8")
+    echo.unlink(missing_ok=True)
+    subprocess.run(openscad_cmd() + ["-D", 'PART="none"', "-o", str(echo), str(probe)], cwd=MECH, capture_output=True)
+    import json
+    import re
+    m = re.search(r"CRADLE = (\[.*\])", echo.read_text(errors="replace") if echo.exists() else "")
+    if not m:
+        return {}
+    bosses, base, xs, sy, top, seat = json.loads(m.group(1))
+    return {"bosses": bosses, "boss_top": base[0], "head_z": base[0] + base[1] - 2.4,   # its counterbores, 2.4 deep
+            "strip_x": xs, "strip_y": sy, "strip_head_z": top - seat}
 
 
 def pod_screws() -> dict:
@@ -302,34 +321,6 @@ def pod_screws() -> dict:
     import json
     return {"holes": json.loads(m.group(1)), "under": float(m.group(2)), "face": float(m.group(3)),
             "inserts": json.loads(m.group(4))}
-
-
-X6_NUMBERS = {"parts/drawer.scad": ["JOINTS", "JOINT_Y", "JOINT_T", "JOINT_Z", "X4_HOLES", "X4_BOSS_D", "DATA_PCB_Z",
-                                    "DATA_WIN_Y"],
-              "parts/x4_cradle.scad": ["BOSSES", "BASE", "GUARD_SCREWS", "GUARD_SY", "COMB_TOP", "STRIP_TOP", "SEAT", "V2_X0",
-                                       "V2_Y", "V2_Z0", "V2", "TOP", "X_L", "OW", "SLIT", "UW", "Y_F", "Y_R", "LATCH", "GAP",
-                                       "WIN_X", "WIN_Y", "PORT_XS", "PORT_Z"]}
-
-
-def x6_numbers(rack) -> dict:
-    """Today's drawer, for notice.py's steps d1-d4 and latch: the front's joint (its two PT 2.3 x 8), the cradle's bosses,
-    its strip's screws and latch, as OpenSCAD's own numbers (parts/drawer.scad, parts/x4_cradle.scad); and the DATA x6
-    (config/rack.yaml › pcb.data_port_x6).  {} if a number is missing: notice.py then leaves those steps out."""
-    import json
-    import re
-    out = {}
-    for scad, keys in X6_NUMBERS.items():
-        probe, echo = BUILD / "csg" / f"_probe_{Path(scad).stem}.scad", BUILD / "csg" / f"_probe_{Path(scad).stem}.echo"
-        probe.write_text(f'include <{(MECH / scad).as_posix()}>\n' + "".join(f"echo({k}={k});\n" for k in keys), encoding="utf-8")
-        echo.unlink(missing_ok=True)
-        subprocess.run(openscad_cmd() + ["-D", 'PART="none"', "-o", str(echo), str(probe)], cwd=MECH, capture_output=True)
-        found = dict(re.findall(r"ECHO: (\w+) = (.*)", echo.read_text(errors="replace") if echo.exists() else ""))
-        miss = [k for k in keys if k not in found]
-        if miss:
-            print(f"{scad}: no value for {' '.join(miss)}: steps d1-d4 and latch left out")
-            return {}
-        out.update({k: json.loads(found[k]) for k in keys})
-    return {**out, "pcb": rack.raw["pcb"]["data_port_x6"]}
 
 
 def outputs(name: str) -> list[str]:
@@ -358,9 +349,11 @@ def main() -> None:
     c["POWER_BOX"] = {**rack.power_box(), "hub_pcb": rack.raw["pcb"]["power_hub"]}
     d, node = rack.drawer, rack.node                 # the drag chain, the DATA socket, the node's DUT port
     c["CHAIN"] = {**rack.chain, "bottom": rack.carrier["bottom"]}
-    dp = rack.raw["pcb"]["data_port"]               # the DATA port board on the rear-bay floor (lib/carrier.scad DATA_PCB_*)
-    c["DATA"] = {"x": rack.data_port_x[0], "wall_y": d["depth"] - d["rear_bay"], "z": d["bottom"] + 8.5,   # PORT_Z
-                 "wall": d["wall"], "pcb": dp, "pcb_z": d["bottom"] + 8.5 - 1.63 - dp["thickness"]}
+    # every bay's DATA board, the DATA ×6, standing at the back of the drawer's rear bay in its cradle
+    # (parts/x4_cradle.scad), its front face towards the port wall (drawer coordinates: x0, face_y, bottom)
+    dp = rack.raw["pcb"]["data_port_x6"]
+    c["DATA"] = {"x0": dp["x0"], "face_y": d["depth"] - d["rear_bay"] + dp["face_y"], "z0": d["bottom"],
+                 "size": dp["size"], "thickness": dp["thickness"], "lead": dp["lead"]}
     c["NODE_DATA"] = [node["size"][0] + 0.4, node["size"][1] - node["right"]["data"], node["thickness"] + 1.6]
     c["NODE_HOLES"] = node["holes"]                 # M3, KiCad coordinates (y from the rear edge)
     import webscene                                  # the USB plugs' sizes, as the viewer draws them
@@ -378,7 +371,7 @@ def main() -> None:
     PARTS.update(usb_parts())
     csg()
     c["POD_SCREWS"] = pod_screws()
-    c["X6"] = x6_numbers(rack)
+    c["CRADLE"] = cradle_screws()
     (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
     conv = BUILD / "parts" / "convert_log.txt"
     conv.unlink(missing_ok=True)

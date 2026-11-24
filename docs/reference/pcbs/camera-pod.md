@@ -57,7 +57,7 @@ end, and SCK, MOSI, MISO, CS and LED (the LEDs' switched cathodes) by J1. Their 
 
 An Arducam Mega 3MP with the SPI interface, in its M12 version (B0434, 33 × 33 mm). Arducam gives it 69 mA
 idle and up to 317 mA working. Fed 3.3 V by the pod, its MISO is a 3.3 V output, which is what the node
-expects. The bill pairs it with an M12 lens of about 120°, the stock 90° being too narrow for a large
+expects. The bill pairs it with the Arducam LN018, an M12 lens of 145°, the stock 90° being too narrow for a large
 board ([Shopping list](../../plan/shopping-list.md#camera-parts)).
 
 The camera's cable is a JST XH 2.54 with six pins at the camera and Dupont sockets at J2; the Mega's own

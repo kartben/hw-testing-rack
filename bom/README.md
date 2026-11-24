@@ -6,16 +6,16 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 | Category | Cost (€) |
 |---|---:|
 | Electronics | 1,016 |
-| Cables | 177 |
+| Cables | 178 |
 | Printed parts | 86 |
-| Cameras | 64 |
+| Cameras | 73 |
 | Power | 58 |
 | Motion | 29 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **1,452** |
+| **Total** | **1,462** |
 
-≈ **€121 per bay** all-in.
+≈ **€122 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -448,6 +448,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Cables | JST PH pre-crimped lead ASPHSPH24K305, 305 mm, 24 AWG UL1007, SPH-002T-P0.5S at both ends (row cables: the feed to row A, 6 a cable) | 8  | 0.44 | 3.52 | Digi-Key FR 455-3083-ND (or Mouser FR) |
 | Cables | JST PH 6-pin housing PHR-6-R, red: a row cable's IN end (the node's J1) | 14  | 0.05 | 0.63 | LCSC C495652 |
 | Cables | JST PH 6-pin housing PHR-6-BK, black: a row cable's OUT end (the node's J2, the hub's row outputs) | 14  | 0.04 | 0.55 | LCSC C495651 |
+| Cables | Heat-shrink tube 2:1, Ø 6.4 mm, black, 1 m: 10 mm bands holding each row cable's six leads in a bundle | 1 m | 1.00 | 1.00 | AliExpress (bulk) |
 | Cables | JST PH crimp contact SPH-002T-P0.5S, 24–30 AWG, insulation Ø 0.8–1.5 mm (the feeds JST's leads don't reach: row B (60 cm), row C (80 cm)) | 50  | 0.01 | 0.41 | LCSC C111515 |
 | Cables | Wire, 24 AWG stranded, UL1007 (Ø ≈ 1.4 mm, within the contact's 1.5), black, 10 m (the crimped feeds) | 1 spool | 4.00 | 4.00 | AliExpress (UL1007 24AWG) |
 | Cables | Crimper for open-barrel contacts, 28–18 AWG (the crimped feeds' contacts) | 1  | 20.00 | 20.00 | IWISS SN-28B (or Engineer PA-09, ≈ €40) |
@@ -464,7 +465,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Power | USB PD charger, 100 W (20 V × 5 A), single port (e.g. Anker Nano 100 W, A2679) | 1  | 46.00 | 46.00 | Anker (anker.com/fr) / UGREEN / any PD 100 W |
 | Power | USB-C to USB-C cable, 5 A, e-marked (100 W or 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A e-marker) |
 | Cameras | Arducam Mega 3MP SPI camera, M12 version (B0434), 33 × 33 mm | 2  | 28.25 | 56.50 | Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey |
-| Cameras | M12 lens, 1/4", ≈ 120° diagonal (the stock 90° is too narrow for a NUCLEO-144 / nRF DK) | 2  | 3.00 | 6.00 | AliExpress |
+| Cameras | Arducam LN018 M12 lens (M40160M12), 1/4", 1.6 mm, 145° diagonal, 118° × 92° (the stock 90° is too narrow for a NUCLEO-144 / nRF DK) | 2  | 7.48 | 14.96 | Welectron (8.90 € TTC) |
 | Cameras | Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm (the Mega → pod J2, VCC GND SCK MISO MOSI CS in order) | 2  | 0.50 | 1.00 | AliExpress |
 | Cameras | Pod hardware: 2 × PT 2.6×14 (the pod board, through the diffuser's posts), cable ties 2.5 × 100 (the lead: 1 at the tray's rear slot, 3 under the ceiling) | 2 set | 0.30 | 0.60 | AliExpress (bulk) |
 

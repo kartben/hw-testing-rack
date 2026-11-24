@@ -107,7 +107,7 @@ The viewer reads them once, at load; the address bar never changes as you move.
 | `explode=0..1` | the parts spread apart |
 | `xray` | ladders and braces hidden, drawers and plates seen through |
 | `camlight` | every camera's light on |
-| `preview`, `preview=<bay>` | opens a bay camera's preview: an Arducam Mega behind its ~120° lens, with fisheye, noise, auto-exposure and JPEG, 640 × 480 at 5 fps |
+| `preview`, `preview=<bay>` | opens a bay camera's preview: an Arducam Mega behind its 145° lens, with fisheye, noise, auto-exposure and JPEG, 640 × 480 at 5 fps |
 | `hideui` | no top bar, controls, hint, panel or selection outline |
 | `quality=high`, `quality=low` | forces the rendering quality |
 | `debug`, `capture` | `window.__viewer` for scripts; a drawing buffer kept for screenshots |

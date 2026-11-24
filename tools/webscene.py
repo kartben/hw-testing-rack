@@ -704,7 +704,7 @@ POD_SLEEVE_Y = 34.0 + 2 * 0.3 + 2 * 1.6 # the sleeve round the case, across y
 POD_FACE_Z = -3.0 - 2.0 - 1.6           # the pod board's component face (down)
 
 
-POD_LENS_DROP = 3.0 + POD_CASE[2] + 6.0 + 9.5  # plate, case, M12 holder, the 120° lens: its tip under the ceiling
+POD_LENS_DROP = 3.0 + POD_CASE[2] + 6.0 + 9.5  # plate, case, M12 holder, the LN018 lens: its tip under the ceiling
 POD_LED_Z = POD_FACE_Z - 0.8                    # the 2835 LEDs' face
 
 
@@ -717,7 +717,7 @@ def camera_view(x0, lens, cp):
     half = (cp["leds"][-1] - cp["leds"][0]) / 2
     leds = [[round(k - (cp["leds"][0] + cp["leds"][-1]) / 2, 2), 0] for k in cp["leds"]]
     return {"lens": [round(x0 + lens[0], 2), lens[1], -POD_LENS_DROP], "instances": True,
-            "fov": 120, "aspect": 4 / 3,
+            "fov": 145, "aspect": 4 / 3,   # the LN018: 145° diagonal
             "lights": [{"at": [0, round(ly, 2)], "size": [round(2 * half + 8, 2), 10], "gap": 7, "diffuser": 1.0,
                         "leds": leds, "led_z": round(POD_LED_Z - 0.1, 2)}]}
 

@@ -96,8 +96,8 @@ through the tunnel of each of the two anchors on the floor there.
 
 :::{build-step} 7
 The jumper passes the windows in the tray's wall, in the shared ladder and in the next tray's wall, and turns
-back up inside the ladder to the right node's ROW IN (J1, on its left edge): the **red** housing.  It lies
-flat, with no twist.
+back up inside the ladder to the right node's ROW IN (J1, on its left edge): the **red** housing, with no twist
+between its two plugs.
 :::
 
 The drawing shows neither colour.  The ties are not optional: pulled right out, a drawer brings its chain foot
@@ -149,7 +149,7 @@ A camera pod goes under a ceiling once that ceiling is in place ([Add a camera](
 ## Check before you go on
 
 - [ ] Every brace is taut on its four screws, and each floor plate has its two bench screws.
-- [ ] Every jumper runs from a ROW OUT (J2, right edge) to the next node's ROW IN (J1, left edge), flat.
+- [ ] Every jumper runs from a ROW OUT (J2, right edge) to the next node's ROW IN (J1, left edge).
 - [ ] Every jumper is tied to both anchors at its tray's front right, and a drawer pulled right out passes
       over it.
 - [ ] Nothing is plugged into a ROW OUT but a row cable, and each row's last ROW OUT is empty.

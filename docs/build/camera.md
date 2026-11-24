@@ -29,7 +29,7 @@ Each camera also takes:
   ([Cables and pinouts](../reference/cables.md));
 * 2 M3 × 8.
 
-Fit the 120° lens in the Mega first.
+Fit the LN018 lens (145°) in the Mega first.
 
 ## The pod at the bench
 
