@@ -42,6 +42,8 @@ that offers every length (checked 2026-10-18).  A 1:1 cable
 VRACK lands on the POS pins (10k + BAT54S, ≈ 2.5 mA at 28 V), CAN_H and CAN_L
 swap, and the next node simply stays off.
 
+<!-- site:row-pinout -->
+
 | Pin | J1 (IN) | J2 (OUT), hub row outputs | |
 |---|---|---|---|
 | 1 | VRACK | POS out | VRACK: row power, 20 or 28 V, ≤ 1.6 A (the hub's eFuse; PH contact 2 A) |
@@ -50,6 +52,8 @@ swap, and the next node simply stays off.
 | 4 | CAN_L | CAN_H | |
 | 5 | GND | GND | |
 | 6 | POS in | VRACK | POS: addressing token, into a node on J1.6, out of it (or of the hub) on pin 1 |
+
+<!-- /site:row-pinout -->
 
 * Bay-to-bay jumpers: 120 mm.
 * Feeds from the power box: ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C.  Give

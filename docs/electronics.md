@@ -169,6 +169,7 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 
 v1.0 of the five boards went to fabrication on 2026-11-11, from commit `125c4ece`: 5 PCBs and 2 assembled boards of each, at NextPCB.  What to check when they arrive: [bring-up.md](bring-up.md).
 
+<!-- site:revisions-at-the-fab -->
 | Board | Revision | Sent | Status |
 |---|---|---|---|
 | Bay node (`bay-node`) | v1.0 | 2026-11-11 | at the fab |
@@ -176,6 +177,7 @@ v1.0 of the five boards went to fabrication on 2026-11-11, from commit `125c4ece
 | Camera pod (`camera-pod`) | v1.0 | 2026-11-11 | at the fab |
 | DATA ×6 (`data-port-x6`) | v1.0 | 2026-11-11 | at the fab |
 | DATA ×4 (`data-port-x4`), assembled with its logic | v1.0 | 2026-11-11 | at the fab |
+<!-- /site:revisions-at-the-fab -->
 
 **A released revision is frozen.**  Its Gerbers, BOM and placement file stay as they were sent, so the repository always shows the boards that are on the bench.  From now on any change to one of these boards goes into a new revision, however small: a silkscreen text, a part value, one track.
 

@@ -247,6 +247,7 @@ From `electronics/power-hub/design.py` (U4, ESP32-S3-MINI-1); devicetree in
 [`boards/hwtr/power_hub/power_hub.dtsi`](../boards/hwtr/power_hub/power_hub.dtsi)
 and [`power_hub-pinctrl.dtsi`](../boards/hwtr/power_hub/power_hub-pinctrl.dtsi).
 
+<!-- site:pin-map -->
 | ESP32-S3 | Net | Use | Devicetree |
 |---|---|---|---|
 | IO0 | BOOT | SW2 BOOT button (strapping pin) | `boot_button` (`sw0`) |
@@ -280,6 +281,7 @@ and [`power_hub-pinctrl.dtsi`](../boards/hwtr/power_hub/power_hub-pinctrl.dtsi).
 | TXD0 (IO43) | U0TX | test pad TP1 | `&uart0` |
 | RXD0 (IO44) | U0RX | test pad TP2 | `&uart0` |
 | EN | EN | SW1 RESET button | — |
+<!-- /site:pin-map -->
 
 `python3 firmware/tools/check_pinmap.py` checks this table and the board
 devicetree against U4 in `design.py`, as it does for the bay node.

@@ -91,6 +91,7 @@ STEP's generic PCB colour for the board's real one.)
 To add one by hand, put its STEP (or GLB/WRL) at `render/assets/boards/<board-id>.step`, using
 the ids from `boards.yaml`, and re-run `tools/board_models.py`.
 
+<!-- site:credits -->
 Credits for the photo renders: BeaglePlay model © Seeed Technology Co., Ltd and BeagleBoard.org Foundation
 (CC BY 4.0); Wio Terminal model © Seeed Studio (Apache 2.0); Raspberry Pi Pico 2 model © Raspberry Pi Ltd (MIT); Arduino
 UNO R4 WiFi and Nano Matter models © Arduino S.r.l. (CC BY-SA 4.0); XIAO ESP32S3 model © Seeed Studio;
@@ -106,3 +107,4 @@ licence); NUCLEO-G474RE and NUCLEO-U575ZI-Q models © STMicroelectronics, under 
 Agreement (`nucleo-64.glb`, `nucleo-144.glb`); BeaglePlay model © Seeed Technology Co., Ltd and
 BeagleBoard.org Foundation, CC BY 4.0, recoloured (`beagleplay.glb`); Wio Terminal model © Seeed Studio,
 Apache 2.0, recoloured (`wio-terminal.glb`); the screens run LVGL's music and widgets demos (LVGL, MIT).
+<!-- /site:credits -->

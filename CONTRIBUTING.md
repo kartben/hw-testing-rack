@@ -1,5 +1,6 @@
 # Contributing
 
+<!-- site:contributing -->
 Everything is generated from sources you can diff:
 
 | Change | Edit | Regenerate |
@@ -37,6 +38,7 @@ To change such a board, raise its revision in its `design.py` first (the
 `Board(…)` call and the silkscreen title block), then make the change.
 `python tools/released.py` (run by the tool tests) fails when a released
 revision's Gerbers, BOM or placement file differ from what was sent.
+<!-- /site:contributing -->
 
 ## Measuring a board
 
@@ -44,8 +46,10 @@ Boards marked `verified: false` in `boards.yaml` have approximate outlines and
 get a fence plate.  If you own one, measure (or take the vendor's Gerbers),
 add `holes:`/`hole_d:` and set `verified: true`.
 
+<!-- site:jlc-parts -->
 ## Looking up JLC parts
 
 `tools/jlc_mcp.py "<query>"` runs the `@jlcpcb/mcp` server in Docker and
 prints LCSC ids, stock, price and basic/extended status.  The same server is
 configured for Claude Code in `.mcp.json` (local, not committed).
+<!-- /site:jlc-parts -->

@@ -797,6 +797,7 @@ the WROOM-1 has no IO26/IO33/IO34); devicetree in
 [`bay_node-pinctrl.dtsi`](boards/hwtr/bay_node/bay_node-pinctrl.dtsi).  Since node v1.0 the DATA lead has no INT
 (map B): the node polls the DATA board over I²C, and IO4 carries the camera's CS.
 
+<!-- site:pin-map -->
 | ESP32-S3 | Net | Use | Devicetree |
 |---|---|---|---|
 | IO0 | BOOT | SW2 BOOT button (strapping pin, 10k pull-up); input once booted | `boot_button` (`sw0`), `gpio-keys` |
@@ -827,6 +828,7 @@ the WROOM-1 has no IO26/IO33/IO34); devicetree in
 | TXD0 (IO43) | U0TX | TP1, console + shell | `&uart0` |
 | RXD0 (IO44) | U0RX | TP2 | `&uart0` |
 | EN | EN | SW1 RESET button (10k/1µF) | — |
+<!-- /site:pin-map -->
 
 Each signal sits on the module edge that faces where it goes on the board: the right column feeds
 the DUT power block (I²C at its rear end) and POS_OUT runs to J2 (docs/can.md); the bottom row the
