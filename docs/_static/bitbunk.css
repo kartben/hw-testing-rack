@@ -750,7 +750,8 @@ html.light .yue img.bb-pcb-render { mix-blend-mode: multiply; }
 .bb-lede {
   font: 650 clamp(1.6rem, 2.9vw, 2.25rem)/1.2 var(--sy-f-heading); letter-spacing: -0.02em; color: var(--bb-ink-strong);
 }
-.bb-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); }
+.bb-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); align-items: center; }
+.bb-hero-text > p:not(:first-child) { font-size: 1.08rem; line-height: 1.6; color: var(--bb-ink); max-width: 34rem; }
 .bb-figures { padding-top: 1.6rem; }
 .bb-ways { padding-top: 0.4rem; }
 @media (max-width: 520px) { .yue .bb-ways pre { white-space: pre-wrap; overflow-wrap: anywhere; } }
