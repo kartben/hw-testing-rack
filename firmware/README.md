@@ -82,7 +82,7 @@ The documentation site, written from this page, has the instructions:
   [LEDs, buttons and switches](../docs/reference/leds-and-buttons.md),
   [States and error messages](../docs/reference/states-and-messages.md)
 - [Try it without hardware](../docs/plan/try-it-without-hardware.md): the simulated node, `dev_server.py`
-- [Work on the firmware](../docs/engineering/work-on-the-firmware.md): the Zephyr pin and its patches, the
+- [Work on the firmware](../docs/dev/work-on-the-firmware.md): the Zephyr pin and its patches, the
   stand-in boards, the tests, the pin-map check
 - [docs/firmware.md](../docs/firmware.md): the design log, what has run where, the open items
 
@@ -91,7 +91,7 @@ The sections of this page that other files link to now point to their page:
 ### Building
 
 [Build or download the firmware](../docs/build/get-the-firmware.md); a build from another Zephyr workspace:
-[Work on the firmware](../docs/engineering/work-on-the-firmware.md#the-zephyr-pin-and-the-carried-patches).
+[Work on the firmware](../docs/dev/work-on-the-firmware.md#the-zephyr-pin-and-the-carried-patches).
 
 ### Wi-Fi in the rack
 

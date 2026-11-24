@@ -27,51 +27,35 @@ myst:
 
 # Build or download the firmware
 
-A rack runs two firmware images, both Zephyr applications for the ESP32-S3 at version 0.5.0:
-[firmware/power-hub](../../firmware/power-hub) on the power hub, one per rack, and
-[firmware/bay-node](../../firmware/bay-node) on every bay node, the same image whether the bay holds a DATA ×6
-or a DATA ×4.  Build them while the PCBs are at the fab: the node's image can then carry your Wi-Fi network,
-and both can be signed with your own key.  The images CI builds have neither.
+A rack runs two Zephyr images: [firmware/power-hub](../../firmware/power-hub) on the power hub and
+[firmware/bay-node](../../firmware/bay-node) on every bay node. Build them yourself while the PCBs are on their
+way. Your own images can carry your Wi-Fi network, and you sign them with your own key. The images from CI
+have no network and use a public test key.
 
-:::{status} bench
-Both images build in CI at every push, beside the builds for the stand-in boards.  The node's firmware has run
-on native_sim and on bench stand-ins (an M5Stack CoreS3, a XIAO ESP32-S3).  The hub's has served its page from
-a XIAO; its bench plan with a real charger has no recorded result.  Neither image has run on a v1.0 PCB:
-[What exists today](../plan/status.md#firmware-feature-by-feature).
-:::
-
-A DATA ×4's co-processor runs a third image, the logic analyzer.  It is GPL-3.0, not built here and not
-shipped with the project: [Logic analyzer](../use/logic-analyzer.md) says where it comes from and how a node
-loads it.
+The co-processor of a DATA ×4 runs a third image, the logic analyzer. You build it separately:
+[Load the analyzer image](../use/logic-analyzer.md#load-the-analyzer-image-once) gives the steps.
 
 ## Set up the workspace
 
-The firmware builds in a west workspace of its own, with this repository as the manifest repository.  The
-machine needs west and the Zephyr SDK with its `xtensa-espressif_esp32s3_zephyr-elf` toolchain, the one CI
-installs ([Zephyr's Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html)
-sets both up).
+You need west and the Zephyr SDK with its `xtensa-espressif_esp32s3_zephyr-elf` toolchain.
+[Zephyr's Getting Started Guide](https://docs.zephyrproject.org/latest/develop/getting_started/index.html)
+installs both. Then make a workspace with this repository as its manifest:
 
 {{ workspace | replace("REPO_URL", repo_url) }}
 
-| Command | What it does |
-|---|---|
-| `west update` | fetches Zephyr at the commit pinned in [firmware/west.yml](../../firmware/west.yml) (main of 2026-10-16) and the five modules the build needs: `hal_espressif`, `mbedtls`, `tf-psa-crypto`, `mcuboot`, `lvgl` |
-| `west patch apply` | applies the eight patch files listed in [zephyr/patches.yml](../../zephyr/patches.yml): changes to USB/IP, the USB host and its hub class, TCP, Wi-Fi and the telnet shell, carried until Zephyr has them.  Not optional: the firmware uses what they add |
-| `west blobs fetch hal_espressif` | the Wi-Fi binary blobs |
-| `west packages pip --install` | esptool and the other Python packages of the ESP32 build |
-
-Every command below is typed in `rack-ws`.
+Do not skip `west patch apply`. It applies the patches to Zephyr that the firmware needs
+([zephyr/patches.yml](../../zephyr/patches.yml)). Run every command on this page from `rack-ws`.
 
 :::{note}
-On Windows keep the workspace and the build directories on a short path (`C:\rack-ws`): `hal_espressif` and
-`tf-psa-crypto` have file paths long enough to hit `MAX_PATH`.
+On Windows, keep the workspace on a short path such as `C:\rack-ws`. Some files of `hal_espressif` and
+`tf-psa-crypto` have paths long enough to hit `MAX_PATH`.
 :::
 
 ## Put your Wi-Fi in the node's image
 
-The rack wants one access point on one fixed channel: choose it first, with the settings of
-[Wi-Fi in the rack](../use/wifi.md).  Then copy the example and put the network's name and password in the
-copy:
+The rack needs one access point on one fixed channel. Choose it first:
+[Wi-Fi for the rack](../use/wifi.md). Then copy the example file and put your network's name and password in
+the copy:
 
 {{ wifi_conf | replace("REPO_DIR", repo_url.split("/")[-1]) }}
 
@@ -80,123 +64,105 @@ copy:
 :caption: firmware/bay-node/wifi.conf.example
 ```
 
-Built with `-DEXTRA_CONF_FILE=wifi.conf`, the image joins that network at its first boot, beside the networks
-stored later with `wifi cred add`.  Every node of the rack takes the same image, and its page and telnet shell
-answer with no wire on its UART pads.  `wifi.conf` is git-ignored: the password stays out of the repository,
-and goes into every image built with it.
+A node built with `-DEXTRA_CONF_FILE=wifi.conf` joins that network at its first boot. Every node takes the
+same image. Git ignores `wifi.conf`, so the password stays out of the repository. Every image you build with
+it contains the password, so keep those images to yourself.
 
-Without `wifi.conf`, each node's network is typed in its shell at
-[stage 4 of its checklist](check-the-pcbs/bay-node.md#4-flash-and-ask), on test pads that sit under the node
-once it is on its tray.  The hub has no such file: its network is typed on its console USB-C, at
-[stage 4 of its own checklist](check-the-pcbs/power-hub.md#4-flash-and-ask).
+Without `wifi.conf`, you type each node's network on its UART pads during
+[its checklist](check-the-pcbs/bay-node.md), [before it goes on its tray](index.md#wifi). The hub has no such
+file: you type its network on its console USB-C during [its own checklist](check-the-pcbs/power-hub.md).
 
 ## Sign with your own key
 
-MCUboot, the bootloader in front of each application, boots only images signed with the key it was built
-with.  Without one, the build signs with MCUboot's public test key (`bootloader/mcuboot/root-ec-p256.pem`)
-and warns that "any image signed with it boots"; the PCB's page then shows *test key*.  Anyone can then sign
-an image the PCB boots (sending it still needs the admin key): fine on a desk and in CI, not for a rack.
+MCUboot, the bootloader, boots only images signed with the key it was built with. If you give no key, the
+build uses MCUboot's public test key. It warns you, and the PCB's web page shows *test key*. Anyone can then
+sign an image that your PCBs will boot. That is acceptable for one bay on your desk. For a rack, make your
+own key.
 
-Decide before the first flash.  A PCB flashed over USB with MCUboot holds the public half of the key, and from
-then on boots only images signed with that key.  Moving from the test key to your own later costs a USB flash
-of every PCB, and so does losing the key ([A lost signing key](../use/recover.md#a-lost-signing-key)).
+Do it before the first flash. To change the key later, or to replace a lost one, you must flash every PCB over
+USB again ([A lost signing key](../use/recover.md#a-lost-signing-key)).
 
-Make the key once, and keep it and a backup outside the repository:
+Make the key once. Keep it, and a backup, outside the repository:
 
 ```console
 $ python bootloader/mcuboot/scripts/imgtool.py keygen -t ecdsa-p256 -k ~/keys/rack-signing.pem
 $ export HWTR_SIGNING_KEY=$HOME/keys/rack-signing.pem
 ```
 
-`HWTR_SIGNING_KEY` is an absolute path, read by both builds.  A build line can take the path instead, after
-`--`: `-DSB_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"/path/to/key.pem\"`.  After changing it, build pristine: add `-p`
-to the build lines below.
+Both builds read the key's path from `HWTR_SIGNING_KEY`. The path must be absolute. You can also give it on
+the build line, after `--`: `-DSB_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"/path/to/key.pem\"`. After you change the
+key, add `-p` to the build lines for a pristine build.
 
 ## Build the two images
 
 {{ build_images | replace("REPO_DIR", repo_url.split("/")[-1]) }}
 
-Leave `-- -DEXTRA_CONF_FILE=wifi.conf` out for a node image without a network.
+For a node image without a network, leave out `-- -DEXTRA_CONF_FILE=wifi.conf`.
 
-`--sysbuild` builds MCUboot in front of the application and signs the application for it.  Without it the
-build is the application alone: a PCB flashed that way takes no update over the network until it is flashed
-again over USB with MCUboot.
+Keep `--sysbuild`. It builds MCUboot and signs the application for it. A PCB flashed without MCUboot cannot
+take an [update over the network](../use/update-firmware.md) until you flash it again over USB.
 
-Each build leaves two files.  The node's:
+Each build leaves two files. For the node:
 
-- `build-bay/mcuboot/zephyr/zephyr.bin` is MCUboot;
-- `build-bay/bay-node/zephyr/zephyr.signed.bin` is the signed application: what `west flash` writes after
-  MCUboot, and the file an [update over the network](../use/update-firmware.md) sends.
+| File | What it is |
+|---|---|
+| `build-bay/mcuboot/zephyr/zephyr.bin` | MCUboot |
+| `build-bay/bay-node/zephyr/zephyr.signed.bin` | the signed application, the file a network update sends |
 
-The hub's are at the same places under `build-hub`, with `power-hub` for `bay-node`.  The build writes an
-image id into the signed file, `power-hub/power_hub` or `bay-node/bay_node`: a node refuses the hub's image,
-and the hub a node's.
+The hub's two files are in the same places under `build-hub`, with `power-hub` in place of `bay-node`. Each
+image carries its own name, so a node refuses the hub's image and the hub refuses a node's.
 
-[Flash the hub and the nodes](flash.md) writes them at [stage 4 of the checklists](check-the-pcbs/index.md).
-The same two applications also build for the bench stand-ins and for the tests on native_sim:
-[Work on the firmware](../engineering/work-on-the-firmware.md).
+You flash the images in the Flash and check step of the hub's and the node's checklists:
+[Flash the hub and the nodes](flash.md).
 
-## Options a builder may change
+## Options you can change
 
-The defaults suit a rack.  To change one, add the option at the end of a build line, after `--`:
+The defaults suit a rack. To change one, add it at the end of the build line, after `--`:
 
 {{ build_option | replace("REPO_DIR", repo_url.split("/")[-1]) }}
 
-`CONFIG_BAY_` options go on the node's build line, `CONFIG_HUB_` options on the hub's, `CONFIG_HWTR_` options
-on either.
+`CONFIG_BAY_` options go on the node's line, `CONFIG_HUB_` options on the hub's, `CONFIG_HWTR_` options on
+either.
 
 `CONFIG_BAY_PORTS_ON_AT_BOOT`, default `y`
-: Every port of the DATA board comes on at boot, one after the other.  With `n` the ports stay off until
-  switched on.
+: Every port of the DATA board comes on at boot. With `n` they stay off until you switch them on.
 
 `CONFIG_BAY_DATA_POWER_AT_BOOT`, default `y`
-: The DATA lead is powered at boot, once its checks pass.  With `n` it stays off until `bay power on`.
+: The DATA lead is powered at boot, once its checks pass. With `n` it waits for `bay power on`.
 
 `CONFIG_BAY_PORTS_LIMIT_MW`, default 25000
-: What a bay may draw on its DATA lead when no hub grants it a share: a bay outside a rack.
+: The power a bay may draw on its DATA lead when no hub grants it a share, as on a desk.
 
 `CONFIG_BAY_LED_BRIGHTNESS`, default 40
 : The bay LED's brightness, 1 to 255.
 
 `CONFIG_BAY_CAMERA_FPS`, default 5
-: The cap on the camera's stream, 1 to 30 frames a second.
+: The camera's frame rate cap, 1 to 30.
 
 `CONFIG_HWTR_NET_TX_POWER_DBM`, default 11
-: Wi-Fi transmit power, 2 to 20 dBm.  `radio <dBm>` changes it on a running node or hub and saves it.
+: Wi-Fi transmit power, 2 to 20 dBm. `radio <dBm>` changes it on a running PCB.
 
 `CONFIG_HUB_BUDGET_MARGIN_PCT`, default 10
-: The share of the charger's contract kept free below the rows' budget.  `hub budget margin` changes it on a
-  running hub.
+: The share of the charger's power that the hub keeps in reserve, in per cent. `hub budget margin` changes it
+  on a running hub.
 
 `CONFIG_HUB_ROW_CYCLE_MS`, default 2000
-: How long a row stays off when it is power-cycled.
+: How long a row stays off when you power-cycle it.
 
-`CONFIG_HUB_EPR_ALLOWED`, off by default
-: Leave it off.  It unlocks a 28 V contract, and the DATA ×4's L2 inductor withstands 30 V
-  ([the power design document](../power.md)).
-
-Every option has the reason for its default in its help text:
+Each option's help text explains its default:
 [firmware/bay-node/Kconfig](../../firmware/bay-node/Kconfig),
 [firmware/power-hub/Kconfig](../../firmware/power-hub/Kconfig),
-[firmware/common/Kconfig](../../firmware/common/Kconfig).  What a node and a hub store while they run (a name,
-the networks, the access key) is not a build option:
-[What a node and a hub remember](../use/recover.md#what-a-node-and-a-hub-remember-and-how-to-wipe-it).
+[firmware/common/Kconfig](../../firmware/common/Kconfig).
 
-## The images CI builds, and what you give up
+## Download the images from CI
 
-The *Firmware* workflow ([.github/workflows/firmware.yml](../../.github/workflows/firmware.yml)) builds both
-images at every push and keeps them as artefacts of the run, `firmware-power_hub-test-key` and
-`firmware-bay_node-test-key`, each with MCUboot's `zephyr.bin` and the application's `zephyr.signed.bin`.
-They are downloaded from a run's page under
-{{ '[the repository\'s Actions]({}/actions/workflows/firmware.yml)'.format(repo_url) }}.
+CI builds both images at every push. Download the artefacts `firmware-power_hub-test-key` and
+`firmware-bay_node-test-key` from a run of the *Firmware* workflow, under
+{{ '[the repository\'s Actions]({}/actions/workflows/firmware.yml)'.format(repo_url) }}. Each holds MCUboot's
+`zephyr.bin` and the application's `zephyr.signed.bin`. These images have limits:
 
-| With CI's images | What it costs |
-|---|---|
-| A GitHub login | the artefacts are served to signed-in users only, and the site publishes no firmware image |
-| They expire | GitHub removes a run's artefacts after its retention time: take them from a recent run and keep the files |
-| MCUboot's public test key | the artefact's name says it.  Anyone can sign an image these PCBs boot, and moving to your own key later is a USB flash of every PCB |
-| No network in the node's image | each node's Wi-Fi is typed in its shell at [stage 4 of its checklist](check-the-pcbs/bay-node.md#4-flash-and-ask).  Miss that moment and [the tray comes out again](index.md#wifi): the pads are under the node |
-| No build directory | `west flash` reads one.  Without it the two files go on with esptool, at the addresses of [What west flash writes](flash.md#what-west-flash-writes); nobody has done that with these artefacts |
-
-A command on this page that does not work as written:
-[report it](../reference/known-limitations.md#report-a-finding).
+- You need a GitHub account to download them. GitHub deletes them after a while, so keep your copy.
+- They are signed with MCUboot's test key.
+- The node's image has no Wi-Fi network: you type it on each node's pads before the node goes on its tray.
+- There is no build directory, so `west flash` cannot write them. Write the two files with esptool, at the
+  addresses in [What west flash writes](flash.md#what-west-flash-writes).

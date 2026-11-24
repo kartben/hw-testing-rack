@@ -1,172 +1,172 @@
 # Troubleshooting
 
-Each row below goes from what you see to its likely cause and to the page that holds the cure. *Every row is
-worked out from the error paths, LED states and messages in the code of the bay node, the power hub and
-`bayctl`, and from the design, as they stood on 2026-11-24; nobody has done it yet.* None comes from a fault
-met on a rack: no rack has run yet.
+Find what you see in the tables below. Each row gives the likely cause and what to do.
 
-:::{status} simulated
-The messages and states quoted here appear on native_sim, on the simulated node and hub, and some on the bench
-stand-ins. None has been seen on a v1.0 PCB. See [What exists today](../plan/status.md#firmware-feature-by-feature).
-:::
+## Where to look
 
-## Where the rack tells you things
-
-| Where | What it says | How to reach it |
-|---|---|---|
-| The bay's page | a red banner (an over-current on a port, `DATA lead off:` and the reason), the Power card, each port's state, the Access card's refusals | `http://bay-b3.local/` |
-| A node's status | `last_fault`, the error that last restarted the node; `budget.lead_off`, why the DATA lead is off; each port's `power.state` | `curl -s bay-b3.local/api/status`; in the shell `bay status`, `bay fault`, `bay port` |
-| The rack's page | a red banner, a pill in the header, a word under each bay, the events | `http://rack.local/` |
-| The hub's events | the last 32, newest first, kept in RAM: a restart of the hub loses them | `python tools/bayctl.py hub events`, `hub events` on its console, `GET /api/events` |
-| A node's refusal log | the last 16 kinds of refusal: address, service, reason, count | `python tools/bayctl.py access show B3`, with the admin key |
-| Metrics | faults, sheds, waiting ports, refusals, lost nodes, CAN errors | `/metrics` of each node and of the hub ([Network ports, names, metrics](../reference/network.md)) |
-| The shells | everything above, and the boot log | a node: its UART pads, or telnet once on Wi-Fi; the hub: its console USB-C only |
+| Where | How to reach it |
+|---|---|
+| The bay's page: a red banner, the Power card, each port's state | `http://bay-b3.local/` |
+| The node's status and its last fault | `curl -s bay-b3.local/api/status`, or `bay status` and `bay fault` in its shell |
+| The rack's page: a banner, a word under each bay, the events | `http://rack.local/` |
+| The hub's last 32 events, lost when the hub restarts | `python tools/bayctl.py hub events` |
+| The refused attempts on a node | `python tools/bayctl.py access show B3`, with the admin key |
 
 ## What the lights say
 
-The bay's LED is on the left of its fascia; the power box's LEDs are on its front wall. Every colour and
-pattern: [LEDs, buttons and switches](../reference/leds-and-buttons.md).
+[LEDs, buttons and switches](../reference/leds-and-buttons.md) lists every colour and pattern.
 
-| What you see | The likely cause | What to do |
+The LED at the front of each bay:
+
+| The bay's LED | What it means | What to do |
 |---|---|---|
-| The bay's LED is {led}`off` dark | The node has no power, or no firmware | [A bay is missing or does not answer](#a-bay-is-missing-or-does-not-answer) |
-| It blinks {led}`red blink` red | The DATA lead's eFuse is in current limit, or a fault switched the lead off: a short, the eFuse's fault, a DATA board that stopped answering | The reason is in the bay page's banner; once it is mended, `bay power on` ([After an over-current](power-and-reset.md#after-an-over-current)) |
-| It is {led}`white dim` dim white | The DATA lead is off: switched off by hand, or a check failed before it went on | The Power card or `bay power` gives the reason: [No power](#no-power-from-the-charger-to-the-port) |
-| It blinks {led}`orange blink` orange, slowly | No network | [Recover a node or a hub](recover.md#a-node-that-is-on-the-rack-bus-but-not-on-wi-fi) |
-| It is {led}`yellow` yellow | SERVICE is on: the front port goes to the node itself | Slide SERVICE off ([Front port and classic mode](front-port.md)) |
-| It is {led}`magenta` magenta | Classic mode: a laptop on the PC port, or `bay mode classic` | [Front port and classic mode](front-port.md) |
-| It blinks {led}`white blink` white | A claim waits for a press on BOOT | Press BOOT briefly, or let the 60 s run out ([Access rules and security](access.md)) |
-| It flashes {led}`white blink` white and {led}`blue blink` blue | The rack's page asked "which one is it?" | Nothing: it stops after 10 s |
-| It stays {led}`blue dim` dim blue | No board has enumerated on any port | [USB/IP and flashing](usb-and-flashing.md) |
-| PD, on the power box, stays {led}`off` dark | The charger made no PD contract | Try another charger before suspecting the hub ([Power box and charger](../build/power-box.md)) |
-| PD on, no ON LED | The rows stay off without firmware, and with a contract under 15 V | `hub status` and `hub pd` on the hub's console |
-| CTL blinks once a second | No PD charger, the hub on its console USB-C alone; or the contract is not final yet | Wait a second; then the charger |
-| CTL blinks twice a second, a FAULT LED is {led}`red` red | A row's eFuse is in current limit or too hot; the hub leaves the row on and the eFuse holds it at 1.6 A | [No power](#no-power-from-the-charger-to-the-port) |
+| {led}`off` Dark | The node has no power, or no firmware | [A bay is missing](#a-bay-is-missing-or-does-not-answer) |
+| {led}`red blink` Blinks red | A fault switched the DATA lead off | Read the reason in the banner of the bay's page, fix it, then `bay power on` |
+| {led}`white dim` Dim white | The DATA lead is off | Read the reason on the Power card ([No power at a port](#no-power-at-a-port)) |
+| {led}`orange blink` Blinks orange | No network | [A node not on Wi-Fi](recover.md#a-node-on-the-rack-bus-but-not-on-wi-fi) |
+| {led}`yellow` Yellow | SERVICE is on | Slide SERVICE off ([Front port and classic mode](front-port.md)) |
+| {led}`magenta` Magenta | Classic mode: the boards' USB goes to the front port | [Front port and classic mode](front-port.md) |
+| {led}`white blink` Blinks white | A claim waits for a press on BOOT | Press BOOT briefly, or wait 60 s |
+| {led}`white blink` {led}`blue blink` Flashes white and blue | Someone asked the bay to identify itself, from the rack's page or `bayctl` | Nothing: it stops after 10 s |
+| {led}`blue dim` Stays dim blue | No board has enumerated | [USB/IP and flashing](usb-and-flashing.md#if-it-does-not-work) |
+
+The LEDs of the power box:
+
+| On the power box | What it means | What to do |
+|---|---|---|
+| PD stays {led}`off` dark | The charger made no PD contract | Try another charger |
+| PD is lit, but no ON LED | No firmware on the hub, or a contract under 15 V | `hub status` on the hub's console |
+| CTL blinks once a second | No PD charger, or the contract is not final yet | Wait a second, then check the charger |
 | CTL double-blinks | Rows shed for lack of power | [Power budget and queued ports](power-budget.md) |
-| CTL flickers | A claim waits for the hub's BOOT | [Access rules and security](access.md#on-the-hub-reading-is-open-and-actions-are-signed) |
+| CTL flickers | A claim waits for the hub's BOOT | Press the hub's BOOT, or wait 60 s |
+| A FAULT LED is {led}`red` red | The row's eFuse is in current limit, or too hot | [No power at a port](#no-power-at-a-port) |
 
-## Words on a page
+## Messages on a page
 
-The refusals of the node's API and their codes, in full: [States and error messages](../reference/states-and-messages.md).
+[States and messages](../reference/states-and-messages.md) gives every message in full.
 
-| What you read | The likely cause | What to do |
+| What you read | What it means | What to do |
 |---|---|---|
-| `DATA lead off: SCL or SDA held low: DATA lead reversed?` | A 1:1 lead between J7 and the DATA board, where it must be "same direction" | Switch the lead off, change it ([Cables and pinouts](../reference/cables.md#data-lead)) |
-| `… a short on the lead (a camera lead in J7?)` | The camera's lead in the DATA socket, J7, or a short on the lead | The camera lead goes in J6, marked CAM |
-| `… no DATA board answers: none, or the wrong lead in J7` | No DATA board, the lead not in its rear socket, or the wrong lead | [Take out a tray, a node or a DATA board](service-a-bay.md) |
-| `… the DATA board stopped answering` | The lead was pulled, or the board lost | Plug it back with the lead off, then `bay power on` |
-| `… the eFuse reported a fault` | An overload or a short on the DATA lead or the DATA board | The lead and the board, then `bay power on` |
-| `… the node's INA226 does not answer` | The node's own meter is gone: a DATA lead shorted under power can destroy it, and the node then never powers the lead | [Report a finding](../reference/known-limitations.md#report-a-finding) |
-| `Over-current on B3.2: the port's 5 V was switched off.` | The board on port 2 drew more than its port gives | **Power on** in the banner ([After an over-current](power-and-reset.md#after-an-over-current)) |
-| A port *Queued*, *waiting* or *shed*; 409 `no room in the bay's budget` | The bay's share of the charger is used | [Power budget and queued ports](power-budget.md) |
-| 409 `the port's VBUS is up while it is off` | The board is fed through a second USB connector | [A board with two USB connectors](mount-a-board.md#a-board-with-two-usb-connectors) |
-| 423 `reserved by …, N min left` | Another address holds the bay or the port | [Reserve a bay](reserve-a-bay.md) |
-| 403 `not allowed from this address`, or `kicked by an admin: retry in a minute` | The access rules, or a kick | [Access rules and security](access.md) |
-| The header badge says *Unknown DATA board* | Something answers at the DATA board's first address and is neither board: the node leaves it alone | The lead and the board in J7 |
-| A bay on the rack's page says *no answer*, *no address* or *newer protocol* | Silent for 3.5 s; never confirmed its address; a newer rack bus protocol than the hub's | [A bay is missing or does not answer](#a-bay-is-missing-or-does-not-answer) |
-| Banner `Row B: eFuse in current limit (1.6 A)` | The row's eFuse reports a fault; the page says 1.6 A whatever the cause, current or heat | [No power](#no-power-from-the-charger-to-the-port) |
-| Banner `Rack bus:` and a state other than error-active | CAN errors on a row cable | [A bay is missing or does not answer](#a-bay-is-missing-or-does-not-answer) |
-| Event `contract lost (PG high): rows off until it is back` | The charger renegotiated or reset | The rows come back with the next contract, one after the other |
-| Event `20 V asked, VBUS stays at … V: the rows stay off` | The charger does not give 20 V | Another charger ([Specifications](../reference/specifications.md#chargers-and-what-each-feeds)) |
-| Event `node B3 did not confirm its address: row B stops there` | B3's node, or the cable into it | [A bay is missing or does not answer](#a-bay-is-missing-or-does-not-answer) |
-| Event `node B3: no answer to command …` | The hub tried three times, 100 ms apart, and the node never answered | [A bay is missing or does not answer](#a-bay-is-missing-or-does-not-answer) |
-| `settings unavailable (-45)` in the boot log | The flash holds another firmware's data where the settings live | [Recover a node or a hub](recover.md#settings-unavailable-45) |
-| The camera's address answers 503, `/api/camera` says `"present": false` | No camera answered on J6: its lead in J7, or not plugged | The camera lead goes in J6 ([Camera](camera.md)) |
+| `DATA lead off: SCL or SDA held low: DATA lead reversed?` | A 1:1 lead between J7 and the DATA board | Fit a "same direction" lead ([DATA lead](../reference/cables.md#data-lead)) |
+| `… a short on the lead (a camera lead in J7?)` | The camera lead is in J7, or the lead is shorted | Move the camera lead to J6, marked CAM |
+| `… no DATA board answers` | No DATA board, or the lead is not in its rear socket | [Take a bay apart](service-a-bay.md) |
+| `… the DATA board stopped answering` | The lead was pulled | Plug the lead back in while it is off, then `bay power on` |
+| `… the eFuse reported a fault` | An overload or a short on the lead or the DATA board | Find and fix it, then `bay power on` |
+| `… the node's INA226 does not answer` | The node's meter is dead. The node will not power the lead | [Report a problem](../reference/known-limitations.md#report-a-problem) |
+| `Over-current on B3.2` | The board on port 2 drew more than its port gives | **Power on** in the banner ([After an over-current](power-and-reset.md#after-an-over-current)) |
+| A port *queued*, *waiting* or *shed*; 409 `no room in the bay's budget` | The bay's share of power is used up | [Power budget and queued ports](power-budget.md) |
+| 409 `the port's VBUS is up while it is off` | The board has power from a second USB connector | [A board with two USB connectors](mount-a-board.md#a-board-with-two-usb-connectors) |
+| 423 `reserved by …` | Someone else holds the bay or the port | [Reserve a bay](reserve-a-bay.md) |
+| 403 `not allowed from this address` or `kicked by an admin` | The access rules, or a kick | [Control who can use the rack](access.md) |
+| *Unknown DATA board* in the header | Something answers on the DATA lead, but it is neither DATA board | Check the lead and the board in J7 |
+| A bay on the rack's page says *no answer*, *no address* or *newer protocol* | The bay went silent, never confirmed its place, or has newer firmware than the hub | [A bay is missing](#a-bay-is-missing-or-does-not-answer) |
+| `Row B: eFuse in current limit (1.6 A)` | Too much current or heat on row B | [No power at a port](#no-power-at-a-port) |
+| `Rack bus:` and a state other than error-active | CAN errors on a row cable | [A bay is missing](#a-bay-is-missing-or-does-not-answer) |
+| Event `contract lost (PG high)` | The charger renegotiated or reset | Nothing: the rows come back with the next contract |
+| Event `20 V asked, VBUS stays at … V` | The charger does not give 20 V | Use another charger ([Chargers](../reference/specifications.md#chargers-and-what-each-feeds)) |
+| Event `node B3 did not confirm its address` | B3's node, or the cable into it | [A bay is missing](#a-bay-is-missing-or-does-not-answer) |
+| `settings unavailable (-45)` in the boot log | The flash holds another firmware's data | [Erase it once](recover.md#settings-unavailable-45) |
+| The camera answers 503 | No camera on J6 | Plug the camera lead into J6 ([Camera](camera.md)) |
 
 ## What the rack does
 
-| What happens | The likely cause | What to do |
+| What happens | What it means | What to do |
 |---|---|---|
-| A row goes off, and comes back by itself later | The hub shed it to stay inside the charger's contract | [Power budget and queued ports](power-budget.md) |
-| Every row goes off at once | The contract was lost | It comes back by itself with the next one; if not, the charger |
-| Every board of a bay restarts at once | BOOT held for a second or more, a restart of the node, a row cycled, or the DATA lead cut by a fault | `bay fault`, and the hub's events |
-| A port switched off on purpose is on again, a reservation is gone | The node restarted: an update, a fatal error, its RESET | [After a power cut or a restart](power-and-reset.md#after-a-power-cut-or-a-restart) |
-| A port will not switch on, and the board is powered anyway | It has 5 V from a second USB connector | [A board with two USB connectors](mount-a-board.md#a-board-with-two-usb-connectors) |
-| `usbip attach` hangs, then times out | The node drops the connection without answering: no usbip right, a kick, or a reservation | [USB/IP and flashing](usb-and-flashing.md#if-it-does-not-work) |
-| Another machine attached the board you had reserved | A reservation of one port does not cover USB/IP | Reserve the whole bay ([Reserve a bay](reserve-a-bay.md#what-it-stops-and-what-it-does-not)) |
-| `bay-b3.local` does not resolve, and the rack's page shows the bay with an address | Your machine has no mDNS, or is on another subnet | [Without mDNS, or from another subnet](set-up-your-machine.md#without-mdns-or-from-another-subnet) |
-| A node loses its network now and then; `bay fault` lists `Link lost, reason N` | A mesh or a repeater, or a busy channel | [Wi-Fi in the rack](wifi.md) |
-| A board's control requests take seconds | Its own Wi-Fi is on the other channel, 3 cm from its node | [Wi-Fi in the rack](wifi.md#boards-that-use-bluetooth-or-wi-fi-themselves) |
-| A wire passes nothing | Its pins stay open while their port is off | [Wires between boards](wires.md) |
-| A drawer sticks, or comes right out | Its fit in the tray, its chain, or the missing stop screw | [If the drawer sticks](../build/first-bay.md#if-the-drawer-sticks) |
-| The rack leans forwards when a top drawer is pulled | It is not screwed to the bench | [Screw the rack to the bench](../build/screw-the-rack-to-the-bench.md) |
+| A row goes off, and comes back later | The hub shed it to stay within the charger's power | [Power budget and queued ports](power-budget.md) |
+| Every row goes off at once | The charger's contract was lost | Wait for it to come back, then check the charger |
+| Every board of a bay restarts | The node restarted, its row was cycled, BOOT was held, or the DATA lead had a fault | `bay fault`, and the hub's events |
+| A port you switched off is on again, a reservation is gone | The node restarted | [After a power cut or a restart](power-and-reset.md#after-a-power-cut-or-a-restart) |
+| `usbip attach` hangs, then times out | The node refuses you: access rules, a kick or a reservation | [USB/IP and flashing](usb-and-flashing.md#if-it-does-not-work) |
+| Another machine attached the board you reserved | A reservation of one port does not cover USB/IP | Reserve the whole bay |
+| `bay-b3.local` does not resolve | Your machine has no mDNS, or is on another subnet | [Without mDNS](set-up-your-machine.md#without-mdns-or-from-another-subnet) |
+| A node loses its network now and then | A mesh, a repeater, or a busy channel | [Wi-Fi for the rack](wifi.md) |
+| A board's control requests take seconds | The board's own Wi-Fi is on another channel | [Boards that use Wi-Fi](wifi.md#boards-that-use-wi-fi-or-bluetooth-themselves) |
+| A wire passes nothing | Its port is off | [Wires between boards](wires.md) |
+| A drawer sticks, or comes right out | Its fit, its chain, or a missing stop screw | [If the drawer sticks](../build/first-bay.md#if-the-drawer-sticks) |
+| The rack tips forwards when a top drawer is out | It is not screwed to the bench | [Screw the rack to the bench](../build/screw-the-rack-to-the-bench.md) |
 
 ## What bayctl and twister print
 
-`bayctl` prints its errors on stderr after `bayctl:` and exits with 1; `capture` exits with 3 when its trigger
-does not come in time ([bayctl](../reference/bayctl.md#exit-codes)).
+`bayctl` prints its errors after `bayctl:` and exits with 1.
 
-| What it prints | The likely cause | What to do |
+| What it prints | What it means | What to do |
 |---|---|---|
-| `warning: hub rack.local: no such host (…)` | The hub has an id, so it is `rack-<id>.local`; or your machine has no mDNS | `export BAYCTL_HUB=rack-lab1.local`, or its address ([How it finds the rack](set-up-your-machine.md#how-it-finds-the-rack)) |
-| `B3: cannot reach http://…` | The node is off the network, or its name does not resolve | [A bay is missing or does not answer](#a-bay-is-missing-or-does-not-answer) |
-| `sudo: a password is required` | `bayctl` runs `sudo -n usbip`, and the sudo rule is missing | [Set up bayctl and usbip](set-up-your-machine.md#usbip-a-sudo-rule-and-flashing-tools-on-linux) |
-| `bay B3 holds several boards: say which (B3.1, …)` | The command acts on one board | Name the port: `B3.2` ([Bays, ports and addresses](names.md)) |
-| `set BAYCTL_KEY to the rack's admin key …` | An admin command without the key | [Set up bayctl and usbip](set-up-your-machine.md#the-lab-file-and-the-admin-key) |
-| `B2   not claimed: bayctl access claim B2` | `access push` met a node nobody claimed | [Access rules and security](access.md#claim-the-hub-and-the-nodes-with-one-key) |
-| `… did not stay: MCUboot went back …` | The new firmware failed its trial | [Update the firmware](update-firmware.md#if-the-new-firmware-does-not-stay) |
-| `hwmap`: `no board target`, `connected: false`, `not the board its target was saved for`, `without a probe id` | A port with a device and no target; a board with no console path; a board swapped; two boards with one runner and no probe id | [Boards left out of the map, and why](twister.md#boards-left-out-of-the-map-and-why) |
-| A `prepare` line in twister's log | A step of the pre-script failed | [What the pre-script does, and when it fails](twister.md#what-the-pre-script-does-and-when-it-fails) |
-| twister stops the pre-script | It ran past twister's 90 s. `prepare` waits 30 s at most for the board to enumerate and 30 s more for its console, and each request to a node may take 15 s | The node's network, then the board ([Zephyr twister](twister.md)) |
+| `warning: hub rack.local: no such host` | The hub has an id, so its name is `rack-<id>.local`. Or your machine has no mDNS | `export BAYCTL_HUB=rack-lab1.local` ([How it finds the rack](set-up-your-machine.md#how-it-finds-the-rack)) |
+| `B3: cannot reach http://…` | The node is off the network | [A bay is missing](#a-bay-is-missing-or-does-not-answer) |
+| `sudo: a password is required` | The sudo rule for `usbip` is missing | [Set up your machine](set-up-your-machine.md#set-up-usbip-on-linux) |
+| `bay B3 holds several boards: say which` | The command acts on one board | Name the port: `B3.2` |
+| `set BAYCTL_KEY to the rack's admin key` | An admin command without the key | [The admin key](set-up-your-machine.md#the-lab-file-and-the-admin-key) |
+| `not claimed: bayctl access claim B2` | Nobody has claimed this node | [Claim the hub and the nodes](access.md#claim-the-hub-and-the-nodes) |
+| `… did not stay: MCUboot went back` | The new firmware failed its trial | [If the new firmware does not stay](update-firmware.md#if-the-new-firmware-does-not-stay) |
+| A `warning:` from `hwmap` | A board left out, or in doubt | [Boards that hwmap leaves out](twister.md#boards-that-hwmap-leaves-out) |
+| A `bayctl:` line from `prepare` in twister's log | A step of the pre-script failed | [What the pre-script does](twister.md#what-the-pre-script-does-and-when-it-fails) |
+| Twister stops the pre-script after 90 s | The node is slow to answer, or the board slow to enumerate | Check the node's network, then the board |
 
-## No power, from the charger to the port
+## No power at a port
 
-Power reaches a board through five stages; look at them in this order.
+Power reaches a board in five stages. Check them in this order.
 
-1. The charger. PD on the power box lights with any PD contract. `hub status` and `hub pd`, on the hub's
-   console, give the contract and what the charger offers. A charger that holds 5 V or 9 V, or does not give
-   20 V, keeps the rows off. A 3 A cable changes no LED: the contract is then 20 V × 3 A, and the budget is
-   smaller ([Specifications](../reference/specifications.md#chargers-and-what-each-feeds)).
-2. The row. Its green ON LED is lit when the row has power. A row is off by hand (`hub row B on`; it is
-   saved), shed for lack of power, or in fault: the hub leaves a faulty row on and its eFuse holds it at 1.6 A,
-   so look for the bay that draws, on the rack's page, where each bay shows what it draws against its grant
-   ([Rows and the rack's page](rack-page.md)). Row D, on and with "no node answered", is harmless.
-3. The bay's node. It takes its power from the row through the nodes before it, and its buck starts above
-   13.5 V. A dark LED with the row on: the jumper into that bay, or the feed in a row's first bay, or a 1:1
-   lead, with which the next node stays off ([Make the row cables](../build/row-cables.md)).
-4. The DATA lead. The node powers it only after its checks: the reason is in the Power card,
-   `budget.lead_off` and `bay power`. The six reasons are in the table above.
-5. The port. Off, latched after an over-current, waiting or shed for the bay's share, or refused because
-   its VBUS is already up: the tables above, and [Power-cycle or reset a board](power-and-reset.md).
+1. The charger. The PD LED on the power box lights with any contract. `hub status` on the hub's console shows the
+   contract. A charger that does not give 20 V keeps the rows off
+   ([Chargers](../reference/specifications.md#chargers-and-what-each-feeds)).
+2. The row. Its green ON LED shows that it has power. A row can be switched off by hand, shed for lack of
+   power, or in fault. In fault, its eFuse holds it at 1.6 A: on the rack's page, find the bay that draws more
+   than its {term}`grant`. A row with no bays that says "no node answered" is fine.
+3. The bay's node. Its power comes through the nodes before it in the row. If its LED is dark with the row on,
+   check the jumper into the bay, or the feed of the row's first bay. A 1:1 lead used as a jumper also keeps
+   the next node off ([Make the row cables](../build/row-cables.md)).
+4. The DATA lead. The node powers it after its checks. If it stays off, the Power card or `bay power` says why.
+5. The port. It may be off, latched after an over-current, or waiting for room in the bay's share
+   ([Power-cycle or reset a board](power-and-reset.md)).
 
 ## A bay is missing or does not answer
 
-The rack's page lists every bay that the hub has found on the rack bus, at its place, with its address once
-it has one ([Rows and the rack's page](rack-page.md)).
+The rack's page shows every bay that the hub found on the rack bus, with its IP address once it has one
+([The rack's page](rack-page.md)).
 
-**The bay is not on the rack's page**, nor in `hub nodes`. The hub gives the nodes of a row their places one
-after the other, each node passing the turn to the next through the row cable. A node that never confirms its
-address stops its row there: the page then says *no address*, the events `node B3 did not confirm its
-address: row B stops there`, and every bay after it in the row gets no place. A dead node, or one without
-rack-bus firmware, stops its row the same way. So look at the first missing bay of the row, and at the jumper
-into it: in a rack in service, the likeliest cause is a jumper left unplugged after a tray was out. A jumper
-whose CANH and CANL are swapped or open loses every node after it too; one that put the row's voltage on CAN
-leaves the bus dead until each node's CAN protection part is replaced ([Rack bus on CAN](../can.md)). Once
-the node's LED is lit, ask for a new enumeration: **Re-enumerate** on the rack's page, `hub enumerate`, or
-`python tools/bayctl.py hub enumerate`. The meter checks of a node and its cable are those of stage 4 of
-[the rack bus checklist](../build/check-the-pcbs/rack-bus.md#4-if-a-node-is-missing-from-hub-nodes).
+### The bay is not on the rack's page
 
-**The bay is on the page with no IP address.** This is not the *no address* above, which is a place on the
-rack bus never confirmed: the bay has its place, and is on the rack bus and not on Wi-Fi. The hub can still identify
-it, reset or power-cycle its boards and restart it:
-[Recover a node or a hub](recover.md#a-node-that-is-on-the-rack-bus-but-not-on-wi-fi).
+The hub gives the nodes of a row their places one after the other, through the row cables. A node that does
+not confirm its place stops the row there. The page says *no address*, and the bays after it are missing.
 
-**The bay is on the page with an address, and `bay-b3.local` does not answer.** Open the address the page
-shows. If it answers, the name is your machine's mDNS, not the bay:
-[Without mDNS, or from another subnet](set-up-your-machine.md#without-mdns-or-from-another-subnet).
+Look at the first missing bay of the row, and at the jumper into it. After you have taken a tray out, the
+likeliest cause is a jumper left unplugged. A dead node, or swapped CANH and CANL wires, also stop the row. A
+jumper that put the row's voltage on the CAN wires leaves the whole bus dead until each node's CAN protection
+part is replaced.
 
-A bay that was there and goes silent for 3.5 s is shown lost, *no answer*, dashed on the page, and the events
-keep `node B3 (0x13) lost: no STATUS for 3 s`, the 3.5 s rounded down: a power cut, a crash or a cable. A node that restarts asks for
-an address again and the hub enumerates the whole rack, well under a second. *newer protocol* means the node
-speaks a newer version of the rack bus protocol than the hub's firmware: update the hub ([Update the firmware](update-firmware.md)).
+Once the node's LED is lit, press **Re-enumerate** on the rack's page, or run:
+
+```console
+$ python tools/bayctl.py hub enumerate
+```
+
+To test a node and its cable with a meter, see
+[If a node is missing](../build/check-the-pcbs/rack-bus.md#4-if-a-node-is-missing-from-hub-nodes).
+
+### The bay has no IP address
+
+The bay is on the rack bus but not on Wi-Fi. The hub can still reset its boards and restart it
+([A node on the rack bus but not on Wi-Fi](recover.md#a-node-on-the-rack-bus-but-not-on-wi-fi)).
+
+### The bay has an address, but its name does not answer
+
+Open the address that the rack's page shows. If it answers, your machine's mDNS is the problem
+([Without mDNS](set-up-your-machine.md#without-mdns-or-from-another-subnet)).
+
+### The bay says no answer or newer protocol
+
+*no answer* means the bay was there but has been silent for 3.5 s. The cause is a power cut, a crash or a
+cable. A node that restarts asks for its place again, and comes back by itself.
+
+*newer protocol* means the node's firmware is newer than the hub's: [update the hub](update-firmware.md).
 
 ## What to send with a report
 
-When none of this explains it, send:
+If none of this explains it, send:
 
-- the bay's status: `curl -s bay-b3.local/api/status`, and `bay fault` from its shell;
-- the hub's events: `python tools/bayctl.py hub events`, before the hub restarts;
-- the firmware's version of the node and of the hub, and whether they show *test key*;
-- which DATA board the bay holds, from the badge in its page's header.
+- the output of `curl -s bay-b3.local/api/status`, and of `bay fault` in the node's shell;
+- the output of `python tools/bayctl.py hub events`, before the hub restarts;
+- the firmware version of the node and of the hub;
+- the DATA board the bay holds, from the badge in its page's header.
 
-Where and how: [Report a finding](../reference/known-limitations.md#report-a-finding).
+Where and how: [Report a problem](../reference/known-limitations.md#report-a-problem).

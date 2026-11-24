@@ -9,100 +9,73 @@ myst:
       ```
 ---
 
-# build.py, plate_layout.py, bom.py
+# Build scripts
 
-Three scripts under `tools/` regenerate what follows from [`config/rack.yaml`](rack-yaml.md): `build.py` the
-STL files, `plate_layout.py` the place of every peg, `bom.py` the bill of materials. Each is run from the
-root of a checkout.
+Three scripts regenerate the rack's files from [`config/rack.yaml`](rack-yaml.md): `build.py`,
+`plate_layout.py` and `bom.py`. Run them from the root of a checkout after you change the size or the layout
+of your rack.
 
-| Tool | Reads | Writes |
+| Script | Reads | Writes |
 |---|---|---|
-| [tools/build.py](../../tools/build.py) | `config/rack.yaml`, the [board library](board-library.md), the OpenSCAD sources under `mechanical/` | `mechanical/generated/*.scad`, then `mechanical/stl/*.stl`; with `web` or `all`, the 3D model's files and the bill of materials as well |
-| [tools/plate_layout.py](../../tools/plate_layout.py) | `config/rack.yaml` › `population` and `plate_grid`, the board library | nothing: it prints each bay's pegs |
+| [tools/build.py](../../tools/build.py) | `config/rack.yaml`, the [board library](board-library.md), the OpenSCAD sources under `mechanical/` | `mechanical/generated/*.scad`, then the STL files in `mechanical/stl/`. With `web` or `all`, also the 3D model's files and the bill of materials |
+| [tools/plate_layout.py](../../tools/plate_layout.py) | `population` and `plate_grid` in `config/rack.yaml`, the board library | nothing: it prints each bay's pegs |
 | [tools/bom.py](../../tools/bom.py) | `config/rack.yaml`, each PCB's `electronics/<pcb>/<pcb>-bom.csv`, the volume of each STL file | `bom/rack-bom.csv`, `bom/README.md`, `bom/jlc-parts.md`, `site/assets/bom.json` |
 
-`bayctl`, which drives a rack, has [its own page](bayctl.md) and needs less than these three:
-[Set up bayctl and usbip](../use/set-up-your-machine.md).
-
-## Get a checkout and install what they need
+## Install what the scripts need
 
 {{ clone | replace("REPO_URL", repo_url) | replace("REPO_DIR", repo_url.split("/")[-1]) }}
 
-Clone the repository; do not unpack a zip of it. `build.py` ends by calling git, and fails at that last step
-outside a git checkout.
+Use a git clone. `build.py` calls git at its last step, so it fails in a folder unpacked from a zip.
 
-| Needs | For | Notes |
-|---|---|---|
-| Python 3.10 or later | all three | CI runs on 3.12: `build.py stl` in the hardware workflow, `bom.py` in the site's build, `plate_layout.py` through the tool tests |
-| The packages of [tools/requirements.txt](../../tools/requirements.txt) | all three | seven packages, and two marked optional that only the 3D model and the renders use. `plate_layout.py` alone imports nothing but PyYAML |
-| OpenSCAD on the `PATH` (`openscad` or `openscad-nightly`), or Docker | `build.py` | without a local OpenSCAD, `build.py` runs the image `openscad/openscad:latest` |
-| The font Liberation Sans Bold | `build.py` | the bay labels and the power box's lettering are set in it; CI installs the package `fonts-liberation` |
-| git | `build.py` | its last step |
-
-No source names an OpenSCAD version. The one run on record is CI's, `build.py stl` on every push
-([.github/workflows/hardware.yml](../../.github/workflows/hardware.yml)): Ubuntu 24.04, its `openscad`
-package, Python 3.12. The Docker route takes whatever `openscad/openscad:latest` is on the day. `build.py`
-also looks for OpenSCAD under `C:\Program Files\OpenSCAD\`, but nothing records a run on Windows or on
-macOS.
+| You need | For |
+|---|---|
+| Python 3.10 or later | all three |
+| The packages of [tools/requirements.txt](../../tools/requirements.txt) | all three. `plate_layout.py` needs only PyYAML. The two packages marked optional are for the 3D model |
+| OpenSCAD on the `PATH` (`openscad` or `openscad-nightly`), or Docker | `build.py`. Without a local OpenSCAD, it runs the Docker image `openscad/openscad:latest`. On Windows it also looks in `C:\Program Files\OpenSCAD\` |
+| The font Liberation Sans Bold | `build.py`: the bay labels and the power box's lettering use it. On Debian and Ubuntu it is the package `fonts-liberation` |
+| git | `build.py`, for its last step |
 
 ## build.py
 
 ```{tool-help} tools/build.py
 ```
 
-| Target | Does |
+| Target | What it does |
 |---|---|
 | `config` | writes `mechanical/generated/config.scad` and `boards.scad` from `config/rack.yaml` and the board library. Every other target starts with it |
 | `stl` | renders every printable part into `mechanical/stl/`, up to eight OpenSCAD processes at a time |
 | `web` | `stl`, then the 3D model's files under `site/assets/`, then `bom.py` |
-| `all` | the same as `web`: the code makes no difference between the two |
+| `all` | the same as `web` |
 
-Which STL files exist follows the configuration: one `ladder_<row>` and one `brace_<row>` per row, two label
-files per bay, one stop and one cam base per `standoff` height of the board library, a pin per hole
-diameter and height, and a `plate_<board>` or `plate_bay_<bay>` for each bay that says `plate: boards`.
+Which STL files you get depends on your configuration. For example, there is one `ladder_<row>` per row, and
+one stop and one cam base for each standoff height in the board library.
 
-`--only` takes the names of the parts to render, without `.stl`, after the target:
+To render some parts only, list them after `--only`, without `.stl`. A name that matches no part renders
+nothing, and `build.py` does not warn you.
 
 ```console
 $ python tools/build.py stl --only tray chain_anchor chain_foot
 ```
 
-A name that matches no part renders nothing and reports nothing.
+Set `RACK_OPENSCAD_DOCKER` to any value to use the Docker image even when OpenSCAD is installed.
 
-The environment variable `RACK_OPENSCAD_DOCKER`, set to any non-empty value, makes `build.py` use the Docker image
-even when OpenSCAD is installed.
-
-`build.py` prints one line for the configuration (`wrote … config.scad and boards.scad`), then one line a
-part:
+`build.py` prints one line per part:
 
 | Line | Means |
 |---|---|
-| `ok   tray` | the file was written. Any line of OpenSCAD that holds `WARNING` follows it, indented |
-| `FAIL tray` | OpenSCAD stopped or wrote no file. The end of its messages follows: an `assert` of the sources shows there, for instance `chain: the U bend reaches the tray's rear wall` |
-| `config/rack.yaml › population › B3: …` | a bay with `plate: boards` and several boards has a layout that does not fit; nothing is rendered |
+| `ok   tray` | the file was written. Any OpenSCAD line that holds `WARNING` follows, indented |
+| `FAIL tray` | OpenSCAD stopped or wrote no file. The end of its messages follows, for instance a failed check of the sources: `chain: the U bend reaches the tray's rear wall` |
+| `config/rack.yaml › population › B3: …` | a bay with `plate: boards` and several boards has a layout that does not fit. Nothing is rendered |
 
 The exit status is 1 when a part failed.
 
-The last step, [tools/keep_unchanged.py](../../tools/keep_unchanged.py), puts back the committed bytes of
-every STL file whose triangles did not change: OpenSCAD orders them differently from run to run. After a
-rebuild, `git status mechanical/stl` therefore lists the parts your change altered, and those only.
-
-When to rebuild the STL files, and how to rebuild one part by hand:
-[Get the STL files](../print/stl-files.md). The whole sequence after a change of size or layout:
-[Choose a size, change the layout](../plan/choose-your-rack.md).
+After a rebuild, `git status mechanical/stl` lists only the parts your change altered. The last step restores
+every STL file whose shape did not change. [Get the STL files](../print/stl-files.md) says when to rebuild.
 
 ## plate_layout.py
 
-```console
-$ python tools/plate_layout.py
-$ python tools/plate_layout.py B3 A1
-```
-
-Without an argument it goes through every bay of `config/rack.yaml` › `population`; with bay names, through
-those. It takes no option. It prints the bays that hold boards on the honeycomb plate
-(`plate: pegs`, the default) and is silent about the others: a bay with `plate: boards` or `plate: slots`,
-an empty bay, a name that is no bay. It writes no file; `build.py` and `bom.py` call the same code for the
-peg files and their counts.
+Prints where the pegs go in each bay whose boards sit on the honeycomb plate (`plate: pegs`, the default).
+It covers every bay, or only the bays you name. It writes no file.
 
 ```console
 $ python tools/plate_layout.py B3
@@ -127,65 +100,51 @@ B3:
   note: B3.4: no cam on its B edge
 ```
 
-How to read it, worked out from `describe()` and `clock()` in `tools/plate_layout.py`; nobody has placed a
-peg from this output yet:
-
 | In the output | Means |
 |---|---|
 | `front-left corner at (8.6, 29.1)` | where the board sits, in millimetres from the plate's front-left corner: x to the right, y towards the port wall |
-| `0.9 mm from its hint` | how far the tool moved the board from its usual place (centred, USB towards the port wall, or the bay's `at`) so that the pegs fall on holes: up to 10 mm, 30 mm along its USB edge when it is alone in the bay |
-| `row 3` | the row of holes, row 1 at the front; the plate's rims carry the numbers of the odd rows |
-| `hole 2` | the place in that row, counted from the left. It counts the places of the grid, the ones left without a hole included (beside a locating pin, a finger slot, a RESET or BOOT pin hole, a port's recess) |
+| `0.9 mm from its hint` | how far the tool moved the board from its usual place so that the pegs fall on holes. The usual place is centred with the USB towards the port wall, or the bay's `at`. The tool moves it up to 10 mm, or 30 mm along its USB edge when it is alone in the bay |
+| `row 3` | the row of holes, row 1 at the front. The plate's rims carry the numbers of the odd rows |
+| `hole 2` | the place in that row, counted from the left. The count includes the places left without a hole: beside a locating pin, a finger slot, a RESET or BOOT pin hole, a port's recess |
 | `stop H6` | a stop for a 6 mm standoff: `peg_stop_h6.stl` |
 | `cam on base H6` | `peg_base_h6.stl` with a `peg_cam.stl` on it |
-| `pin d1.8 H9` | a pin of 1.8 mm for a 2.1 mm hole (the hole less 0.3 mm), for a 9 mm standoff: `peg_pin_d21_h9.stl`, named for the hole |
-| `arrow at 8:30` | the turn of a stop or a pin in its hole: the hour its flange's arrow points to, seen from above, 12 o'clock towards the port wall. Six turns: 12:30, 2:30, 4:30, 6:30, 8:30, 10:30 |
-| `F edge` | the edge of the board the peg holds: `L` left, `R` right, `F` front, `B` back, the port wall's side |
-| `bobbin: row 16, hole 13` | the post for the cable's spare length; only in a bay with one board |
+| `pin d1.8 H9` | a 1.8 mm pin for a 2.1 mm hole, for a 9 mm standoff: `peg_pin_d21_h9.stl`, named for the hole |
+| `arrow at 8:30` | how to turn a stop or a pin in its hole: the hour its flange's arrow points to, seen from above, with 12 o'clock towards the port wall. There are six turns: 12:30, 2:30, 4:30, 6:30, 8:30, 10:30 |
+| `F edge` | the edge of the board the peg holds: `L` left, `R` right, `F` front, `B` back (the port wall's side) |
+| `bobbin: row 16, hole 13` | the post for the cable's spare length, only in a bay with one board |
 | `note: … against the drawer's left wall` (or `right wall`, `front panel`) | the board leans on the drawer on that side and takes no stops there |
-| `note: … no cam on its B edge`, `one cam only` | a layout the tool accepts and ranks below a full one |
+| `note: … no cam on its B edge`, `one cam only` | a layout the tool accepts, though it is weaker than a full one |
 | `note: … held along one axis by friction only` | nothing clamps the board along one axis |
-| `note: … no peg fits: placed at its hint, unheld` | no layout: the bay needs another way to hold that board |
+| `note: … no peg fits: placed at its hint, unheld` | no layout works: the bay needs another way to hold that board |
 
-What to do with a layout, and with a board the pegs cannot hold: [Put a board in a bay](../use/mount-a-board.md)
-and [A board that is not in the library](../use/add-a-board.md).
+What to do with a layout, and with a board the pegs cannot hold:
+[Put a board in a bay](../use/mount-a-board.md) and [A board that is not in the library](../use/add-a-board.md).
 
 ## bom.py
 
+`bom.py` counts the parts of the rack described in `config/rack.yaml` and rewrites its four output files.
+The counts and prices follow the size of your rack, except the PCB lines
+([Get the bill for your rack](bill-of-materials.md#get-the-bill-for-your-rack)).
+
 ```console
 $ python tools/bom.py
-warning: the JLC quote assembles 10 × bay-node but the configuration needs 12: re-quote
-warning: JLC sells C22893 (data-port-x6) by 1 at least: add it to JLC_MIN_BUY
-BOM: 292 lines, total ~ EUR 1,452 (EUR 121/bay)
-  Electronics     EUR     1016
-  Cables          EUR      177
-  Printed parts   EUR       86
-  Cameras         EUR       64
-  Power           EUR       58
-  Motion          EUR       29
-  Fasteners       EUR       15
-  Analyzer        EUR        7
 ```
 
-It takes no argument: it counts the rack of `config/rack.yaml` and rewrites its four files. The output
-above is that of the committed configuration, 12 bays. The two `warning` lines concern the JLCPCB estimate
-the bill carries, and no count: the quote on record assembles 10 bay nodes where 12 bays take 12, and one
-part's minimum order is missing from the script's table. A printed part's mass is an estimate: the volume of
-its STL file, PETG at 1.27 g/cm³, 55 % of the solid volume. Prices are indicative (EUR before VAT, small
-quantities, October 2026).
+It prints the number of lines, the total price and the total of each category. A line that starts with
+`warning:` is about the PCB lines.
 
-`bom/README.md` and `bom/rack-bom.csv` are rewritten whole on each run: an edit by hand is lost. The lines
-themselves are on [Bill of materials](bill-of-materials.md).
+All prices are estimates. The mass of a printed part assumes that PETG fills 55 % of its volume. `bom.py`
+rewrites its output files whole, so do not edit them by hand. [Bill of materials](bill-of-materials.md)
+lists the lines.
 
-## What is generated, and what is committed
+## Generated files
 
-| File | Written by | In the repository |
-|---|---|---|
-| `mechanical/generated/config.scad`, `boards.scad` | `build.py`, any target | committed; their first line says not to edit them |
-| `mechanical/stl/*.stl` | `build.py stl` | committed, in print orientation |
-| `site/assets/rack.json`, `parts.glb` | `build.py web` | committed |
-| `bom/rack-bom.csv`, `bom/README.md`, `bom/jlc-parts.md`, `site/assets/bom.json` | `bom.py`, and `build.py web` through it | committed |
+| File | Written by |
+|---|---|
+| `mechanical/generated/config.scad`, `boards.scad` | `build.py`, any target. Their first line says not to edit them |
+| `mechanical/stl/*.stl` | `build.py stl`, in print orientation |
+| `site/assets/rack.json`, `parts.glb` | `build.py web` |
+| `bom/rack-bom.csv`, `bom/README.md`, `bom/jlc-parts.md`, `site/assets/bom.json` | `bom.py`, and `build.py web` through it |
 
-A generated file is committed with the change that alters it; the last step of `build.py` keeps that
-change to the files that really differ. The scripts behind the 3D model, the renders, the assembly drawings and this site are on
-[Regenerate the site, the viewer, the renders, the drawings](../engineering/tools.md).
+These files are all in the repository. After you change `config/rack.yaml`, run
+`python tools/build.py web` and commit the regenerated files with it.

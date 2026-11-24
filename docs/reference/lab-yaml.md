@@ -1,78 +1,82 @@
 # lab.yaml
 
-`config/lab.yaml` holds what one installation knows and its rack cannot say: where the hub is, the address
-of a node the hub does not list, overrides of a board target, the access rules. The file is optional and
-git-ignored, and `bayctl` reads it at every run.
+`config/lab.yaml` holds the settings that `bayctl` cannot get from the rack, such as where the hub is and
+who may use the bays. The file is optional. Git ignores it, and `bayctl` reads it each time it runs.
 
-:::{status} simulated
-`bayctl`'s tests read these keys against the simulated node and from the example file alone. No lab file
-has described a v1.0 rack. See [What exists today](../plan/status.md#status-bayctl).
-:::
+To start one, copy the example file:
 
-Copy [config/lab.example.yaml](../../config/lab.example.yaml) to `config/lab.yaml` to start one.
-`--lab FILE`, before the command, or the `BAYCTL_LAB` environment variable names another file
-([Set up bayctl and usbip](../use/set-up-your-machine.md#the-lab-file-and-the-admin-key)). Keep in it only
-what the nodes cannot know: every board key is an override of what a node reports. An entry also stands in
-for a node that does not answer, or for a whole rack when no hub does; it then has to say everything, as
-the example does.
+```console
+$ cp config/lab.example.yaml config/lab.yaml
+```
+
+Then delete its `bays:` entries: they describe the example rack. Add only the entries your rack needs, as
+[A short lab file](#a-short-lab-file) shows.
+
+To use another file, give `--lab FILE` before the command, or set `BAYCTL_LAB`
+([The lab file and the admin key](../use/set-up-your-machine.md#the-lab-file-and-the-admin-key)).
+
+Put in it only what the nodes cannot report: a board key in this file overrides what the node says. An entry
+can also stand in for a node that does not answer, or for the whole rack when no hub answers. It must then
+give everything `bayctl` needs.
 
 ## Top-level keys
 
 | Key | Default | Holds |
 |---|---|---|
-| `domain` | `local` | the suffix of the two default names, `rack.<domain>` and `bay-<id>.<domain>` |
-| `hub` | `rack.<domain>` | the power hub, `host` or `host:port`; `false`: no hub. `BAYCTL_HUB` wins over it |
+| `domain` | `local` | the suffix of the default names, `rack.<domain>` and `bay-<id>.<domain>` |
+| `hub` | `rack.<domain>` | the power hub, as `host` or `host:port`. `false`: no hub. `BAYCTL_HUB` overrides it |
 | `http_port` | 80 | the nodes' web and API port |
-| `aux_port` | 4000 | the nodes' AUX UART as raw bytes |
+| `aux_port` | 4000 | the nodes' AUX UART, raw bytes |
 | `rfc2217_port` | 4001 | the nodes' AUX UART over RFC 2217 |
-| `access` | none | the access rules of every node: see [access](#access) |
+| `access` | none | the [access rules](#access-rules) of every node |
 | `bays` | none | one entry per bay or per port |
 
-The three ports follow the firmware's build options; change them only for a node built with others, or for
-the simulated node.
+Change the three ports only for nodes built with other ports, or for the simulated node.
 
-## Per bay and per port
+## Bays and ports
 
-An entry of `bays:` is named like a bay, `B3`, or like a port of its DATA board, `B3.2`, the port from 1
-to 6. On a v1.0 rack every board is on a port: the board's keys go under `B3.2`, and `B3` holds what
-belongs to the node. A port's entry inherits its bay's `host` and ports.
+Each entry under `bays:` is either a bay, such as `B3`, or a port of the bay's DATA board, such as `B3.2`.
+Ports run from 1 to 6. In a rack every board sits on a port, so put a board's keys under its port. The bay's
+entry holds the node's keys. A port's entry inherits the bay's `host` and network ports.
 
 | Key | On | Holds |
 |---|---|---|
 | `host` | bay | the node's name or address |
-| `http_port`, `aux_port`, `rfc2217_port` | bay | this node's ports, over the top-level ones |
+| `http_port`, `aux_port`, `rfc2217_port` | bay | this node's network ports, in place of the top-level ones |
 | `access` | bay | sources added to the rack's rules, for this bay only |
 | `platform` | port | the Zephyr board, as twister names it |
-| `board` | port | a family of the [board library](board-library.md), whose defaults then apply: for a port whose node gives no target |
+| `board` | port | a board family from the [board library](board-library.md), such as `nucleo-64`. Its defaults apply when the node gives no target |
 | `runner` | port | the west runner |
-| `id` | port | the probe id, what `west flash --dev-id` gets. Quote it |
-| `console` | port | `usb`, `usb:NN` (the serial port on interface `NN`), `aux` or `none` |
-| `serial` | port | the console's path on the host, when the name `bayctl` derives will not do |
+| `id` | port | the probe id, passed to `west flash --dev-id`. Put it in quotes |
+| `console` | port | `usb`, `usb:NN` (the serial port on USB interface `NN`) or `none` |
+| `serial` | port | the console's path on the host, when the name `bayctl` builds will not do |
 | `baud` | port | the console's speed |
-| `ci` | port | `false`: the board stays out of twister's map |
-| `fixtures` | port | twister fixtures the board provides, added to `bay:` and `node:` |
+| `ci` | port | `false` keeps the board out of twister's map |
+| `fixtures` | port | twister fixtures the board provides, added to the `bay:` and `node:` fixtures `bayctl` writes itself |
 | `product` | port | twister's `product` string, for a runner that picks its probe by it |
-| `role` | port | `analyzer`: the port holds the bay's logic analyzer, never in the map. Only this file says so |
-| `pin` | port | `{vid, pid, serial}`: the device a target is pinned to. `export lab` writes it and only `import lab` reads it |
+| `role` | port | `analyzer`: the port holds the bay's logic analyzer, which never goes in the map. `bayctl` learns this only from this file |
+| `pin` | port | `{vid, pid, serial}`: the device a target is pinned to. `export lab` writes it, and only `import lab` reads it |
 
-What the keys of a board target mean, and the four consoles: [Board targets](../use/board-targets.md).
+[Board targets](../use/board-targets.md) explains the keys of a board target.
 
 `bayctl` stops on an entry it cannot read:
 
 | Entry | Message |
 |---|---|
 | a port outside 1 to 6 | `a sub-slot is <bay>.<1-6>, a DATA board's port` |
-| a `console` that is none of the four | `console must be usb, usb:<interface, 2 hex digits>, aux or none` |
+| a `console` other than `usb`, `usb:NN`, `aux` or `none` | `console must be usb, usb:<interface, 2 hex digits>, aux or none` |
 | `console: aux` on a port | `a sub-slot has no AUX UART: its console is the board's own USB` |
 | a `role` other than `analyzer` | `role '…': analyzer (or none: a board under test)` |
 | `role` on a bay | `` `role` is a sub-slot's: an analyzer watches its neighbours `` |
 
-It only warns, and ignores the keys, when a bay's entry carries board keys while its node reports several
-boards (`its platform belong under bays.B3.<port>`), and when a port's entry names a port the node does
-not have (`left out`). A node with one board and no DATA board, which only the stand-ins and the simulator
-have, takes the port keys on its bay's entry.
+In two cases it prints a warning and ignores the keys:
 
-## access
+- board keys on a bay's entry when the node reports several boards: `… belong under bays.B3.<port>`;
+- a port the node does not have: `… left out`.
+
+## Access rules
+
+`access` says which addresses may use which services of the bay nodes.
 
 ```{code-block} yaml
 :caption: config/lab.yaml
@@ -90,54 +94,62 @@ bays:
 
 | Key | Default | Holds |
 |---|---|---|
-| `enabled` | `true` | `false`: the node's rules are off, and every address may use everything |
-| `everyone` | `[status]` | the services of an address that matches no source |
-| `sources` | none | a name, then `cidr` and `allow` |
+| `enabled` | `true` | `false` turns the node's rules off: every address may use everything |
+| `everyone` | `[status]` | the services an address gets when it matches no source |
+| `sources` | none | a name for each source, then its `cidr` and `allow` |
 
-- A service is `status`, `control`, `console`, `usbip`, `shell` or `camera`; `all` stands for the six.
+- A service is `status`, `control`, `console`, `usbip`, `shell` or `camera`. `all` stands for the six.
 - A source's name is 1 to 15 letters, digits, `.`, `_` or `-`. Its `cidr` is IPv4: `a.b.c.d` or
   `a.b.c.d/n`.
 - An address gets what every source it matches allows, plus `everyone`.
-- A bay's own `access:` adds sources to the rack's, replaces one of the same name, and may set `everyone`
-  or `enabled` for that bay.
-- A node holds 8 sources, the bay's own included: `bayctl` refuses a ninth.
+- A bay's own `access:` adds sources to the rack's and replaces a source of the same name. It may also set
+  `everyone` or `enabled` for that bay.
+- A node holds 8 sources, the bay's own included. `bayctl` refuses a ninth.
 
-`bayctl access push` writes the rules to the nodes, signed with the admin key from `BAYCTL_KEY`. The key
-never goes in this file, and the rules are never read back into it. What each service covers and how a
-node enforces it: [Access rules and security](../use/access.md).
+`bayctl access push` writes the rules to the nodes, signed with the admin key from `BAYCTL_KEY`. The key never
+goes in this file, and `bayctl` never copies the rules back into it.
+[Control who can use the rack](../use/access.md) says what each service covers.
 
-## Which source wins
+## Where each value comes from
 
-For a board, a key of the lab file wins over what the node holds, which wins over the defaults of the
-board's family.
+`bayctl` looks for each value in the order below and takes the first it finds. For a board, this file comes
+first, then the node, then the defaults of the board's family.
 
-| Value | Taken from, in this order |
+| Value | Where `bayctl` looks, in order |
 |---|---|
 | the hub's address | `BAYCTL_HUB`; `hub:`; `rack.<domain>` |
 | a node's address | `host:` of its bay; the address the hub lists for that place; `bay-<id>.<domain>` |
 | the Zephyr board | `platform:`; the node's target; the `platform` of the family that `board:` names, when it has only one |
-| the family | `board:`; else the family that lists the Zephyr board, and among several the one whose USB ids the device shows |
+| the family | `board:`; else the family that lists the Zephyr board, and among several, the one whose USB ids the device shows |
 | the runner | `runner:`; the node's target; the family's runner for that Zephyr board; the family's default |
 | the probe id | `id:`; the node's target |
-| the console | `console:`; the node's target; `usb` (on a node with one board, the family's, else `usb`) |
-| the console's path | `serial:`; else the name derived from the USB strings of the device on the port |
+| the console | `console:`; the node's target; `usb` |
+| the console's path | `serial:`; else a name made from the USB strings of the device on the port |
 | the speed | `baud:`; the family's; 115200 |
-| in the map or not | `ci:`; the node's switch. An analyzer is never in it |
+| in the map or not | `ci:`; the node's setting. An analyzer is never in it |
 | twister's product | `product:`; the family's |
 | fixtures | `fixtures:` only |
 
-For a node that does not answer, the middle source is missing: the lab file and the family's defaults are
-all there is. Where each source is read, and how the console's name is derived:
-[bayctl](bayctl.md#where-the-data-comes-from).
+When a node does not answer, only this file and the family's defaults are left.
+[Where the data comes from](bayctl.md#where-the-data-comes-from) explains how `bayctl` names a console.
 
-## The commented example
+## A short lab file
 
-The example file was written before the DATA ×6. It says "DATA ×4 port" where a port of either DATA board
-is meant. Its bays `A1` to `A4`, `B2` and `B4` hold one board on the node itself: on a v1.0 rack each of
-those boards is on a port, `A1.1` for instance, and `console: aux` is refused there. It stops at row B. The
-keys and the rules are current.
+This file keeps only what the nodes of a rack cannot report. It names the hub, marks the logic analyzer on
+port 3 of bay B3, keeps port 4 out of twister's map and gives bay B4 a fixed address. Add the `access`
+section of [Access rules](#access-rules) to it if you use access rules.
 
-```{literalinclude} ../../config/lab.example.yaml
-:language: yaml
-:caption: config/lab.example.yaml
+```{code-block} yaml
+:caption: config/lab.yaml
+hub: rack-lab1.local
+bays:
+  B3.3:
+    role: analyzer
+  B3.4:
+    ci: false
+  B4:
+    host: 192.168.1.71
 ```
+
+A board's keys go under its port, such as `B3.3`, even when the bay holds one board. A bay's entry, such as
+`B4`, holds only the node's keys: `host`, the network ports and `access`.

@@ -1,13 +1,6 @@
 # The five PCBs
 
-A rack takes five PCB designs: one power hub, a bay node on every tray, a DATA board in every drawer (a
-DATA ×6, or a DATA ×4 where the bay needs wires and a logic analyzer) and a camera pod for each camera.
-
-:::{status} designed
-v1.0 of all five went to the fab on 2026-11-11 and none is on a bench. Their pages give the design's
-values, read from each PCB's `design.py`, its bill of materials and `config/rack.yaml`; nothing has been
-measured. [What exists today](../../plan/status.md#the-five-pcbs).
-:::
+A rack uses five kinds of PCB. This page says what each one does and where to find its design files.
 
 ::::{grid} 3 3 5 5
 :gutter: 2
@@ -29,49 +22,30 @@ measured. [What exists today](../../plan/status.md#the-five-pcbs).
 :::
 ::::
 
-| PCB | Size | Does |
+KiCad renders, in the order of the table below. Not to scale.
+
+| PCB | Size | What it does |
 |---|---|---|
-| [Power hub](power-hub.md) | 76 × 100 mm, 4 layers | turns a USB-C PD charger into the rack's supply, switches it to four rows through eFuses, runs the rack's CAN bus |
-| [Bay node](bay-node.md) | 74 × 90 mm, 4 layers | one bay: the DATA lead's supply and meter, the boards' USB to the network or the front port, the camera, the AUX UART |
-| [Camera pod](camera-pod.md) | 40 × 27 mm, 2 layers | the camera's 3.3 V and four white LEDs, on a lead from the node |
-| [DATA ×6](data-x6.md) | 100 × 70 mm, 4 layers | six switched and measured USB-C ports behind a hub |
-| [DATA ×4](data-x4.md) | 100 × 70 mm, 4 layers | four such ports, a pin header for each, a switch matrix and a logic analyzer |
+| [Power hub](power-hub.md) | 76 × 100 mm, 4 layers | feeds up to four rows of bays from one USB-C PD charger, and runs the [rack bus](../glossary.md) |
+| [Bay node](bay-node.md) | 74 × 90 mm, 4 layers | runs one bay: powers its DATA board, shares the boards' USB, drives the camera and the AUX UART |
+| [Camera pod](camera-pod.md) | 40 × 27 mm, 2 layers | connects the bay's camera and four white LEDs to the bay node |
+| [DATA ×6](data-x6.md) | 100 × 70 mm, 4 layers | six USB-C ports behind a hub, each one switched and measured |
+| [DATA ×4](data-x4.md) | 100 × 70 mm, 4 layers | four such ports, each with a pin header, plus a switch matrix and a logic analyzer |
 
-KiCad renders, not to one scale. The order is that of first power and of
-[the bench checks](../../build/check-the-pcbs/index.md): the hub needs nothing else, the node meets the hub
-next, and the three others hang off a node that works. The leads between them are on
-[Cables and pinouts](../cables.md).
+The DATA ×6 and the DATA ×4 are the two DATA boards. A DATA board stands at the back of the drawer, and
+your boards plug into it.
 
-## How many a rack takes
+Each bay takes a bay node and a DATA board. Each camera takes a camera pod. A rack takes one power hub, and
+a single bay on a desk takes none. How many of each you order depends on the size of your rack:
+[Order the PCBs](../../plan/order-the-pcbs.md#how-many-of-each) counts them. The leads between the PCBs are
+on [Cables and pinouts](../cables.md).
 
-From [Order the PCBs](../../plan/order-the-pcbs.md), which also says what to send to the fab and what it
-leaves for you to solder:
+Each PCB's page describes v1.0, the revision printed on the PCB.
 
-```{include} ../../plan/order-the-pcbs.md
-:start-after: <!-- site:pcbs-per-size -->
-:end-before: <!-- /site:pcbs-per-size -->
-```
+## Schematics and design files
 
-## Revisions at the fab
-
-v1.0 of the five went to NextPCB on 2026-11-11, from commit `125c4ece`: 5 PCBs and 2 assembled of each.
-
-```{include} ../../electronics.md
-:start-after: <!-- site:revisions-at-the-fab -->
-:end-before: <!-- /site:revisions-at-the-fab -->
-```
-
-A revision that went to a fab is frozen: its Gerbers, its bill of materials and its placement file stay
-as they were sent, so that the repository describes the PCBs the fab makes.
-[electronics/released.json](../../../electronics/released.json) holds the SHA-256 of each file, and
-`python tools/released.py` compares them with the tree. Any change, a silkscreen text or one track, goes
-into a new revision ([Change a PCB](../../engineering/change-a-pcb.md)). What a bench finds wrong on v1.0
-is written down and fixed in the next one, not in v1.0.
-
-## Schematics and sources
-
-Each PCB's schematic, layout and fabrication files are generated from its `design.py`. The schematic is
-also a PDF, readable without KiCad.
+Each PCB's schematic, layout and fabrication files are generated from its `design.py`. The schematic is also
+a PDF, which you can read without KiCad.
 
 | PCB | Schematic | KiCad project and `design.py` |
 |---|---|---|
@@ -81,28 +55,6 @@ also a PDF, readable without KiCad.
 | DATA ×6 | [data-port-x6-schematic.pdf](../../../electronics/data-port-x6/docs/data-port-x6-schematic.pdf) | [electronics/data-port-x6/](../../../electronics/data-port-x6/) |
 | DATA ×4 | [data-port-x4-schematic.pdf](../../../electronics/data-port-x4/docs/data-port-x4-schematic.pdf) | [electronics/data-port-x4/](../../../electronics/data-port-x4/) |
 
-Beside each PDF, in the project's `docs/` folder, are three KiCad renders: top, bottom and a three-quarter
-view. The fabrication files are one archive per PCB, linked from its page and listed, with what an archive
-holds, under [Where the fab files are](../../plan/order-the-pcbs.md#where-the-fab-files-are). The reasons
-behind the designs are in the design log, [electronics.md](../../electronics.md).
-
-## One page per PCB, one revision per page
-
-Each PCB's page describes the revision printed on it: "BAY NODE v1.0", "POWER HUB v1.0", "CAM POD v1.0",
-"DATA ×6 v1.0", "DATA ×4 v1.0", each dated 2026-11. A later revision adds a section "What changed in v1.1"
-to the same page, which keeps its address. Each page ends on the known issues of its revision, and
-[Known issues, and what will not work](../known-limitations.md) gathers them.
-
-Where the design log disagrees with a PCB's `design.py` or its bill of materials, these pages follow the
-`design.py` and the bill. Two traps in older text: "DATA ×4 v2" is this DATA ×4 v1.0, named after a first
-design that was never built; and a DATA lead that carries 5 V belongs to the designs before v1.0, whose
-lead carries the row's 20 V.
-
-## A sixth design that was not ordered
-
-The repository holds one more PCB, the single DATA port: one USB-C on 40 × 17 mm, for a drawer that
-holds one board. It was retired from the rack on 2026-10-31, when every drawer took a DATA ×6 or a
-DATA ×4, and it was never ordered. Its files stay in
-[electronics/data-port/](../../../electronics/data-port/) for the standalone Solo box, with a trap: its
-lead's supply wire goes straight to the USB-C's VBUS, and a bay node v1.0 puts 20 to 28 V on that wire.
-Do not plug one into a node v1.0 ([One bay on a desk](../../build/one-bay-on-a-desk.md)).
+The same `docs/` folder holds three KiCad renders of each PCB: top, bottom and three-quarter view.
+The fabrication files come as one archive per PCB:
+[Download the fabrication files](../../plan/order-the-pcbs.md#download-the-fabrication-files).

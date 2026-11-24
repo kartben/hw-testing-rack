@@ -58,6 +58,6 @@ configured for Claude Code in `.mcp.json` (local, not committed).
 
 The published site is built from `docs/` with Sphinx (`sphinx-build -W -b html docs docs/_build/html`, after
 `pip install -r tools/requirements.txt -r docs/requirements.txt`). Its pages follow
-[docs/STYLE.md](docs/STYLE.md): the voice, what a page must not sound like, the status line, where a fact has
-its home, and the directives that keep counts, pin maps and a tool's help out of hand-typed text. The
+[docs/STYLE.md](docs/STYLE.md): what the site is for, how to write a page, where a fact has its home,
+and the directives that keep counts, pin maps and a tool's help out of hand-typed text. The
 navigation is `docs/_toc.yml`. A still of the 3D model for a page: `python tools/viewer_still.py`.

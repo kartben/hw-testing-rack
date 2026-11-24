@@ -1,15 +1,15 @@
 # Board library
 
-[mechanical/boards/boards.yaml](../../mechanical/boards/boards.yaml) describes 20 development boards: their
-outlines, holes and debug USB, how high they stand over the plate, and their Zephyr defaults. Twelve outlines
-are verified and eight are approximate. A bay's entry in `config/rack.yaml` names a board by its id, the first
-column below.
+The board library, [mechanical/boards/boards.yaml](../../mechanical/boards/boards.yaml), lists the
+development boards the rack knows. For each board it gives the size, the mounting holes, the debug USB, how
+high the board sits above the plate, and the Zephyr defaults. A bay in `config/rack.yaml` names its board by
+the id in the first column below. To add a board, see [Add a board to the library](../use/add-a-board.md).
 
 ## The boards
 
 | `id` | Board | Outline, mm | Standoff, mm |
 |---|---|---|---|
-| `arduino-uno-r4` | Arduino UNO R4 Minima / WiFi | 68.58 × 53.34 | 6 |
+| `arduino-uno-r4` | Arduino UNO R4 Minima or WiFi | 68.58 × 53.34 | 6 |
 | `giga-r1-display` | Arduino GIGA R1 WiFi with the GIGA Display Shield | 106.0 × 80.0 | 5 |
 | `nucleo-64` | ST NUCLEO-64 (MB1136, MB1367) | 70.0 × 82.5 | 12 |
 | `nucleo-144` | ST NUCLEO-144 (MB1137, MB1364, MB1404) | 70.0 × 133.34 | 12 |
@@ -30,108 +30,70 @@ column below.
 | `mimxrt1060-evkb` | NXP MIMXRT1060-EVKB | 130.0 × 108.0, approximate | 10 |
 | `mimxrt1170-evkb` | NXP MIMXRT1170-EVKB | 165.0 × 127.0, approximate | 12 |
 
-Read from `mechanical/boards/boards.yaml`. The outline is as the vendor's drawing shows it, width first; the
-standoff is the gap from the plate to the underside of the PCB, and the height of the board's pegs.
+The outline is width × length, as in the vendor's drawing. The standoff is the gap between the plate and the
+underside of the board. It is also the height of the board's {term}`pegs <peg>`.
 
-## How each is held
-
-What `tools/plate_layout.py` returned on 2026-11-24 for each board alone in a bay on the default plate, and
-whether the board fits a lane of a slot bin. The layouts change with `boards.yaml` and the plate: for your
-bay, run the tool on it
-([Ask the tool where the pegs go](../use/mount-a-board.md#ask-the-tool-where-the-pegs-go)).
-
-| `id` | On the plate | In a slot bin |
-|---|---|---|
-| `arduino-uno-r4` | a pin, two cams | yes |
-| `giga-r1-display` | four stops, four cams. The example's B2 gives it its own plate (`plate: boards`): the shield hides the GIGA's edges | no: 21.1 mm thick, 106 mm long |
-| `nucleo-64` | three stops, three cams | yes |
-| `nucleo-144` | a pin, two cams | no: 27.6 mm thick, 133 mm long |
-| `rpi-pico2` | a pin and a cam: `one cam only` | yes |
-| `esp32-s3-devkitc` | no stop and no cam: `held along one axis by friction only`, on both axes | yes |
-| `esp32-c6-devkitc` | the same | yes |
-| `xiao` | two stops, a cam: `no cam on its B edge` | yes |
-| `arduino-nano-matter` | three stops, a cam: `no cam on its B edge` | yes |
-| `beagleplay` | four stops, four cams | no: 21.6 mm thick |
-| `wio-terminal` | four stops, three cams | yes |
-| `microbit-v2` | four stops, a cam: `no cam on its F edge` | yes |
-| `frdm-mcxn947` | three stops, three cams | no: 25.6 mm thick, 118 mm long |
-| `nrf54l15-dk` | four stops, four cams | no: 23.6 mm thick, 117 mm long |
-| `nrf52840-dk` | four stops, two cams: `no cam on its B edge` | no: 23.6 mm thick, 137 mm long |
-| `nrf5340-dk` | the same | no: 23.6 mm thick, 136 mm long |
-| `frdm-k64f` | three stops, three cams | no: 21.6 mm thick |
-| `stm32f746g-disco` | `no peg fits` | no: 21.6 mm thick, 154 mm tall on edge |
-| `mimxrt1060-evkb` | four stops, a cam: `no cam on its R edge` | no: 27.6 mm thick, 108 mm long, 130 mm tall on edge |
-| `mimxrt1170-evkb` | `no peg fits`: it is wider than the drawer | no |
-
-A note in code type is the tool's own words: what each one means for the board, and what to do when the
-pegs cannot hold it, is on [A board that is not in the library](../use/add-a-board.md#what-the-notes-mean). A
-slot bin's reasons are the warnings that `python tools/build.py web` prints for a board in a lane too small
-for it. Layouts for the eight boards with an approximate outline are only indicative.
-
-The example rack holds `esp32-s3-devkitc` and `esp32-c6-devkitc` in slot bins, and the GIGA on its own plate.
+Eight outlines are approximate (`verified: false`). They come from a secondary source. The library has no
+holes for those boards, so no pin can hold them, and their peg layouts are only a guide. If you own one of
+these boards, measure it and set `verified: true` ([Add a board to the library](../use/add-a-board.md)).
 
 ## What fits in a bay
 
-| Holder | What it takes |
+| Holder | What fits |
 |---|---|
-| The honeycomb plate | a board inside the plate's 134.5 × 159.4 mm, clear of what hangs over the plate's front: the display's frame over the front-right corner and the front's joints at both front corners, which only a peg's flange passes under. A board whose USB faces the port wall needs room behind it for its plug and the cable's first bend, up to 26 mm |
-| The drawer's side wall, instead of stops | a board whose standoff is 6.4 mm or less |
-| A lane of a slot bin | a board up to 19.8 mm thick in all (`on_edge`: what reaches under the PCB and over it, a plug in its USB included), 86.5 mm long from its USB edge and 82 mm tall on edge |
-| No bay | a board wider than the drawer, such as the MIMXRT1170-EVKB: it would take a double-width bay, which is not designed |
+| The honeycomb plate | a board within the plate's 134.5 × 159.4 mm |
+| The drawer's side wall, used as a stop | a board whose standoff is 6.4 mm or less |
+| A lane of a {term}`slot bin` | a board up to 19.8 mm thick in all, 86.5 mm long from its USB edge and 82 mm tall on edge |
 
-No source states how tall a board on a plate may be. The cables of boards on plates arch up to about 105 mm
-over the row, and a camera pod hangs down to 120 mm, its lens about 30 mm under the ceiling.
-A slot bin's 82 mm are those of the 120 mm row C, 85 mm from the bin's floor to the ceiling.
+On the honeycomb plate, keep clear of the edges. The drawer's front overhangs both front corners of the
+plate, the right one more. Only a peg's flange passes under it. A board whose USB faces the port wall needs
+up to 26 mm behind it for the plug and the first bend of the cable.
 
-Read from `config/rack.yaml` › `drawer.slot_bin`, `tools/rackcfg.py` and `tools/plate_layout.py`. The pegs,
-the plate and the slot bin: [Put a board in a bay](../use/mount-a-board.md).
+A board on a plate must also fit under what hangs above it. In a 165 mm row, a camera pod comes down to
+120 mm above the row. The cables of boards on plates arch up to about 105 mm.
 
-## Unverified outlines
+In a slot bin, the 19.8 mm counts everything under and over the PCB, a plug in its USB included. The
+library holds these two figures in `on_edge`. These boards fit a lane: `arduino-uno-r4`, `nucleo-64`,
+`rpi-pico2`, `esp32-s3-devkitc`, `esp32-c6-devkitc`, `xiao`, `arduino-nano-matter`, `wio-terminal` and
+`microbit-v2`. The others are too thick, too long or too tall. `python tools/build.py web` warns you when a
+board is in a lane too small for it.
 
-`verified: false` marks an outline or holes taken from secondary sources. The eight, with the `source` each
-entry gives:
+On the honeycomb plate, the layout tool (`tools/plate_layout.py`) finds pegs for every board alone in a bay,
+with three exceptions:
 
-| `id` | Source |
-|---|---|
-| `frdm-mcxn947` | NXP UM12018: outline only, holes not published |
-| `nrf54l15-dk` | Nordic hardware files PCA10156 1.0.0: outline and USB, holes not taken over yet |
-| `nrf52840-dk` | Nordic hardware files PCA10056 3.0.3: outline and USB, holes not taken over yet |
-| `nrf5340-dk` | approximate: measure your board |
-| `frdm-k64f` | a community measurement, outline only |
-| `stm32f746g-disco` | approximate: measure your board; the position of its USB on the long edge is to confirm |
-| `mimxrt1060-evkb` | approximate: measure your board |
-| `mimxrt1170-evkb` | approximate: measure your board |
+- `stm32f746g-disco`: the tool reports `no peg fits`.
+- `mimxrt1170-evkb`: the tool reports `no peg fits`. The board is wider than the drawer, so no bay can take it.
+- `esp32-s3-devkitc` and `esp32-c6-devkitc`: the tool finds no stop and no cam, and reports
+  `held along one axis by friction only` for both axes.
 
-None of them has holes in the library, so none can be held by a pin. If you own one, measure it and set
-`verified: true`: [A board that is not in the library](../use/add-a-board.md).
+To run the tool for your own bay, see [Ask the tool where the pegs go](../use/mount-a-board.md#ask-the-tool-where-the-pegs-go).
+[What the notes mean](../use/add-a-board.md#what-the-notes-mean) explains what it prints, and what to do when
+pegs cannot hold a board. The example rack puts the GIGA R1 on its own plate (`plate: boards`), because
+the display shield hides the GIGA's edges.
 
 ## The fields of boards.yaml
 
 | Field | What it holds | When absent |
 |---|---|---|
-| `name`, `short` | the board's name, and the short one the 3D model and the bill of materials print | `short`: `name` (the bill of materials: the id) |
-| `size` | `[width, length]` of the outline, in the vendor's drawing: origin at its bottom-left corner | required |
-| `holes`, `hole_d` | the mounting holes' centres, `[x, y]`, and their diameter | no holes; 3.2 |
-| `usb` | the debug USB: `edge` (`top`, `bottom`, `left`, `right` of the drawing), `pos` (its centre along that edge, from the left for top and bottom, from the bottom for left and right), `type` (`usb-c`, `micro-b`, `mini-b`) | the middle of the top edge, `usb-c` |
-| `second_usb` | a second USB connector, the same keys | none |
-| `orient` | `side`: the debug USB turned to the drawer's right wall, for a small board on a straight cable or one too long for a plug behind it | towards the port wall |
-| `pegs.keepout` | `[edge, from, to]`: stretches of the outline no peg may touch (a header or a connector at the edge, pins under it). The USB plug's way is kept clear without it | none |
-| `standoff` | the plate's top to the PCB's underside: the height `H` of the board's pegs | 6 |
-| `height` | its tallest part over the PCB | 10 |
+| `name`, `short` | the board's name, and the short one the 3D model and the bill of materials print | `short`: `name`, or the id in the bill of materials |
+| `size` | `[width, length]` of the outline, in the vendor's drawing, origin at its bottom-left corner | required |
+| `holes`, `hole_d` | the centres of the mounting holes, `[x, y]`, and their diameter | no holes; 3.2 |
+| `usb` | the debug USB: `edge` (`top`, `bottom`, `left` or `right` of the drawing), `pos` (its centre along that edge: from the left for top and bottom, from the bottom for left and right), `type` (`usb-c`, `micro-b`, `mini-b`) | the middle of the top edge, `usb-c` |
+| `second_usb` | a second USB connector, with the same keys | none |
+| `orient` | `side` turns the debug USB towards the drawer's right wall. Use it for a small board on a straight cable, or for a board too long to leave room for a plug behind it | towards the port wall |
+| `pegs.keepout` | `[edge, from, to]`: stretches of the outline no peg may touch, such as a header or a connector at the edge. The tool keeps the way for the USB plug clear without it | none |
+| `standoff` | from the top of the plate to the underside of the PCB: the height of the board's pegs | 6 |
+| `height` | the tallest part above the PCB | 10 |
 | `pcb_t` | the PCB's thickness | 1.6 |
-| `on_edge` | `[under, over]` the PCB's bottom face, in a slot bin's lane | `standoff`, and `pcb_t` + `height` |
-| `fence` | `true`: corner fences on the board's own plate (`plate: boards`) in place of inserts; a board without holes gets them anyway | false |
-| `headers` | 2.54 mm pin headers where Dupont jumpers plug: rows of `n` pins from `at` by `step`, with their `names` | none |
-| `color`, `screen`, `model` | what the 3D model paints, a live screen on the board, and the vendor's 3D model with its credit ([3D models of the dev boards](../boards-3d.md)) | a plain green board |
+| `on_edge` | `[under, over]` the bottom face of the PCB, in a lane of a slot bin | `standoff`, and `pcb_t` + `height` |
+| `fence` | `true`: corner fences on the board's own plate (`plate: boards`) instead of inserts. A board without holes gets them anyway | false |
+| `headers` | 2.54 mm pin headers for Dupont jumpers: rows of `n` pins from `at` by `step`, with their `names` | none |
+| `color`, `screen`, `model` | the colour the 3D model paints, a live screen on the board, and the vendor's 3D model with its credit ([Licences and credits](licences-and-credits.md)) | a plain green board |
 | `source`, `verified` | where the outline comes from, and whether it was measured or taken from the vendor's own drawing | `verified`: false |
-| `span` | `2`: the board needs a double-width bay, which is not designed. No tool reads it today | |
-| `zephyr` | the board's Zephyr defaults: below | |
+| `span` | `2`: the board needs a double-width bay. The rack has none | |
+| `zephyr` | the board's Zephyr defaults, below | |
 
-Read from the header of `boards.yaml` and from `tools/rackcfg.py`, `tools/plate_layout.py` and
-`tools/build.py`. Two lines of that header are older than the honeycomb plate: `verified: false` no longer
-gives a board a fence plate, and `fence` acts only on a board's own plate.
-
-## Zephyr defaults per family
+## Zephyr defaults
 
 | `id` | Target (`platform`, or the `choices`) | `runner` |
 |---|---|---|
@@ -139,7 +101,7 @@ gives a board a fence plate, and `fence` acts only on a board's own plate.
 | `giga-r1-display` | `arduino_giga_r1/stm32h747xx/m7` | `dfu-util` |
 | `nucleo-64` | `nucleo_c031c6`, `nucleo_f401re`, `nucleo_f446re`, `nucleo_g071rb`, `nucleo_g474re`, `nucleo_l476rg` | `stm32cubeprogrammer` |
 | `nucleo-144` | `nucleo_f429zi`, `nucleo_f767zi`, `nucleo_h563zi`, `nucleo_h743zi`, `nucleo_u575zi_q` | `stm32cubeprogrammer` |
-| `rpi-pico2` | `rpi_pico2/rp2350a/m33_0`, console on the bay's AUX UART | `uf2` |
+| `rpi-pico2` | `rpi_pico2/rp2350a/m33_0` | `uf2` |
 | `esp32-s3-devkitc` | `esp32s3_devkitc/esp32s3/procpu` | `esp32` |
 | `esp32-c6-devkitc` | `esp32c6_devkitc/esp32c6/hpcore` | `esp32` |
 | `xiao` | `xiao_ble`, `xiao_esp32c3`, `xiao_esp32c6/esp32c6/hpcore`, `xiao_esp32s3/esp32s3/procpu`, `xiao_rp2040` | `uf2` or `esp32`, by target |
@@ -156,21 +118,53 @@ gives a board a fence plate, and `fence` acts only on a board's own plate.
 | `mimxrt1060-evkb` | `mimxrt1060_evk@B/mimxrt1062/qspi` | `linkserver` |
 | `mimxrt1170-evkb` | `mimxrt1170_evk@B/mimxrt1176/cm7` | `linkserver` |
 
-Read from the `zephyr` field of each entry, which also lists the USB ids (`usb`) the board's debug USB shows.
-The bay's page offers these targets when a device with one of those ids is on a port, from a table compiled
-into the node's firmware (`firmware/bay-node/web/board_targets.py`); `bayctl` takes the runner from here when
-it writes twister's hardware map. A family with `choices` needs one picked per port. How a port gets its
-target: [Board targets](../use/board-targets.md).
+Each entry's `zephyr` field also lists the USB ids of its debug USB. When a device with one of those ids is on
+a port, the bay's page offers these targets. The page reads them from a copy built into the node's firmware,
+so a board you add shows there only after you update the firmware. For a family with several `choices`, pick
+one for each port.
+`bayctl` takes the runner from here when it writes twister's hardware map.
+[Board targets](../use/board-targets.md) explains how a port gets its target.
 
-From the entries' own notes:
+## Boards that need a wire or a probe
 
-- `arduino-uno-r4`: the WiFi's ESP32-S3 is its probe and USB console; the Minima has neither, so an SWD probe
-  and the console on AUX.
-- `giga-r1-display`: build with `--shield arduino_giga_display_shield`; `dfu-util` needs the bootloader, a
-  double tap of RESET (the bay's AUX RESET).
-- `rpi-pico2`: no probe on the board; `uf2` needs BOOTSEL (AUX BOOT to TP6, AUX RESET to RUN), or add a
-  Raspberry Pi Debug Probe and use `openocd`.
-- `arduino-nano-matter`: its SAMD11 is a CMSIS-DAP probe on the USB-C; `openocd` needs Arduino's fork for the
-  MG24's flash, or use `jlink`.
-- `wio-terminal`: its UF2 bootloader on the USB-C, entered by a double reset (the bay's AUX RESET); no probe.
-- `beagleplay`: the CC1352 with `cc1352_flasher --play`, the M4 through remoteproc, from the board's own Linux.
+Every board sits on a port of a DATA board. Its console must be a serial port on USB: the board's own, or a
+probe's. Only a DATA ×4 port has a RESET and a BOOT pin, which you wire to the board with jumper wires
+([Reset and bootloader](../use/power-and-reset.md#reset-and-bootloader)). A DATA ×6 port has USB only.
+
+Most boards in the library need nothing more. These do.
+
+### Arduino UNO R4 Minima (`arduino-uno-r4`)
+
+The UNO R4 WiFi needs nothing: its ESP32-S3 is the probe and the USB console. The Minima has neither. Wire an
+SWD probe that has a serial port, such as a Raspberry Pi Debug Probe, to the Minima's SWD pins and to D0 and
+D1. Plug the probe into another port of the bay.
+
+### Arduino GIGA R1 (`giga-r1-display`)
+
+Build with `--shield arduino_giga_display_shield`. The console is on the GIGA's USB-C. `dfu-util` needs the
+bootloader, which a double tap of RESET starts. Put the GIGA on a DATA ×4 port, and wire the port's RST pin
+to the GIGA's RESET pin. Then reset the port twice in quick succession.
+
+### Raspberry Pi Pico 2 (`rpi-pico2`)
+
+The Pico 2 has no probe. Build with `-S cdc-acm-console` to put the console on its USB. `uf2` copies the
+image onto the bootloader's drive, so the drive must be mounted on your machine.
+
+A blank Pico 2 starts in its bootloader. To start the bootloader again later, put the board on a DATA ×4
+port and wire the port's BOOT pin to TP6. Then run `bayctl boot <port> --power-cycle`. You can also add a
+Raspberry Pi Debug Probe on another port and use `openocd`.
+
+### Arduino Nano Matter (`arduino-nano-matter`)
+
+The SAMD11 on the board is a CMSIS-DAP probe on the USB-C. `openocd` needs Arduino's fork to write the
+MG24's flash. You can also use `jlink`.
+
+### Seeed Wio Terminal (`wio-terminal`)
+
+The Wio Terminal has no probe. Its console and its UF2 bootloader are on the USB-C, and a double reset starts
+the bootloader. Put the Wio on a DATA ×4 port, and wire the port's RST pin to the Wio's RESET pad. Then reset
+the port twice in quick succession.
+
+### BeagleBoard.org BeaglePlay (`beagleplay`)
+
+Flash it from the board's own Linux: the CC1352 with `cc1352_flasher --play`, the M4 through remoteproc.

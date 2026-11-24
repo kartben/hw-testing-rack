@@ -1,68 +1,54 @@
-# Zephyr twister
+# Run twister on the rack
 
-`bayctl hwmap` writes a twister hardware map from what the rack holds: one entry per board, each with a
-pre-script that powers the board, attaches its USB device and waits for its console before every test.
+`bayctl hwmap` writes a twister hardware map of the boards in your rack. Each entry has a pre-script. Before
+every test, it powers the board, attaches its USB device and waits for its console.
 
-:::{status} simulated
-The map and its scripts are generated in `bayctl`'s tests against the simulated node, and in the
-repository's CI from the example lab file. Twister has never run with such a map, against a rack or against
-a stand-in. See [What exists today](../plan/status.md#status-twister).
-:::
+You need a Linux machine set up as on [Set up your machine](set-up-your-machine.md), with the sudo rule, and a
+[board target](board-targets.md) on each port.
 
-Needs: a Linux machine set up as on [Set up bayctl and usbip](set-up-your-machine.md), the sudo rule
-included, because the pre-script runs `sudo -n usbip`; and a [board target](board-targets.md) on each
-port.
-
-## Generate the hardware map
+## Make the hardware map
 
 ```console
 $ python tools/bayctl.py hwmap -o rack-map.yaml
 ```
 
-`hwmap` asks the hub for the nodes and each node for its ports, then writes the map and, in a folder
-`rack-scripts` beside it, one script per board: `bay-b3-2-pre.sh` for B3.2. It ends with
-`wrote rack-map.yaml (N boards) and pre-scripts in <folder>`. Each board it left out or has a doubt about
-is a line `warning:` on stderr; the exit code stays 0. Make the map again when a board moves or changes,
-rather than editing it.
+`hwmap` writes the map, and one script per board in a folder `rack-scripts` beside it: `bay-b3-2-pre.sh` for
+B3.2. It prints a `warning:` line on stderr for each board it leaves out or is unsure of, and still exits 0.
 
 | Option | Effect |
 |---|---|
 | `-o FILE` | the map; `rack-map.yaml` in the current directory by default |
 | `--scripts DIR` | where the scripts go, instead of `rack-scripts` beside the map |
 | `--python PYTHON` | the interpreter the scripts call; by default the one that runs `hwmap`, by its full path |
-| `--power-cycle` | the pre-script power-cycles the board before every test, for a clean state each time |
-| `--lease DURATION` | each test reserves its board: see the last section |
+| `--power-cycle` | the pre-script power-cycles the board before every test |
+| `--lease DURATION` | each test reserves its board ([Reserve each board for its test](#reserve-each-board-for-its-test)) |
 
-The map and the scripts hold absolute paths to that Python, to `bayctl`, to the lab file when there is one
-and to the scripts: make them on the machine that runs twister.
+The map and the scripts hold absolute paths, so make them on the machine that runs twister. When a board moves
+or changes, make the map again instead of editing it.
 
-With no hub and no node in reach, the map comes from the lab file's entries alone. The repository's CI
-does this with the example lab file, which gives 7 boards and 8 warnings; the command is on
-[Try it without hardware](../plan/try-it-without-hardware.md). That file predates the DATA ×6: its A1 to
-A4, B2 and B4 hold one board on the node, a form a v1.0 rack does not have, so its map begins with `A1`
-where a v1.0 rack's would begin with `A1.1`. The Pico 2's warning in it, `AUX BOOT to TP6, AUX RESET to
-RUN`, is the wiring of a one-board bay: on a DATA ×4 port it means the port's own BOOT line to TP6 and its
-RESET line to RUN ([USB/IP and flashing](usb-and-flashing.md#uf2-boards-and-esp32-boards)).
+You can also make a map with no rack, from the lab file alone:
+[Try it without hardware](../plan/try-it-without-hardware.md#a-twister-hardware-map-without-a-rack).
 
-## Run twister, and what a run leaves behind
+## Run twister
 
 ```console
 $ west twister --device-testing --hardware-map rack-map.yaml -p xiao_esp32c3 -T samples/hello_world
 ```
 
-Twister then handles the rack's boards as boards plugged into the machine: before each test it runs the
-entry's pre-script, then flashes with west and reads the console. Which probes and bootloaders work
-through USB/IP, at full speed, decides what may go in the map: [USB/IP and flashing](usb-and-flashing.md)
-lists them. A board flashed with `uf2`, such as a Pico 2, also needs its bootloader's drive mounted on this
-machine and its BOOT line wired; keep it out of the map until a flash by hand works.
+Before each test, twister runs the entry's pre-script, flashes the board with west and reads the console. It
+may pick any board of the platform in the map. To test some boards only, see
+[Run twister on some boards only](#run-twister-on-some-boards-only). Keep a board out of the map until you can
+flash it by hand through the rack
+([Which probes and devices work](usb-and-flashing.md#which-probes-and-devices-work)).
 
-When the run ends, every board it tested is still attached to your machine and powered, after a run from a
-laptop as after a CI job ([What a job leaves behind](ci-host.md#what-a-job-leaves-behind)).
+When the run ends, every board it tested is still powered and attached to your machine. With the kernel's
+default settings, one Linux machine attaches 8 boards at a time
+([How many boards one host can attach](ci-host.md#how-many-boards-one-host-can-attach)).
 
 ## One entry, field by field
 
 ```{code-block} yaml
-:caption: rack-map.yaml, the entry of B3.1 from the example lab file, the map made in /ci
+:caption: rack-map.yaml made in /ci: the entry of B3.1
 - connected: true
   platform: xiao_esp32c3
   product: Seeed Studio XIAO (any) (bay B3.1)
@@ -80,106 +66,118 @@ laptop as after a CI job ([What a job leaves behind](ci-host.md#what-a-job-leave
 
 | Field | Where it comes from |
 |---|---|
-| `connected` | `true`; `false` for a board with no console path, which keeps it out of the tests. `true` says only that a path is known: a lab file's `serial:` gives one with the node off |
-| `platform` | the Zephyr board of the port's target |
-| `product` | `product` in the lab file or in the board's family, else the family's name and the port's |
-| `runner` | the target's runner, else the default of its family |
-| `id` | the target's probe id; else, for the `esp32` runner, the console's path; else the USB serial number of the device on the port, or of the device the target is pinned to |
-| `serial` | the console's path under `/dev/serial/by-id`, worked out from the device's USB strings, or `serial:` in the lab file |
-| `baud` | `baud` in the lab file, else the family's, else 115200 |
-| `pre_script` | the script that prepares this board; with `--lease`, a `post_script` follows it |
+| `connected` | `false` when the board has no console path: twister then skips it |
+| `platform` | the port's board target |
+| `product` | the lab file or the board library |
+| `runner` | the target's runner, else the board family's |
+| `id` | the probe id; for the `esp32` runner, the console's path; else the device's USB serial number |
+| `serial` | the console's path under `/dev/serial/by-id`, or `serial:` in the lab file |
+| `baud` | the lab file, else the board family's, else 115200 |
+| `pre_script` | the script that prepares the board; with `--lease`, a `post_script` too |
 | `script_param` | twister stops the pre-script after 90 s |
-| `fixtures` | `bay:` and the port's name; `node:` and the bay, for a port of a DATA board; then `fixtures:` of the lab file |
+| `fixtures` | `bay:` and the port; `node:` and the bay, for a port of a DATA board; then the lab file's `fixtures:` |
 
-Every board of the run is attached to the same machine, so two boards with the same kind of probe show up
-as two probes at once and the runner picks its board by `id`. An empty probe id on the target stands for
-the device's USB serial number. For the `esp32` runner the serial port is the id,
-and `bayctl` fills it in. `hwmap` warns when two or more boards with the same runner end up without an id.
-
-`serial` is the name udev will give the console once the board is attached; `bayctl` computes it without
-attaching anything ([Where the data comes from](../reference/bayctl.md#where-the-data-comes-from)).
-
-A board whose console is `aux` gets `serial_pty` in place of `serial`: the command `bayctl pty <bay>`,
-which joins the pty twister gives it to the node's raw AUX port. Only a node with one board can have that
-console, so no entry of a v1.0 rack carries it ([Board targets](board-targets.md#which-console)). Twister
-splits the command on spaces and commas: keep the paths of Python and of the checkout free of both.
-`bayctl pty` sets no baud rate and uses the AUX settings saved on the node: set the baud rate once, on the
-web console or with `bay aux <baud>` ([Serial console](serial-console.md)).
+All the boards are attached to the same machine, so the runner finds its board by `id`. `hwmap` warns when two
+boards with the same runner have no id. It finds `serial` without attaching anything
+([Where the data comes from](../reference/bayctl.md#where-the-data-comes-from)).
 
 ## What the pre-script does, and when it fails
 
 ```{code-block} sh
-:caption: rack-scripts/bay-b3-1-pre.sh, made with --python python3 from a checkout in /ci/rack
+:caption: rack-scripts/bay-b3-1-pre.sh, made from a checkout in /ci/rack with its virtual environment active
 #!/bin/sh
 # Generated by tools/bayctl.py hwmap: bay B3.1 (Seeed Studio XIAO (any)) before each test.
-exec python3 /ci/rack/tools/bayctl.py prepare B3.1
+exec /ci/rack/.venv/bin/python /ci/rack/tools/bayctl.py prepare B3.1
 ```
 
-With a lab file, `--lab` and its full path come before `prepare`. `prepare B3.1` does this, in order:
+The script calls the Python that ran `hwmap`, by its full path, so it finds PyYAML without an active virtual
+environment. If you use a lab file, the script also gives `--lab` and the file's full path before `prepare`.
+`prepare B3.1` does this, in order:
 
 1. With `--lease`, it reserves the port for this machine, or renews the reservation.
-2. It switches the bay to USB/IP mode if the bay is in classic mode.
-3. It powers the port on if the port is off or latched after an over-current. With `--power-cycle` it
+2. If the bay is in classic mode, it switches the bay to USB/IP mode.
+3. If the port is off, or latched after an over-current, it powers the port on. With `--power-cycle`, it
    detaches the board and cycles the port for 1000 ms instead.
-4. It waits until the node has enumerated a USB device on the port, 30 s at most.
+4. It waits up to 30 s for the node to enumerate a USB device on the port.
 5. It runs `usbip attach`, unless the device is already attached.
-6. It waits for the console's path to exist, 30 s at most.
+6. It waits up to 30 s for the console's path to appear.
 
-The script carries its paths and none of the environment: it finds the hub the way the `hwmap` run did
-only if `BAYCTL_HUB`, and `BAYCTL_USBIP`, are the same when twister runs.
+The script holds its paths but not your environment. Run twister with the same `BAYCTL_HUB` and
+`BAYCTL_USBIP` as the `hwmap` run.
 
-Step 3 sends a plain power-on, never a queued one. A port that was shed, or that waits for its turn,
-answers 409 while the bay has no room: `prepare` exits with 1 and the test has no board to flash. On the
-default grant four boards may not all be on in a DATA ×4 bay, and ports 5 and 6 of a DATA ×6 cannot be
-switched at all on firmware 0.5 ([How many boards a bay gives a job](ci-host.md#how-many-boards-a-bay-gives-a-job-on-firmware-05)).
-
-When a step fails, `prepare` exits with 1 and prints one line on stderr: `bayctl:`, the port, and one of
-these, after the API path when it is the node that refused:
+When a step fails, `prepare` exits with 1 and prints one line on stderr: `bayctl:`, the port, and one of these
+messages.
 
 | Message | The step that failed |
 |---|---|
-| `409 no room in the bay's budget: the bay draws …` | 3: the bay's share is used up |
+| `409 no room in the bay's budget: the bay draws …` | 3: the bay's share of power is used up ([Power budget and queued ports](power-budget.md)) |
 | `423 …` | 1 or 3: another address has reserved the port or the bay |
 | `no USB device enumerated on the DUT port after 30 s` | 4: the node saw no device on the port |
 | `<busid> is not exported (is the board powered and enumerated?)` | 5: the node does not export the port's device |
 | `sudo -n usbip …`, then sudo's or usbip's own message | 5: the sudo rule, or `usbip` itself |
-| `/dev/serial/by-id/… did not appear` | 6: the console's path never showed up on this machine |
+| `/dev/serial/by-id/… did not appear` | 6: the console never showed up on this machine |
 
-A pre-script that runs into twister's 90 s, and what to look at for each of these:
-[Troubleshooting](troubleshooting.md).
+Step 3 does not wait for power. A port that does not fit in the bay's share fails with 409. To wait for room
+instead, run `bayctl power B3.1 on --wait 300` before twister ([Power budget and queued ports](power-budget.md)).
 
-## Boards left out of the map, and why
+## Boards that hwmap leaves out
 
 `hwmap` writes no entry for:
 
-- a port whose target is out of the map: the page's switch, or `ci: false` in the lab file;
-- the port of the bay's logic analyzer, whatever its switch says;
+- a port kept out of the map, by the switch on the bay's page or by `ci: false` in the lab file;
+- the port of the bay's logic analyzer;
 - an empty port of a DATA board;
-- a port with a device and no target. This one is warned about, with the address of the page to set it on.
+- a port with a device but no board target. `hwmap` warns about this one, and gives the address of the page
+  where you set the target.
 
-It writes the entry with `connected: false`, and a warning, for a board that has no console path: it was
-powered off or still enumerating when the map was made, it has no serial port on the interface its console
-names, or its console is `none`. `serial:` in the lab file gives a path by hand. Twister passes over such an
-entry, and `hwmap` still exits 0: a job checks the map itself
-([A whole job](ci-host.md#a-whole-job-from-checkout-to-results)).
+It writes `connected: false`, with a warning, for a board with no console path. The board was off or still
+enumerating, or its console is wrong or `none`. To give the path by hand, set `serial:` in the lab file.
+Twister skips such an entry and `hwmap` still exits 0, so a CI job must check the map itself
+([A job, from checkout to results](ci-host.md#a-job-from-checkout-to-results)).
 
-It writes the entry as it is, and warns, when the device on the port is not the one the target was saved
-for ([Board targets](board-targets.md#pinned-to-the-device-on-the-port)). Some families of the board
-library carry a note that `hwmap` prints as a warning at every run: the Pico 2's says that it has no
-on-board probe and that `uf2` needs BOOTSEL.
+`hwmap` also warns when the device on a port is not the one its target was saved for
+([When you change the board on a port](board-targets.md#when-you-change-the-board-on-a-port)). Some boards of
+the library carry a note: `hwmap` prints it too.
 
-## Pin a test to a bay, reserve the bays for the run
+## Run twister on some boards only
 
-`--fixture bay:B3.2` pins a test to one board. `node:B3` names any board of
-bay B3. Add your own per port, under `fixtures:` in the [lab file](../reference/lab-yaml.md).
+Twister runs a test on any board of the platform that the map holds. `--fixture` does not choose a board:
+twister adds the fixture to every entry of the map. To test some boards only, give twister a map that holds
+only them.
+
+The `bay:` fixture of each entry names its port. This cuts `rack-map.yaml` down to the ports you list, and
+stops with an error if one of them is missing or not connected:
+
+```console
+$ python - rack-map.yaml B3.1 B3.2 <<'EOF'
+import sys, yaml
+path, ports = sys.argv[1], sys.argv[2:]
+want = {f"bay:{p}" for p in ports}
+keep = [e for e in yaml.safe_load(open(path)) or []
+        if want & set(e["fixtures"])]
+up = {f[4:] for e in keep if e["connected"]
+      for f in e["fixtures"] if f in want}
+missing = sorted(set(ports) - up)
+if missing:
+    sys.exit(f"not connected in the map: {' '.join(missing)}")
+yaml.safe_dump(keep, open(path, "w"), sort_keys=False)
+EOF
+```
+
+Run it after each `hwmap`. Reserve the bays of those ports first, so that no one else uses them
+([Reserve a bay](reserve-a-bay.md)).
+
+A test that needs a fixture, such as a sensor wired to the board, runs only on the boards that have it. List a
+port's fixtures under `fixtures:` in the [lab file](../reference/lab-yaml.md).
+
+## Reserve each board for its test
 
 ```console
 $ python tools/bayctl.py hwmap -o rack-map.yaml --lease 30m
 ```
 
-With `--lease`, the pre-script reserves the board before each test (`prepare B3.2 --lease 30m`) and the
-entry gains a `post_script`, which runs `bayctl release B3.2`. Every test renews the reservation, so the
-duration needs to cover one test, however long the run. A reservation of one port does not keep another
-host off the board's USB/IP: a job that shares the rack reserves the whole bay instead, before `hwmap`, and
-makes the map without `--lease` ([Two hosts on one rack](ci-host.md#two-hosts-on-one-rack)). How to end a
-reservation that a dead job left: [Reserve a bay](reserve-a-bay.md).
+With `--lease`, the pre-script reserves the board before each test, and a `post_script` releases it after.
+Give a duration long enough for one test.
+
+On a rack that several hosts share, reserve whole bays before `hwmap` and make the map without `--lease`
+([Share the rack between hosts](ci-host.md#share-the-rack-between-hosts)).

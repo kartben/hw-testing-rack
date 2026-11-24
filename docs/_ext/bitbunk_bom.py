@@ -159,6 +159,23 @@ def _source(config, row: dict) -> nodes.Node:
     return out
 
 
+def _short(item: str) -> str:
+    """The bill's item without its notes: what comes before the first ": " (unless it sits inside a
+    parenthesis, then before that parenthesis), and without a parenthesis of more than four words."""
+    p = item.find(": ")
+    if p >= 0:
+        head, depth, opened = item[:p], 0, None
+        for i, ch in enumerate(head):
+            if ch == "(":
+                depth += 1
+                opened = i if depth == 1 else opened
+            elif ch == ")":
+                depth -= 1
+        item = head[:opened] if depth > 0 and opened is not None else head
+    item = re.sub(r"\s*\((?:[^()]*\s){4,}[^()]*\)", "", item)
+    return item.strip(" ,;")
+
+
 def _list(value: str | None) -> list[str]:
     return [v.strip() for v in (value or "").split(",") if v.strip()]
 
@@ -173,6 +190,7 @@ class BomTable(SphinxDirective):
         "size": directives.unchanged,
         "plain": directives.flag,
         "total": directives.flag,
+        "full": directives.flag,            # the item with the bill's notes, as bom/rack-bom.csv has it
         "class": directives.class_option,
     }
 
@@ -223,6 +241,8 @@ class BomTable(SphinxDirective):
                     line.append(_money(r.get(c)))
                 elif c == "source":
                     line.append(_source(self.config, r))
+                elif c == "item" and "full" not in self.options:
+                    line.append(_short(r.get("item") or ""))
                 else:
                     line.append(r.get(c) or "")
             body.append(line)

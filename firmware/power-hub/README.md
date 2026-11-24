@@ -19,7 +19,7 @@ How to build, flash and use it is on the documentation site:
 | Build | [Build or download the firmware](../../docs/build/get-the-firmware.md), [Flash the hub and the nodes](../../docs/build/flash.md), [Power box and charger](../../docs/build/power-box.md) |
 | Use | [Rows and the rack's page](../../docs/use/rack-page.md), [Access rules and security](../../docs/use/access.md), [Update the firmware](../../docs/use/update-firmware.md), [Power budget and queued ports](../../docs/use/power-budget.md) |
 | Reference | [Power hub shell](../../docs/reference/hub-shell.md), [Power hub HTTP API](../../docs/reference/hub-api.md), [Network ports, names, metrics](../../docs/reference/network.md), [LEDs, buttons and switches](../../docs/reference/leds-and-buttons.md) |
-| Without a hub | the simulated hub: [Try it without hardware](../../docs/plan/try-it-without-hardware.md); the bench stand-ins and the tests: [Work on the firmware](../../docs/engineering/work-on-the-firmware.md) |
+| Without a hub | the simulated hub: [Try it without hardware](../../docs/plan/try-it-without-hardware.md); the bench stand-ins and the tests: [Work on the firmware](../../docs/dev/work-on-the-firmware.md) |
 | Design | [docs/firmware.md › Power hub application](../../docs/firmware.md#power-hub-application), [docs/power.md](../../docs/power.md), the rack bus: [docs/rack-protocol.md](../../docs/rack-protocol.md) |
 
 ## Source layout

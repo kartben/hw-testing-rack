@@ -1,187 +1,129 @@
-# Known issues, and what will not work
+# Limitations
 
-A board in a bay gets full-speed USB over the network, never high speed, and no new revision changes that:
-the three sections *by design* hold limits of that kind. What is known to be wrong on the v1.0 PCBs and in
-firmware 0.5 can be fixed by a next revision or release. What is only untested is on
-[What exists today](../plan/status.md).
+This page lists what a BitBunk rack cannot do, and how to work around it where you can.
 
-Nothing on this page was found on a rack: no rack exists. Every line comes from the design, from the code or
-from a review of the layout, and a few from the bench stand-ins, where the line says so.
+## USB over the network
 
-(by-design-usb)=
-## USB, by design
+A board's USB reaches your machine through its bay node and the Wi-Fi network. These do not pass:
 
-Over USB/IP a board's USB passes through the bay node's ESP32-S3 and the Wi-Fi network.
-
-| What does not pass | Why |
+| What | Why |
 |---|---|
-| High speed | The ESP32-S3 has one full-speed USB port: 12 Mbit/s for the whole bay, shared by its boards |
-| A CMSIS-DAP v1 probe (HID), such as the UNO R4 WiFi's own | It needs interrupt OUT transfers. The bay node's USB host does control, bulk and interrupt IN |
-| Audio and video devices | No isochronous transfers |
-| A low-speed device behind a DATA board, such as a keyboard | The USB host does not handle low speed behind a hub |
-| A seventh device on one bay node | Six USB/IP sessions a node: the six boards of a DATA ×6, or the four of a DATA ×4, its co-processor and a spare |
-| A second machine on a board that is already attached | A device takes one USB/IP client |
-| A session across a reset | The session ends when the board leaves the bus. `bayctl attach --follow` attaches it again |
-| A continuous 921600 Bd stream through a USB-serial bridge | The bridge overflows between two reads over Wi-Fi. 115200 Bd passed on a XIAO stand-in (2026-10-22), and the throughput measured there is enough for 230400 Bd. A board's own USB serial holds its data until it is read |
+| High speed | The bay node has one full-speed USB port, 12 Mbit/s for the whole bay |
+| A CMSIS-DAP v1 probe (HID), such as the UNO R4 WiFi's | It needs interrupt OUT transfers |
+| Audio and video devices | The node does no isochronous transfers |
+| A low-speed device, such as a keyboard | The node does not handle low speed behind a hub |
+| A seventh device on one bay node | A node serves six USB/IP sessions |
+| A second machine on a board | A device takes one client |
+| A session across a board's reset | It ends when the board leaves the bus. `bayctl attach --follow` attaches it again |
+| A continuous 921600 Bd stream through a USB-serial bridge | The bridge overflows. Use 115200 or 230400 Bd |
 
-A board that carries a USB hub of its own, behind the DATA board's, has not been tried. The firmware's notes
-still say that such a board does not work over USB/IP; that sentence was written before the bay node drove
-a hub at all.
+`usbip` needs a Linux kernel: see [On macOS or Windows](../use/usb-and-flashing.md#on-macos-or-windows).
+[USB/IP and flashing](../use/usb-and-flashing.md#which-probes-and-devices-work) lists the probes that work.
 
-`usbip` and `bayctl attach` need a Linux kernel. What exists for the other systems is on
-[USB/IP and flashing](../use/usb-and-flashing.md#on-macos-or-windows).
+None of this applies to a laptop on the bay's front port. In classic mode, the laptop's own USB connects to
+the DATA board at 480 Mbit/s ([Front port and classic mode](../use/front-port.md)). Classic mode needs the bay
+node's firmware running.
 
-None of these limits is in the way of a laptop on the bay's front port: classic mode is an analog path to
-the laptop's own USB, at 480 Mbit/s ([Front port and classic mode](../use/front-port.md)). It needs the bay
-node powered and its firmware running, and it has never been tried.
-
-(by-design-network-and-access)=
-## Network and access, by design
+## Network and access
 
 | Limit | What it means |
 |---|---|
-| Wi-Fi only | A bay node and the hub have no Ethernet. The rack bus carries places, power grants and the hub's commands, never a board's USB |
+| Wi-Fi only | A bay node and the hub have no Ethernet |
 | IPv4 only | IPv6 is off in both firmwares |
-| No TLS, no login | Rights go by source address. A bay node's telnet shell has no login of its own, and the admin key crosses the network in clear once, when a PCB is claimed |
-| A refused connection is dropped | It is not reset: `usbip attach` from a machine without the right waits for its timeout |
-| The hub has no rules | Anyone on the network reads the rack's page, its status, its events and its metrics. The key guards what acts |
-| One client on each AUX port | TCP 4000 (raw) and 4001 (RFC 2217) take one client each. The web console still shows the traffic |
-| A reservation is kept in RAM | A bay node that restarts forgets it |
+| No TLS, no login | Rights go by source address. The node's telnet shell has no login. The admin key crosses the network in clear once, when you claim a node or the hub |
+| A refused connection is dropped | The node does not reset it, so `usbip attach` from a machine without the right waits until it times out |
+| The hub has no access rules | Anyone on the network can read the rack's page, status, events and metrics. Actions need the admin key |
+| One client on each AUX port | TCP 4000 (raw) and TCP 4001 (RFC 2217) take one client each |
+| Reservations live in RAM | A bay node that restarts forgets its reservation |
 
-What the access rules protect, and what they leave open: [Access rules and security](../use/access.md).
-Keep the rack on a lab network or behind a VPN.
+Keep the rack on a lab network or behind a VPN. [Control who can use the rack](../use/access.md) explains
+what the access rules protect.
 
-(by-design-mechanics-and-power)=
-## Mechanics and power, by design
+## Mechanics and power
 
 | Limit | What it means |
 |---|---|
-| One bay wide | No double-width bay is designed: a board must fit one board plate, 134.5 × 159.4 mm, with its plug and its cable behind it |
-| Rows of 165 mm at most | A taller row is not designed: a 185 mm row would take a 258.8 mm ladder |
-| Four rows | The hub has four row outputs |
-| A dense bay takes thin boards | Up to 19.8 mm thick, 86.5 mm long and 82 mm tall, standing on edge, and no jumper wires: a board that needs wires goes to a bay with a plate |
-| No battery on a board | A board that charges a LiPo draws 0.6 to 1.2 A by itself, and a cell charging unattended in a closed drawer is a fire risk: [Put a board in a bay](../use/mount-a-board.md) |
-| 20 V | 28 V is locked out in firmware 0.5, and the hub never accepts 36 or 48 V. A 140 W charger brings nothing more today: see the open questions |
-| No ride-through | The charger's output is the rack's rail. A charger that cuts out, or that renegotiates through a hard reset, restarts every bay |
-| It tips | A pull of 8 to 13 N at the top row tips a rack that stands free, by calculation: [Screw the rack to the bench](../build/screw-the-rack-to-the-bench.md) |
-| One bay on a desk | No camera mast, and no blank for the pin-header windows of the Quad: [One bay on a desk](../build/one-bay-on-a-desk.md) |
+| One bay wide | A board must fit one plate, 134.5 × 159.4 mm, with its plug and cable behind it ([What fits in a bay](board-library.md#what-fits-in-a-bay)) |
+| Four rows, 165 mm high at most | The hub has four row outputs. A row's ladder must fit a 256 mm print bed |
+| Slot bins take thin boards | Up to 19.8 mm thick, 86.5 mm long and 82 mm tall, and no jumper wires |
+| Every bay needs a DATA board | A bay node powers nothing until a DATA board answers, even for a single board ([A bay that holds one board](../use/names.md#a-bay-that-holds-one-board)) |
+| No pins on a DATA ×6 | It has no RESET or BOOT line and no wires. Use a DATA ×4 for those |
+| No battery on a board | A board that charges a LiPo draws 0.6 to 1.2 A, and a cell charging in a closed drawer is a fire risk ([Put a board in a bay](../use/mount-a-board.md)) |
+| 20 V only | The hub does not use 28 V, even when you choose *28 V EPR when offered* on the rack's page. A 140 W charger gives no more power than a 100 W one |
+| No ride-through | The charger's output is the rack's supply. A charger that cuts out or resets restarts every bay |
+| A rack standing free tips over | A pull of 8 to 13 N at the top row is enough: [Screw the rack to the bench](../build/screw-the-rack-to-the-bench.md) |
+| No camera on a bay on a desk | The Quad, the box for one bay on a desk, has no mount for a camera ([One bay on a desk](../build/one-bay-on-a-desk.md)) |
 
-Which board fits which bay is checked case by case by the layout tool and listed in the
-[board library](board-library.md). Every current and voltage: [Specifications](specifications.md).
+[Specifications](specifications.md) gives every current and voltage.
 
-## Known issues of the v1.0 PCBs
+## The PCBs
 
-They come from the [design review of 2026-11-09](../pcb-review-2026-11-09.md), written in French two days
-before the order, less what was fixed before fabrication. The review holds 65 findings: none critical, 4
-major, 37 minor, 24 remarks, and no error of pinout, polarity or connection. Each is calculated or read from
-the layout. None is measured.
+These limits come from the PCBs themselves. [The five PCBs](pcbs/index.md) has a page for each PCB, with
+the details and the points to check while you assemble it.
 
-Four fixes went into v1.0 on 2026-11-10: a 1 kΩ resistor on the bay node's fault line (BN-01), copper and
-vias under the DATA ×6's 3.3 V regulator (X6-02), the DATA ×6's 5 V set to 5.08 V (X6-07), and ground vias
-under the DATA ×4's co-processor (X4B-03). The two other major findings concern an order at JLCPCB only, the
-DATA ×6's placement file and a part that was out of stock there: [Order the PCBs](../plan/order-the-pcbs.md#at-jlcpcb-where-nobody-has-ordered).
+### Plugging and unplugging
 
-Each list below is written on the PCB's own page; the codes in brackets are the review's.
+- Switch a row off at the hub before you plug or unplug a row cable. A node plugged into a live row pulls
+  the row's voltage down, and its neighbours may restart.
+- Switch a bay's power off before you plug or unplug its DATA lead. The connector has no ground pin that
+  mates first, so the lead's 20 V can reach the signal wires. It can destroy the node's I²C pins, its meter
+  or the DATA board's USB hub.
+- Do not plug the AUX lead into ROW OUT. The two connectors take the same plug and sit 22 mm apart. On the
+  last node of a row, ROW OUT is free. An AUX lead plugged there puts VRACK on its BOOT wire and into your
+  board. AUX is 3.3 V, with no level shifting and no ESD protection.
+- After you unplug the charger, wait a few seconds before you plug it back in. The hub's supply takes 2 to 6 s
+  to drain, and a charger plugged back in sooner may refuse the hub.
+- Connect the hub's console port with a USB-C to USB-C cable. A live USB-A port can overstress the hub's
+  3.3 V regulator as it is plugged in.
 
-### Power hub
+### Power and faults
 
-```{include} pcbs/power-hub.md
-:start-after: <!-- site:known-issues -->
-:end-before: <!-- /site:known-issues -->
-```
+- A short on a DATA lead can restart the whole row. The lead's limit, 1.76 A, is above the row's, 1.6 A,
+  so the hub's limit acts first. The row's voltage drops until the node cuts the lead, and the other bays of
+  the row restart.
+- A DATA lead shorted while powered can destroy the node's meter. The node then never powers the lead
+  again, and the bay stays out of service.
+- After a power cut of a few seconds, ports that were on may come back on by themselves before the node
+  takes over. On a DATA ×4 a board may also see a reset pulse.
+- A port of a DATA ×4 keeps its VBUS near 2.5 V for many seconds after it is switched off. A board with no
+  brown-out detection may start badly after a short power cycle.
+- On a DATA ×6, a board with two USB cables needs both in ports 1 to 3, or both in ports 4 to 6. If they are
+  split across the two groups, a port's switch latches off.
 
-### Bay node
+### Wires and camera
 
-```{include} pcbs/bay-node.md
-:start-after: <!-- site:known-issues -->
-:end-before: <!-- /site:known-issues -->
-```
+- On a DATA ×4, wire a port's VREF before you close one of its switches. Without VREF the port is not
+  isolated: low levels pass and high levels are clamped near 0.4 V. Nothing is damaged.
+- An idle bus of the DATA ×4 sits at 2.1 to 2.8 V until the analyzer image is loaded. A signal pulled up only
+  by the bus may not reach a 3.3 V board's high level. Push-pull signals and I²C with pull-ups on
+  the boards work.
+- For I²C at 1.8 V over a wire, leave the bus's 2.2 kΩ pull-ups off.
+- A camera that hangs comes back only when its row is power-cycled. The camera has no reset line, and the
+  node cannot switch its 5 V.
+- While the camera's light is dimmed, a picture is corrupted now and then. With the light fully on or off,
+  pictures are fine.
 
-### Camera pod
+## The firmware
 
-```{include} pcbs/camera-pod.md
-:start-after: <!-- site:known-issues -->
-:end-before: <!-- /site:known-issues -->
-```
-
-### DATA ×6
-
-```{include} pcbs/data-x6.md
-:start-after: <!-- site:known-issues -->
-:end-before: <!-- /site:known-issues -->
-```
-
-### DATA ×4
-
-```{include} pcbs/data-x4.md
-:start-after: <!-- site:known-issues -->
-:end-before: <!-- /site:known-issues -->
-```
-
-## Known issues of firmware 0.5
-
-Read from the code of the bay node's and the hub's firmware at version 0.5.0, and from `bayctl`.
-
-| Issue | What it means for you |
+| Limit | What it means |
 |---|---|
-| A reservation of one port does not guard its USB/IP | It guards the port's power, its reset lines and its wires. Another machine can still attach the board: reserve the whole bay ([Reserve a bay](../use/reserve-a-bay.md)) |
-| The wires of a port with no VREF are not held open | A bay node v1.0 cannot read VREF, so the rule that keeps a port's pins open under 0.65 V does not exist yet. Wire VREF before you close a switch ([Wires between boards](../use/wires.md)) |
-| The co-processor cannot be restarted alone | A new analyzer image runs from the next power-up of the whole DATA ×4, its boards included |
-| The rack's page offers 28 V and nothing happens | The hub answers the request as done and stays at 20 V. Only its shell says why: `28 V EPR is off on this hub` |
-| The hub's budget is set in its shell only | The margin, the cap and the order in which rows are shed have no API route, no control on the page and no `bayctl` command |
-| The hub switches a bay as a whole | A command from the rack's page or over the rack bus acts on the bay's DATA lead: every board of the bay |
-| The metrics have no figure per port | Every bay node metric carries one label, `bay` |
+| A reservation of one port does not guard its USB | Another machine can still attach the board. Reserve the whole bay ([Reserve a bay](../use/reserve-a-bay.md)) |
+| Ports 5 and 6 of a DATA ×6 have no routes of their own over HTTP | `/api/ports/<n>/power`, `/reset`, `/boot` and `/board` take n from 1 to 4, so `bayctl power B3.5` fails. Switch ports 5 and 6 from the bay's page or with `POST /api/power` and `"port"`, and give their board targets in [config/lab.yaml](lab-yaml.md) |
+| The co-processor of a DATA ×4 does not restart alone | A new analyzer image runs from the next power-up of the whole DATA ×4, its boards included |
+| The hub switches a bay as a whole | A command from the rack's page or over the rack bus acts on every board of the bay |
+| The hub's budget is set in its shell only | The margin, the cap and the order in which rows are shed have no API route, no control on the page and no `bayctl` command ([Power hub shell](hub-shell.md)) |
+| Nothing limits how many boards flash at once | Keep to eight per Wi-Fi channel yourself ([Wi-Fi for the rack](../use/wifi.md#how-many-boards-may-flash-at-once)) |
+| No figure per port in the metrics | Every bay node metric has one label, `bay` |
 | No shell on the front port | In SERVICE mode the front port flashes the bay node. Its shell is on the UART test pads and over telnet |
-| RFC 2217 reports no line state | The server answers a poll with CTS, DSR and CD up, whatever the lines do |
-| Nothing caps the boards flashed at once | The figure of 8 a Wi-Fi channel is for you to keep: `bayctl` does not count ([Wi-Fi in the rack](../use/wifi.md)) |
-| The old name shows | The help of the `bay` and `hub` shell commands, the boot log and the PDUDaemon export still say `hw-testing-rack` |
+| RFC 2217 reports no line state | The AUX port answers CTS, DSR and CD up, whatever the lines do |
 
-`bayctl`'s own help text and [config/lab.example.yaml](../../config/lab.example.yaml) describe a bay with a
-DATA ×4 only. A DATA ×6 bay takes the same commands with ports 1 to 6 on the simulated node (on a bay node, ports 5 and 6:
-see the open questions); `reset` and `boot` answer `this port has no such line`, checked against the
-simulated node.
+## Report a problem
 
-## Open questions
+If something on this site is wrong, or a part or a step does not work for you, open an issue on
+{{ '[the project\'s issue tracker]({}/issues)'.format(repo_url) }}. Give:
 
-Six things the sources do not settle. Where one bites, its page says what the code or the design does
-today.
-
-**The Solo with a bay node v1.0.** The Solo box pairs a bay node with the single DATA port PCB, which left
-the rack on 2026-10-31. That PCB wires the lead's supply straight to its USB-C and expects 5 V; a bay node
-v1.0 puts 20 to 28 V on that wire. Do not build a Solo with a v1.0 bay node:
-[One bay on a desk](../build/one-bay-on-a-desk.md).
-
-**The front display.** The drawer's front has a window for a 1.9 inch display, the firmware can drive one
-and the 3D model draws it. The bay node v1.0 has no connector for it, and the sources do not say which
-revision will.
-
-**Ports 5 and 6 of a DATA ×6 over HTTP.** The bay node serves `/api/ports/<n>/power`, `/reset` and `/boot`
-for n from 1 to 4. The bay's page switches ports 5 and 6 through `POST /api/power` with the port in the
-body; `bayctl` uses the per-port routes. The simulated node accepts any n, so the gap does not show there.
-
-**The pin headers of a base DATA ×4.** Its design log has the base assembly take two 2 × 1 pieces per
-port; its BOM lists the 2 × 6 headers of the full assembly. Either works electrically.
-
-**28 V.** The firmware locks it out because of a 30 V inductor. The review of 2026-11-09 finds that every
-inductor on the PCBs is now rated 75 V, and also that the hub has no margin at 28 V. When, and whether, the
-lock opens is not decided.
-
-**A bay with one board.** Half the bays of the example rack hold a single board, and a bay node v1.0 powers
-nothing unless a DATA board answers. Which DATA board and which port a lone board takes, and what the port
-is called: [Bays, ports and addresses](../use/names.md#a-bay-that-holds-one-board).
-
-## Report a finding
-
-A wrong value on a PCB, a part that does not fit, a step of these pages that fails on the bench: open an
-issue on {{ '[the project\'s issue tracker]({}/issues)'.format(repo_url) }}. Give:
-
-- what it is about, and which one: the PCB and which of your assembled ones, or the printed part, your
-  printer and your filament;
-- the page and the step or the stage where it showed;
+- which PCB or printed part, and for a printed part your printer and filament;
+- the page and the step where you found it;
 - what you found, with the reading or the message;
-- what you did to the PCB, if anything: a bodge wire, a changed value;
+- anything you changed on the PCB, such as a bodge wire or a new value;
 - for a rack that runs: the firmware's version, the bay's `/api/status` and the hub's events.
-
-v1.0 is frozen: a fault found on a v1.0 PCB is fixed in its next revision, and listed above until then.
-As of 2026-11-24 nothing has been reported: no PCB has been powered and no part printed. To change the
-design yourself: [Contribute](../engineering/contribute.md).

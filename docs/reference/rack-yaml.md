@@ -1,217 +1,166 @@
 # rack.yaml
 
-[config/rack.yaml](../../config/rack.yaml) describes one rack: its frame and rows, its bays and what each one
-holds, its cables, its power box and the outlines of its PCBs. Every printed part, the bill of materials and
-the 3D model are generated from it; the bay nodes and the power hub never read it. All sizes are in
-millimetres.
+[config/rack.yaml](../../config/rack.yaml) describes your rack. The build tools read it to make the printed
+parts, the bill of materials and the 3D model. The bay nodes and the power hub never read it. All sizes are
+in millimetres.
 
-## What the file drives
-
-| Read by | What it reads | What it makes |
-|---|---|---|
-| `python tools/build.py config` (and every other `build.py` command first) | every section but `analyzer`, `cameras` and `cables` | `mechanical/generated/config.scad`, the constants every printed part includes, and `boards.scad`, with the plates of the bays that say `plate: boards` |
-| `python tools/build.py stl` | the same, through `config.scad`; `rows` and `population` for the list of files | the STL files in `mechanical/stl/` |
-| `python tools/build.py web` | the whole file | `site/assets/rack.json` and the models of the 3D model, then the bill of materials |
-| [tools/bom.py](../../tools/bom.py) | `rows`, `population`, `drawer.detent`, `drawer.display`, `cables`, `power_box.charger`, the `layers` of `pcb` | `bom/README.md` and `bom/rack-bom.csv`: printed parts, fasteners, cables, PCBs to order |
-| [tools/plate_layout.py](../../tools/plate_layout.py) | `population`, `plate_grid`, `drawer`, `pcb.data_port_x6` | where the pegs go, printed, no file written |
-| `electronics/<pcb>/design.py` | `pcb` | the PCBs' outlines, holes and connector positions |
-| [tools/bayctl.py](../../tools/bayctl.py) | `analyzer` only | the logic analyzer's pinned firmware and USB id |
-
-How to run them, and what each prints: [build.py, plate_layout.py, bom.py](tools.md). The order to follow
-after an edit: [Edit config/rack.yaml and regenerate](../plan/choose-your-rack.md#edit-config-rack-yaml-and-regenerate).
-The per-installation settings (host names, board targets, access) are in another file:
+The file comes with an example rack of four columns and three rows. Change it to the rack you want, then
+regenerate the outputs as [Edit config/rack.yaml and regenerate](../plan/choose-your-rack.md#edit-config-rack-yaml-and-regenerate)
+explains. The settings of your installation, such as host names and access rules, go in another file,
 [lab.yaml](lab-yaml.md).
 
-## frame, rows, bay
+## rows
 
-```{literalinclude} ../../config/rack.yaml
-:language: yaml
-:caption: config/rack.yaml
-:start-at: "frame:"
-:end-before: "drawer:"
-```
+`rows` sets the size of your rack. Give one entry per row, from the bottom up, with one `1` per column. You
+can have one to four rows. The number of columns is up to you, within what the power allows:
+[Choose your rack's size](../plan/choose-your-rack.md) helps you decide.
 
-```{literalinclude} ../../config/rack.yaml
-:language: yaml
-:caption: config/rack.yaml
-:start-at: "rows:"
-:end-before: "cameras:"
+```{code-block} yaml
+:caption: config/rack.yaml, the example's three rows of four
+rows:
+  - id: A
+    height: 165
+    layout: [1, 1, 1, 1]
+  - id: B
+    height: 165
+    layout: [1, 1, 1, 1]
+  - id: C
+    height: 120
+    layout: [1, 1, 1, 1]
 ```
 
 | Key | What it sets |
 |---|---|
-| `frame.tilt` | the shelves' tilt, front edge lower: 20°. `0` gives flat shelves, which nobody has tried: the slot bin relies on the tilt, and `bay.camera_lens` is a fixed offset worked out for 20° |
-| `frame.base_height` | floor to row A: the base ladders, the cell the power box sits in |
-| `frame.panel_thickness`, `panel_clearance` | a ladder, and the play of a tray between two: with `bay.width` they make the column pitch, 165.8 mm |
-| `rows` | one entry per row, bottom to top. `id` is the row's letter, which is also the hub's output that feeds it; four rows at most, the hub's four outputs |
-| `rows[].height` | the row's pitch: 165 for a row of plates, 120 for row C, whose slot bins take boards up to 82 mm tall. 165 at most: a 185 mm row takes a 258.8 mm ladder, too long for a 256 mm bed |
-| `rows[].layout` | one `1` per column. Every entry is `1`: a double-width bay (`2`) is not designed |
-| `bay.width`, `bay.depth` | the tray, 158 × 210 |
-| `bay.carrier` | the tray's floor, walls and plenum, and where the bay node sits in it |
-| `bay.camera_mount`, `bay.camera_lens` | the four inserts under every bay's ceiling that a camera pod screws into, and where its lens looks down on the bay below |
+| `id` | the row's letter, A to D. Each letter is also the hub output that feeds the row, so a rack has four rows at most |
+| `height` | 165 for a row of bays with plates, 120 for a row of {term}`slot bins <slot bin>`. 165 is the most, so that the row's {term}`ladder` fits a 256 mm print bed |
+| `layout` | one `1` per column. Every entry is `1`: there is no double-width bay |
 
-What a size changes, and what nobody has tried: [Choose a size and a kind for each bay](../plan/choose-your-rack.md).
-
-## drawer, plate_grid, chain
-
-Most values here are the design; three are yours to measure or to choose.
-
-| Key | What it sets | Yours to change |
-|---|---|---|
-| `drawer.depth`, `travel`, `wall*`, `front_*`, `flange`, `guide_width`, `clearance` | the drawer, its separate front and the tray's guides | no |
-| `drawer.display` | the node's front display on the drawer's front; `seat` (8.6) and `screw` (M2) are assumed | measure the display when it arrives ([Measure before you print](../print/index.md)) |
-| `drawer.rear_bay`, `port_mouth`, `port_recess` | the rear bay where the DATA board stands, its port wall, and the recesses under the port wall's slots in the plate | no |
-| `drawer.detent` | what holds the closed drawer against the slope: `printed`, a spring tab (no parts, about 3 N), or `magnet`, two 6 × 3 mm magnets glued in (about 10 N), which the bill of materials then lists with the glue | yes |
-| `drawer.plate`, `plate_gap` | the plate's thickness and its gaps to the drawer's walls | no |
-| `drawer.slot_bin` | the slot bin: its floor, front stop and dividers; six lanes of 21.0 mm. A board up to 19.8 mm thick in all, 86.5 long and 82 tall | no |
-| `plate_grid` | the honeycomb: 10 mm pitch, 7.2 mm holes, the stop's eccentricity (3.55) and the cam's spiral | no |
-| `chain` | the drag chain's outer size, bend radius, end pieces, and where it runs in the tray | measure `outer`, `radius`, `end_holes`, `end_length` ([Enter your measurements](../print/index.md#enter-your-measurements)) |
-
-```{literalinclude} ../../config/rack.yaml
-:language: yaml
-:caption: config/rack.yaml › drawer
-:start-at: "  detent: printed"
-:end-before: "  plate: 5.0"
-```
-
-Two comments in this section of the file are out of date. The port wall does not have "the DATA ×4's four
-U's": it has six identical standing slots, one per port of a DATA ×6, and a DATA ×4 stands behind slots 2 to 5.
-The single DATA port board it names was retired from the rack on 2026-10-31.
-
-(population-one-entry-per-bay)=
 ## population
 
-The file calls its `population` an example, "used by the docs, the BOM roll-up and the 3D viewer". Each key is
-a bay; a bay left out is empty.
+`population` says what each bay holds. Each key is a bay, such as `B3`, and a bay you leave out is empty. For
+a plain rack, with no board in any bay, write `population: {}`. Do not leave a bare `population:`: YAML reads
+it as nothing at all, and the tools refuse it.
 
-```{literalinclude} ../../config/rack.yaml
-:language: yaml
-:caption: config/rack.yaml › population
-:start-at: "population:"
-:end-before: "  A4:"
-```
-
-```{literalinclude} ../../config/rack.yaml
-:language: yaml
-:caption: config/rack.yaml › population › C4
-:start-at: "  C4:"
-:end-before: "# A sub-slot's board"
+```{code-block} yaml
+:caption: config/rack.yaml, a bay of each kind
+population:
+  A1: { board: nucleo-64, cable: c-to-micro-b }
+  A3: { board: beagleplay, cable: c-to-c, mount: sled }
+  B2: { board: giga-r1-display, cable: c-to-c, plate: boards }
+  B3:
+    x4: v2
+    boards:
+      - { board: xiao, cable: c-to-c-straight, at: [8.7, 30.0] }
+      - { board: rpi-pico2, cable: c-to-micro-b-straight,
+          at: [74.7, 16.0], role: analyzer }
+    jumpers:
+      B3.1: { VREF: 3V3, P1: D7, P2: D6 }
+  C1:
+    plate: slots
+    boards:
+      - { board: nucleo-64, cable: c-to-micro-b-straight, slot: 1 }
+      - { board: xiao, cable: c-to-c-straight, slot: 2 }
 ```
 
 | Key | Values | What it does |
 |---|---|---|
-| `board` | an id of the [board library](board-library.md) | one board in the bay |
-| `boards` | a list of up to four boards, or six with `plate: slots`; each item takes `board`, `cable`, `slot`, `at`, `orient`, `role` | several boards in the bay: on a plate with a DATA ×4, or on edge in a slot bin with a DATA ×6. `board` and `boards` exclude each other |
-| `cable` | an id of `cables` | the board's cable to its DATA port |
-| `slot` | 1 to 4 on a DATA ×4, 1 to 6 in a slot bin | the port the board is on, and in a slot bin its lane; without it, the board's rank in the list |
-| `at` | `[x, y]`, plate coordinates | where a board's front-left corner goes on a plate of several boards; the layout tool moves it up to 10 mm to reach its pegs. Without it the boards are packed in a row. Not in a slot bin |
-| `orient` | `rear` (the default) or `side` | a board's USB towards the port wall, or towards the drawer's right wall. Not in a slot bin |
-| `role` | `analyzer` | the board is the bay's logic analyzer, not a board under test: `bayctl` keeps it out of twister's map, the bill adds its Pico 2 and its jumper wires |
-| `mount` | `drawer` (the default), `sled`, `fixed` | a drawer on a drag chain; a sled without a chain, with a port block behind it; a sled screwed in place |
-| `plate` | `pegs` (the default), `boards`, `slots` | the honeycomb plate and its pegs; the board's own plate (`plate_<board>`, or `plate_bay_<bay>` for several boards); a slot bin |
-| `x4` | `v2` or `base` | which assembly of the DATA ×4 the 3D model shows and the bill prices: with its logic, or without. A bay with `boards` and no `x4` is priced as `base` |
-| `jumpers` | per port, header pin: board pin | the Dupont wires the 3D model draws and the bill counts |
+| `board` | an id from the [board library](board-library.md) | one board in the bay |
+| `boards` | a list of up to four boards, or six with `plate: slots`. Each item takes `board`, `cable`, `slot`, `at`, `orient` and `role` | several boards: on a plate with a {term}`DATA ×4`, or standing on edge in a slot bin with a {term}`DATA ×6`. Use `board` or `boards`, not both |
+| `cable` | an id from `cables` (below) | the cable from the board to its DATA port |
+| `slot` | 1 to 4 on a DATA ×4, 1 to 6 in a slot bin | the board's port, and in a slot bin its lane. By default, the board's place in the list |
+| `at` | `[x, y]` in [plate coordinates](#frames-of-reference) | where the board's front-left corner goes, on a plate with several boards. The layout tool, `tools/plate_layout.py`, moves it up to 10 mm to reach its pegs. Without `at`, the boards are packed in a row. Not in a slot bin |
+| `orient` | `rear` (the default) or `side` | which way the board's USB faces: towards the port wall, or towards the drawer's right wall. Not in a slot bin |
+| `role` | `analyzer` | the board is the bay's logic analyzer, not a board under test. The bill adds its Pico 2 and jumper wires. To keep it out of twister's map, give it `role: analyzer` in [lab.yaml](lab-yaml.md) too |
+| `mount` | `drawer` (the default), `sled` or `fixed` | `drawer`: a drawer on a drag chain. `sled`: a {term}`sled` with no chain, and a port block behind it. `fixed`: a sled screwed in place |
+| `plate` | `pegs` (the default), `boards` or `slots` | `pegs`: the honeycomb plate with pegs. `boards`: a plate made for the bay's boards, `plate_<board>`, or `plate_bay_<bay>` for several. `slots`: a slot bin, for boards up to 19.8 mm thick, 86.5 mm long and 82 mm tall ([What fits in a bay](board-library.md#what-fits-in-a-bay)) |
+| `x4` | `v2` or `base` | which DATA ×4 the 3D model shows and the bill prices. `v2` has the pin matrix and the {term}`co-processor`. `base` leaves them off. A bay with `boards` and no `x4` is priced as `base` |
+| `jumpers` | for each port, header pin: board pin | the Dupont wires the 3D model draws and the bill counts |
 | `open` | `true` | the 3D model shows the drawer pulled out |
-| `pc_cable` | `true` | the 3D model draws a laptop on the bay's front port |
+| `pc_cable` | `true` | the 3D model draws a laptop plugged into the bay's front port |
 
-A bay with `boards` and no `plate: slots` is counted with a DATA ×4, every other bay with a DATA ×6. The
-build stops on an entry it cannot use, with a message such as `B3: two boards on slot 2` or
-`` B1: `board` and `boards` both set: one or the other ``. For a plain rack, with no board in any bay, write
-`population: {}`: a bare `population:` is read as nothing at all, which the tools do not accept.
+A bay with `boards` and no `plate: slots` gets a DATA ×4. Every other bay gets a DATA ×6. If the build cannot
+use an entry, it stops with a message such as `B3: two boards on slot 2` or
+`` B1: `board` and `boards` both set: one or the other ``.
 
-The layout tool, the bill of materials and the 3D model read this section; the bay node and `bayctl` do not.
-The bay learns a board's Zephyr target from its page or from `lab.yaml`
-([Board targets](../use/board-targets.md)). How a board goes in, step by step:
-[Put a board in a bay](../use/mount-a-board.md).
+The bay node and `bayctl` do not read `population`. You set a board's Zephyr target on the bay's page or in
+`lab.yaml` ([Board targets](../use/board-targets.md)). [Put a board in a bay](../use/mount-a-board.md) takes
+you through mounting a board.
 
-The comment above `population` in the file says that the boards of a bay with a DATA ×4 "share one plate
-(`plate_bay_<id>`, `plate: boards`)". That was the former kind; since the honeycomb plate they are on pegs
-like every other bay, unless the entry says `plate: boards`, as the next lines of the same comment say.
+## frame and bay
 
-## cameras, cables, power_box, standalone
+`frame` sets the frame, and `bay` the trays.
 
 | Key | What it sets |
 |---|---|
-| `cameras` | the bays the 3D model draws with a camera pod. The bill counts two pods whatever the list holds (`CAMERA_SETS` in `tools/bom.py`), and every bay has the inserts for one |
+| `frame.tilt` | how far the shelves tilt, front edge lower: 20°. Keep 20° if any bay has a slot bin or a camera. A slot bin needs the slope, and the camera is placed for 20° |
+| `frame.base_height` | the height from the floor to row A. The power box sits in this base |
+| `frame.panel_thickness`, `panel_clearance` | the thickness of a ladder, and the play of a tray between two ladders. With `bay.width` they give the column pitch, 165.8 mm |
+| `bay.width`, `bay.depth` | the size of the tray, 158 × 210 |
+| `bay.carrier` | the tray's floor, walls and {term}`fascia`, and where the bay node sits in the tray |
+| `bay.camera_mount`, `bay.camera_lens` | the four inserts under each bay's ceiling that a camera pod screws into, and where its lens looks down on the bay below |
+
+## drawer, plate_grid and chain
+
+These sections hold the design of the drawer, the board plate and the drag chain. Leave them as they are,
+with two exceptions:
+
+- `drawer.detent` sets what holds a closed drawer on the slope. `printed` is a spring tab with no extra parts,
+  about 3 N. `magnet` uses two 6 × 3 mm magnets glued in, about 10 N, and adds the magnets and the glue to the
+  bill.
+- `chain.outer`, `radius`, `end_holes` and `end_length` set the size, the bend radius and the end pieces of
+  the drag chain. Measure your own chain and enter its sizes, as
+  [Enter your measurements](../print/index.md#enter-your-measurements) explains.
+
+For reference, `drawer` also sets the drawer's front, its rear bay and port wall, the plate's thickness and
+the slot bin's six 21.0 mm lanes. `plate_grid` sets the honeycomb, with its 10 mm pitch and 7.2 mm holes, and
+the stops and cams of the pegs.
+
+## cameras, cables, power_box, standalone, analyzer
+
+| Key | What it sets |
+|---|---|
+| `cameras` | the bays the 3D model draws with a camera pod. Every bay has the inserts for one. The bill of materials always counts two pods |
 | `cables` | each cable by id: `label`, as the bill lists it; `a` and `b`, its two ends; `length`; `style`, how the 3D model lays it (`right`, `adapter`, `side`, `straight`). A cable of style `adapter` adds two 90° adapters per board to the bill |
-| `cables.data-lead`, `row-jumper`, `row-feed` | a description of the rack's own leads, which no tool reads today. The bill counts the row cables from the size of the rack, and its feeds' lengths are in `tools/bom.py` (`ROW_FEED_CM`) |
-| `power_box` | the power box: the base cell it sits in (`column`), its place in it, its size and wall |
+| `power_box` | the power box: the base cell it sits in (`column`), its place in the cell, its size and its wall |
 | `power_box.charger` | the charger and cable lines of the bill |
-| `standalone` | one bay on a desk: the PD trigger module's size (the largest the seller's photos allow: measure the one you buy) and the rubber feet |
-
-```{literalinclude} ../../config/rack.yaml
-:language: yaml
-:caption: config/rack.yaml › cables
-:start-at: "  c-to-c:       {"
-:end-before: "  data-lead:"
-```
-
-The `data-lead` label still says "node J7 → DATA port board": the lead goes to a DATA ×6 or a DATA ×4.
+| `standalone` | one bay on a desk: the largest PD trigger module its boxes take, 30 × 21 mm, and the rubber feet. Enter a larger module's size here ([Parts to measure before you print](../print/index.md#parts-to-measure-before-you-print)) |
+| `analyzer` | the logic analyzer's firmware: its release, file, checksum and USB id. This is the only section `bayctl` reads |
 
 ## pcb
 
-```{literalinclude} ../../config/rack.yaml
-:language: yaml
-:caption: config/rack.yaml › pcb
-:start-at: "  bay_node:"
-:end-before: "  power_hub:"
+`pcb` holds the outline, the holes and the connectors of each of the rack's PCBs, so that the printed parts
+fit them. Its main entries are `bay_node`, `power_hub`, `data_port_x4_v2` (the DATA ×4), `data_port_x6` and
+`camera_pod`. `solder_mask` is the colour to order: green.
+
+Leave `pcb` as it is: it describes the PCBs you order.
+
+## After you edit the file
+
+Run the build:
+
+```console
+$ python tools/build.py all
 ```
 
-`pcb` holds the outline, the holes and the connectors of each of the rack's PCBs, in KiCad coordinates, so that
-the printed parts and the PCBs agree: `bay_node`, `power_hub`, `data_port_x4_v2` (the DATA ×4), `data_port_x6`,
-`camera_pod`, and two boards that are not ordered: `data_port`, the single-port board kept for the Solo, and
-`data_port_x4`, the first DATA ×4, whose values still place the drawer's bosses and the cradle. `solder_mask`
-is the colour to order, green.
+It renders every printed part again, then rebuilds the 3D model and the bill of materials. A part whose shape
+did not change keeps its committed file, so git shows you which STL files to print again
+([Get the STL files](../print/stl-files.md)). [Build scripts](tools.md) lists what each tool reads and writes.
 
-The five PCBs went to fabrication as v1.0 on 2026-11-11 and that revision is frozen: a change here changes a PCB
-too, and `tools/released.py`, which the tool tests run, fails when a released revision's files differ from
-what was sent ([Change a PCB](../engineering/change-a-pcb.md)).
-
-## Which key changes what
-
-Every printed part includes the same `mechanical/generated/config.scad`, so `python tools/build.py stl`
-renders all of them after any edit, and puts back the committed bytes of the files whose geometry did not
-change. Read from `part_jobs()` in [tools/build.py](../../tools/build.py), `scad_config()` in
-[tools/rackcfg.py](../../tools/rackcfg.py), the `include` lines of `mechanical/parts/` and `printed()` and
-`hardware()` in [tools/bom.py](../../tools/bom.py):
-
-| Key | Printed parts | Counts in the bill |
-|---|---|---|
-| `frame` | ladders, braces, the tray, the power box | |
-| the number of `rows` | a `ladder_<row>` and a `brace_<row>` per row, a label pair per bay | ladders, braces, square nuts, row feeds and jumpers, bay nodes, DATA boards, everything per bay |
-| the length of a `layout` | a label pair per bay | the same, by column |
-| `rows[].height` | that row's ladder and brace | |
-| `bay` | the tray and everything that fits in it; `camera_mount`, `camera_lens`: the tray's inserts and the camera pod | |
-| `drawer` | the drawer, its front, the sled and port block, the plate, the slot bin, the cradle and cover | `detent: magnet`: magnets and glue |
-| `plate_grid` | the plate and the pegs | the pegs, through the layout |
-| `chain` | the tray, the chain's anchor and foot, the printable link | |
-| `population` | which plate each bay gets (honeycomb, own plate, slot bin), drawer or sled | pegs, plates, slot bins, sleds, DATA ×6 against DATA ×4, the boards' cables and adapters, Dupont wires, the analyzer |
-| `cameras` | | |
-| `cables` | | the boards' cables, by label |
-| `power_box` | the power box | the charger and its cable |
-| `standalone` | the standalone boxes | the standalone section |
-| `pcb` | the cradle and strip, the drawer, the tray, the plate and the slot bin (the holes over the node's buttons), the power box, the pod, the standalone boxes | |
-
-`cameras` changes only the 3D model. The PCBs to order follow the rows and `population`:
-[Order the PCBs](../plan/order-the-pcbs.md).
+`rows` and `population` decide which PCBs you order ([Order the PCBs](../plan/order-the-pcbs.md)). `cameras`
+changes only the 3D model.
 
 ## Frames of reference
 
-```{literalinclude} ../../config/rack.yaml
-:language: yaml
-:caption: config/rack.yaml
-:start-at: "# Everything is in millimetres."
-:end-at: "one bay's tray."
-```
+Each section measures its positions from one of these origins.
 
-| Frame | Origin and axes | Used by |
+| Name | Origin and axes | Used by |
 |---|---|---|
-| Frame | the front-left-bottom corner of the leftmost base ladder; X to the right, Y to the back, Z up | `frame` |
+| Frame | the front-left-bottom corner of the leftmost base ladder. X to the right, Y to the back, Z up | `frame` |
 | Row | a row's front-bottom edge, tilted by `frame.tilt`: Y along the slope, Z square to the shelf | `rows` |
-| Carrier | a row's frame moved to the front-left corner of one bay's tray | `bay`, `chain` |
-| Drawer | the drawer's left side and its front face | `drawer`, `pcb.data_port_x4_v2.x0` and the other DATA boards' |
-| Plate | the plate's front-left corner; x to the right, y towards the port wall | `population` › `at`, the layout tool's output |
-| KiCad | each PCB's own; on the bay node and the hub, y = 0 is the rear edge | `pcb` |
+| Carrier | a row's frame, moved to the front-left corner of one bay's tray | `bay`, `chain` |
+| Drawer | the drawer's left side and its front face | `drawer`, the DATA boards' `x0` under `pcb` |
+| Plate | the plate's front-left corner. x to the right, y towards the port wall | `population` › `at`, the layout tool's output |
+| KiCad | each PCB's own. On the bay node and the hub, y = 0 is the rear edge | `pcb` |
 
-A board's own outline, holes and USB position in [boards.yaml](board-library.md#the-fields-of-boards-yaml) are
-in a fourth frame: the vendor's drawing, from its bottom-left corner.
+A board's outline, holes and USB in [boards.yaml](board-library.md#the-fields-of-boards-yaml) are measured from
+the bottom-left corner of the vendor's drawing.

@@ -1,81 +1,78 @@
-# Bay node checklist
+# Check a bay node
 
-One per bay: it runs from the row's 20 V, carries the ESP32-S3, the USB path to the boards, the
-DATA lead's supply and the camera's.  Test pad names are the ones printed on the bottom face; every
-connector and pad is listed on [the bay node's PCB page](../../reference/pcbs/bay-node.md).
+The bay node is the PCB with the ESP32-S3 that runs a bay. It runs from the 20 V of its row and feeds the
+bay's USB, DATA lead and camera. Check every node your rack uses.
 
-:::{status} designed
-No bay node v1.0 has been powered or measured: the expected values are the design's.
-[What exists today](../../plan/status.md#status-bay-node).
-:::
+The pads are named in print on the bottom face. [The bay node's PCB page](../../reference/pcbs/bay-node.md)
+lists them all.
 
-## 1. Look
+## 1. Look it over
 
 ```{figure} ../../img/pcbs/bay-node-top.jpg
 :alt: The top face of the bay node v1.0
 :width: 70%
 
-KiCad render of the bay node v1.0, top face.  J1 (ROW IN) is at the lower left, J3 (PC) and the SERVICE switch
-on the front edge at the bottom; J7 (DATA), J5 (AUX) and J2 (ROW OUT) run down the right edge, J6 (CAM) stands
-at the upper right.
+KiCad render, top face. J1 (ROW IN) is at the lower left. J3 (PC) and SERVICE are on the front edge, at the
+bottom. J7 (DATA), J5 (AUX) and J2 (ROW OUT) run down the right edge. J6 (CAM) is at the upper right.
 ```
 
-- [ ] The pin-1 marks of U1 (the 5 V buck), U5 and U6 (the USB muxes), U7 (the OR gate), U9 (the
-  DATA lead's eFuse), U10 (the INA226 current monitor), U11 (the CAN transceiver) and the four
-  USBLC6 (U4, U8, U12, U13).  U2 (the 3.3 V regulator) and Q1 (the reverse-polarity FET) only fit one way.
-- [ ] C1, the tall 100 µF can: its black mark is the minus side.  D2, the big diode beside it: its
-  bar is on the VIN side.
-- [ ] R35 is not fitted: its footprint stays empty.
+- [ ] The pin-1 marks of U1 (the 5 V buck), U5 and U6 (the USB muxes), U7 (the OR gate), U9 (the eFuse of
+  the DATA lead), U10 (the INA226 current monitor), U11 (the CAN transceiver) and the four USBLC6 (U4, U8,
+  U12, U13). U2 (the 3.3 V regulator) and Q1 (the reverse-polarity FET) only fit one way.
+- [ ] C1, the tall 100 µF can: its black mark is the minus side.
+- [ ] D2, the big diode beside C1: its bar is on the VIN side.
+- [ ] R35 is not fitted: its footprint is empty.
 - [ ] The SERVICE switch (SW3) sits on its two pegs.
 
-## 2. No power
+## 2. Measure for shorts
 
 ```{figure} ../../img/pcbs/bay-node-bottom.jpg
 :alt: The bottom face of the bay node v1.0, with its named test pads
 :width: 70%
 
-KiCad render of the bottom face.  The supply row is at the bottom: CAM 5V, DATA VIN, 3V3, 5V, VIN, GND.  TX, RX
-and GND, the shell's pads, are at the top.
+KiCad render, bottom face. The supply pads run along the bottom edge. The shell's pads, TX, RX and GND, are
+at the top.
 ```
 
 | Ohmmeter between GND and | Expect |
 |---|---|
-| VIN, 5V, 3V3, DATA VIN, CAM 5V | no short: the reading climbs, or stays above ≈ 100 Ω |
+| VIN, 5V, 3V3, DATA VIN, CAM 5V | no short: the reading climbs, or stays above about 100 Ω |
 
-## 3. First power
+## 3. Power it on its own
 
-The node runs from its row socket, never from the USB port.  Bench supply at 20 V, limit 0.2 A,
-on J1 (ROW IN): pin 1 is +, pins 2 and 5 are GND.  The
-[two-wire lead for the bench](../row-cables.md#a-two-wire-lead-for-the-bench) plugs in there.  Raise the
-voltage from 0.
+The node runs from its row socket, never from its USB port. Plug the
+[two-wire lead for the bench](../row-cables.md#a-two-wire-lead-for-the-bench) into J1 (ROW IN): pin 1 is +,
+pins 2 and 5 are GND. Set the bench supply's limit to 0.2 A and raise the voltage from 0 to 20 V.
 
 | Check | Expect |
 |---|---|
-| Under ≈ 13.5 V | 5V at 0 V: the buck waits for the row to be up |
-| At 20 V: VIN | the supply's voltage, a few tens of millivolts lower |
-| 5V | 5.24 V (5.1–5.4 V) |
-| 3V3 | 3.3 V (3.2–3.4 V) |
-| CAM 5V | as 5V (it comes through a resettable fuse) |
-| DATA VIN | 0 V: the DATA lead's eFuse is off without firmware |
-| The supply's current | well under the 0.2 A limit: write it down |
+| 5V, below about 13.5 V | 0 V: the buck waits for the row to be up |
+| VIN, at 20 V | the supply's voltage, a few tens of millivolts lower |
+| 5V | 5.24 V (5.1 to 5.4 V) |
+| 3V3 | 3.3 V (3.2 to 3.4 V) |
+| CAM 5V | the same as 5V (it comes through a resettable fuse) |
+| DATA VIN | well below VIN: the DATA lead stays off without firmware. Several volts are normal: the eFuse leaks a little |
+| The supply's current | well under 0.2 A: write it down |
 
-Optional: the supply reversed, limit 50 mA.  No current flows and VIN stays at 0 V.
+If you want, test the reverse-polarity protection too. Set the limit to 50 mA and reverse the supply. No
+current flows, and VIN stays at 0 V.
 
-## 4. Flash and ask
+## 4. Flash and check
 
-Node powered from J1.  Slide SERVICE on, laptop on the front PC port (J3).  The switch, the port and the
-image: [Flash a node](../flash.md#flash-a-node).
+Keep the node powered from J1. Slide SERVICE on: it hands the PC port (J3) to the node itself. Plug the
+laptop into the PC port and flash the node ([Flash a node](../flash.md#flash-a-node) has the details):
 
 ```console
 $ west flash -d build-bay
 ```
 
-SERVICE off.  The node joins the Wi-Fi of `wifi.conf` and answers at `http://bay<MAC>.local/`
-and over telnet.  Without Wi-Fi: a 3.3 V USB-UART on the TX, RX and GND pads, 115200.
+Slide SERVICE off. The node joins the Wi-Fi network in your `wifi.conf` and answers at
+`http://bay<MAC>.local/`. Its shell answers over telnet. It also answers on the TX, RX and GND pads, through a
+3.3 V USB-UART at 115200 baud.
 
-An image built without `wifi.conf`, or taken from CI, carries no network.  Type it on those pads now:
-they are under the node [once it is on its tray](../index.md#wifi).  Which network:
-[Wi-Fi in the rack](../../use/wifi.md).
+An image built without `wifi.conf`, or downloaded from CI, has no network in it. In that case, connect the
+USB-UART to the pads and type your network now. Once the node is on its tray, the pads are
+[underneath it](../index.md#wifi). [Wi-Fi for the rack](../../use/wifi.md) says which network to use.
 
 ```console
 uart:~$ wifi cred add -s <ssid> -k 1 -p <password>
@@ -85,30 +82,21 @@ uart:~$ wifi cred auto_connect
 | Check | Expect |
 |---|---|
 | `bay status` | an IP address, power off, 0 mA, no fault |
-| SERVICE on | the status LED turns yellow; off again, it leaves yellow ([the LED's colours](../../reference/leds-and-buttons.md)) |
+| SERVICE on, then off | the status LED turns yellow, then changes back ([the LED's colours](../../reference/leds-and-buttons.md)) |
 | RESET (SW1) | the node restarts and comes back on the network |
-| `bay power on`, nothing on J7 | DATA VIN rises to VIN for under a second, then the node switches it off and says no board answered |
-| J5 pins 3 and 4 joined with a wire, `bay aux send hello`, `bay aux` | the receive counter grows by what was sent |
-| A laptop on the PC port, SERVICE off | `bay status` shows the classic data path |
+| `bay power on`, nothing on J7 | DATA VIN rises to VIN for about a second. Then the node switches it off and says no DATA board answers |
+| J5 pins 3 and 4 joined with a wire, `bay aux send hello`, then `bay aux` | the receive counter grows by what was sent |
+| A laptop on the PC port, SERVICE off | `bay status` shows the classic data path: the boards' USB goes to the laptop |
 
-Every command of this shell: [Bay node shell](../../reference/node-shell.md).
+[Bay node shell](../../reference/node-shell.md) lists every command.
 
-## 5. On the hub
+## 5. Run it from the hub
 
-A [row cable](../row-cables.md) from one of the hub's rows to J1.  The node starts when the hub turns the row
-on, takes its position from the hub and shows it in `bay status`.  The bus itself, with two nodes:
-[the rack bus checklist](rack-bus.md).
+Run a [row cable](../row-cables.md) from one of the hub's rows to J1. The node starts when the hub turns the
+row on. It gets its position from the hub and shows it in `bay status`.
 
-Then the PCBs that hang off the node: [the camera pod](camera-pod.md),
-[the DATA ×6](data-x6.md), [the DATA ×4](data-x4.md).
+## 6. Burn the fuse
 
-## 6. Last
-
-- [ ] The module's one-time fuse (`DIS_USB_OTG_DOWNLOAD_MODE`), once everything above passed, and only on
-  a node that goes into the rack.  It [cannot be undone](../index.md#fuse); the command is on
-  [Flash the hub and the nodes](../flash.md#the-modules-one-time-fuse).
-- [ ] On the first node of a revision, the measurements the reviews left for it (F1's margin, the 3.3 V load
-  step, the I²C rise time): [More to measure](index.md#more-to-measure-on-the-first-pcbs-of-a-revision).
-
-A node that passed goes on its tray: [Fit out a tray](../fit-out-a-tray.md).  A reading that does not match:
-[report it](../../reference/known-limitations.md#report-a-finding).
+- [ ] Burn the module's one-time fuse, `DIS_USB_OTG_DOWNLOAD_MODE`, only on a node that goes into the rack.
+  It turns off a USB download mode that the rack never uses, and it [cannot be undone](../index.md#fuse).
+  [The module's one-time fuse](../flash.md#the-modules-one-time-fuse) gives the command.

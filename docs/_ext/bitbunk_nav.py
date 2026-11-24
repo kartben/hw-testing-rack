@@ -182,7 +182,7 @@ def page_context(app: Sphinx, pagename: str, templatename: str, context: dict, d
             parts.append({"caption": part.get("caption"), "pages": pages})
     context["bb_nav"] = {
         "title": sec["title"],
-        "index": {"title": sec.get("index_nav") or sec["title"], "url": link(sec["index"]),
+        "index": {"title": sec.get("index_nav") or app.env.titles[sec["index"]].astext(), "url": link(sec["index"]),
                   "current": pagename == sec["index"]},
         "parts": parts,
     }
@@ -191,7 +191,7 @@ def page_context(app: Sphinx, pagename: str, templatename: str, context: dict, d
     parent = info["parent"]
     chain = []
     while parent:
-        chain.append({"title": toc.info[parent]["nav"], "url": link(parent)})
+        chain.append({"title": toc.info[parent]["nav"] or app.env.titles[parent].astext(), "url": link(parent)})
         parent = toc.info[parent]["parent"]
     context["bb_crumbs"] = crumbs + chain[::-1]
 

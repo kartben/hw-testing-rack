@@ -1,125 +1,121 @@
-# Power hub checklist
+# Check the power hub
 
-The hub turns a USB-C PD charger into the rack's supply (VRACK) and switches it to four rows
-through eFuses.  Its connectors and pads are listed on [its PCB page](../../reference/pcbs/power-hub.md);
-the pads below go by the names printed on the bottom face.
+The power hub turns a USB-C PD charger into the rack's supply, VRACK, and switches it to up to four rows.
+Check it first: it needs no other PCB.
 
-:::{status} designed
-No power hub v1.0 has been powered or measured: the expected values are the design's.
-[What exists today](../../plan/status.md#status-power-hub).
-:::
+The pads are named in print on the bottom face. [The hub's PCB page](../../reference/pcbs/power-hub.md) lists
+them all.
 
-## 1. Look
+## 1. Look it over
 
 ```{figure} ../../img/pcbs/power-hub-top.jpg
 :alt: The top face of the power hub v1.0
 :width: 70%
 
-KiCad render of the power hub v1.0, top face.  J1, the PD input, is at the upper right and J6, the console,
-at the lower right; the row sockets J2 to J5 are on the left edge, row A at the bottom.
+KiCad render, top face. J1 (PD input) is at the upper right and J6 (console) at the lower right. The row
+sockets, J2 to J5, are on the left edge.
 ```
 
 - [ ] The pin-1 marks of U1 (CH224A, the PD controller), U2 (the 5 V buck), U3 (the 3.3 V regulator),
-  U6 (the CAN transceiver) and U11–U14 (the row eFuses); the module's antenna at the PCB's edge.
+  U6 (the CAN transceiver) and U11 to U14 (the row eFuses).
+- [ ] The module's antenna at the edge of the PCB.
 - [ ] C8, the tall 100 µF can: its black mark is the minus side.
-- [ ] The LEDs, the two USB-C receptacles (J1 the PD input, J6 the console) and the four row
-  sockets: seated flat, no lifted pin.
+- [ ] The LEDs, the two USB-C receptacles (J1 and J6) and the four row sockets sit flat, with no lifted pin.
 
-## 2. No power
+## 2. Measure for shorts
 
 ```{figure} ../../img/pcbs/power-hub-bottom.jpg
 :alt: The bottom face of the power hub v1.0, with its named test pads
 :width: 70%
 
-KiCad render of the bottom face: the pads of this checklist, by the names printed beside them.
+KiCad render, bottom face, with the names of the pads.
 ```
 
 | Ohmmeter between GND and | Expect |
 |---|---|
-| VRACK, VHV, 5V BUCK, 5V, USB 5V, 3V3 | no short: the reading climbs, or stays above ≈ 100 Ω |
+| VRACK, VHV, 5V BUCK, 5V, USB 5V, 3V3 | no short: the reading climbs, or stays above about 100 Ω |
 | ROW A, ROW B, ROW C, ROW D | no short |
 
-Between CANH and CANL: ≈ 56 Ω (the bus's two terminations are both here).
+Between CANH and CANL, expect about 56 Ω. Both ends of the CAN bus are terminated on the hub.
 
-## 3. First power
+## 3. Power it on its own
 
-**a. The console USB-C alone** (J6, from a laptop; it powers the controller, not the rows).
+### From the console port
 
-| Pad | Expect |
-|---|---|
-| USB 5V | ≈ 5 V |
-| 5V | 0.3–0.5 V under USB 5V (it comes through a Schottky diode) |
-| 3V3 | 3.3 V (3.2–3.4 V) |
-| VRACK, ROW A–D | 0 V |
-
-The laptop sees a new serial port (the ESP32-S3's USB-Serial-JTAG), with a blank module too.
-
-**b. A PD charger on J1**, console unplugged, nothing on the rows, no firmware yet.
+Plug a laptop into J6 with a USB-C to USB-C cable. Avoid a USB-A port: a live one can push the hub's 3.3 V
+regulator to its limit. The console port powers the controller, not the rows.
 
 | Pad | Expect |
 |---|---|
-| VRACK, VHV | 9 V: the CH224A asks for it by itself at plug-in |
-| 5V BUCK | 5.24 V (5.1–5.4 V) |
+| USB 5V | about 5 V |
+| 5V | 0.3 to 0.5 V below USB 5V (it comes through a Schottky diode) |
+| 3V3 | 3.3 V (3.2 to 3.4 V) |
+| VRACK, ROW A to D | 0 V |
+
+The laptop sees a new serial port, even with a blank module.
+
+### From the charger
+
+Unplug the laptop. Plug a PD charger into J1, with nothing on the rows and no firmware yet.
+
+| Pad | Expect |
+|---|---|
+| VRACK, VHV | 9 V: the CH224A asks for it by itself |
+| 5V BUCK | 5.24 V (5.1 to 5.4 V) |
 | 3V3 | 3.3 V |
-| ROW A–D | 0 V: the rows stay off without firmware |
+| ROW A to D | 0 V: the rows stay off without firmware |
 
-The PD LED is on ([what each LED of the hub shows](../../reference/leds-and-buttons.md)).  If VRACK stays at
-5 V, try another charger before suspecting the PCB.
+The PD LED is on ([the hub's LEDs](../../reference/leds-and-buttons.md)). If VRACK stays at 5 V, try another
+charger before you suspect the PCB.
 
-## 4. Flash and ask
+After you unplug the charger, wait 6 seconds or more before you plug it in again. VRACK takes 2 to 6 seconds
+to fall, and some chargers refuse the hub until it has.
 
-Console USB-C to the laptop, charger plugged.  The port and the image:
-[Flash the hub](../flash.md#flash-the-hub).
+## 4. Flash and check
+
+Plug the laptop back into J6 and leave the charger in J1. Flash the hub
+([Flash the hub](../flash.md#flash-the-hub) has the details):
 
 ```console
 $ west flash -d build-hub
 ```
 
-Then a terminal on the same port (115200).  The hub's shell is on this port only, and no image carries its
-Wi-Fi network: type it here, now ([Wi-Fi in the rack](../../use/wifi.md) says which network).
+Open a terminal on the same serial port at 115200 baud. The hub's firmware never contains a Wi-Fi network, so
+type yours. [Wi-Fi for the rack](../../use/wifi.md) says which network to use.
 
 ```console
-uart:~$ hub status
-uart:~$ hub pd
 uart:~$ wifi cred add -s <ssid> -k 1 -p <password>
 uart:~$ wifi cred auto_connect
 ```
 
-`hub pd` shows the contract and what the charger offers.  Once on the network the hub answers at
-`http://rack.local/`.  Leave it unnamed: `hub id` is only for two racks on one network
-([Bays, ports and addresses](../../use/names.md) says what it changes).  Every command of this shell:
-[Power hub shell](../../reference/hub-shell.md).
+The hub then answers at `http://rack.local/`. [Power hub shell](../../reference/hub-shell.md) lists every
+command.
 
 | Check | Expect |
 |---|---|
-| `hub pd` | a 20 V contract |
-| VRACK pad | 20 V; VSNS ≈ 1.8 V |
-| Half a second later, one row after the other | ROW A–D at VRACK, EN A–D ≈ 1.65 V, FLT A–D ≈ 3.3 V, no red LED |
-| `hub row A off`, then `on`, then `cycle` | ROW A follows; the other rows don't move |
-| `west flash -d build-hub` again, rows on | the rows stay on through the flash (never tried: note the result) |
+| `hub pd` | a 20 V contract, and what the charger offers |
+| VRACK pad | 20 V; VSNS about 1.8 V |
+| The rows, half a second after the contract | ROW A to D at VRACK, one row after the other; EN A to D about 1.65 V; FLT A to D about 3.3 V; no red LED |
+| `hub row A off`, then `on`, then `cycle` | ROW A follows; the other rows do not move |
+| `west flash -d build-hub` again, rows on | the rows stay on through the flash |
 
-## 5. Load
+## 5. Put a load on each row
 
-A row cable in row A's socket (J2; rows B, C, D are J3, J4, J5).  The supply is on the socket's
-pin 6, GND on pins 2 and 5; at the lead's free end that is pin 1 and pins 2 and 5.  Confirm it
-with the meter (continuity to the ROW A pad), then put the 47 Ω 10 W resistor between the two
-for a few seconds: it takes 0.43 A and gets hot.
+Plug a row cable into the socket of row A, J2. Rows B, C and D are J3, J4 and J5. At the free end of the
+cable, the supply is on pin 1 and GND on pins 2 and 5. Check it with the meter: pin 1 rings to the ROW A pad.
+
+Hold the 47 Ω 10 W resistor between pin 1 and GND for a few seconds. It draws 0.43 A and gets hot.
 
 | Check | Expect |
 |---|---|
-| IMON A pad | ≈ 0.6 V (1.4 V per ampere) |
-| `hub status` | ≈ 0.43 A on row A |
+| IMON A pad | about 0.6 V (1.4 V per ampere) |
+| `hub status` | about 0.43 A on row A |
 | ROW A pad | still at VRACK |
 
-The same on rows B, C and D.
+Do the same on rows B, C and D.
 
-## 6. Last
+## 6. Burn the fuse
 
-- [ ] The module's one-time fuse (`DIS_USB_OTG_DOWNLOAD_MODE`), once everything above passed, and only on
-  a hub that goes into the rack.  It [cannot be undone](../index.md#fuse); the command is on
-  [Flash the hub and the nodes](../flash.md#the-modules-one-time-fuse).
-- [ ] On the first hub of a revision, the measurements the reviews left for it (several chargers, the VHV pin
-  at plug-in, a shorted row): [More to measure](index.md#more-to-measure-on-the-first-pcbs-of-a-revision).
-
-A hub that passed goes into [the power box](../power-box.md).  A reading that does not match:
-[report it](../../reference/known-limitations.md#report-a-finding).
+- [ ] Burn the module's one-time fuse, `DIS_USB_OTG_DOWNLOAD_MODE`, only on a hub that goes into the rack.
+  It turns off a USB download mode that the rack never uses, and it [cannot be undone](../index.md#fuse).
+  [The module's one-time fuse](../flash.md#the-modules-one-time-fuse) gives the command.

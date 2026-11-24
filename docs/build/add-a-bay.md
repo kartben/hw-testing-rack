@@ -1,33 +1,51 @@
-# Add a bay, then a row
+# Add a column or a row
 
-The bay beside an existing one shares the ladder between them: it takes one more ladder per level, a floor
-plate, a cap plate, a brace per level and its tray.  A 6-pin jumper then joins its node to its neighbour's,
-through the windows in both tray walls and in the shared ladder.
+Once the first bay stands, you build the rest of the rack from it: more columns to the right, more rows on
+top. You choose how far: up to four rows, and as many columns as the power allows
+([Choose your rack's size](../plan/choose-your-rack.md)). You can also add bays later, to a rack that is
+already running.
 
-:::{status} designed
-Written from the 3D model.  No two bays have been joined, and no jumper has carried a row's current.
-[What exists today](../plan/status.md#status-frame).
-:::
+## Build the rest of the rack in this order
 
-## What the next bay shares
+1. Put up the base of each further column, from left to right (steps 1 to 3).
+2. Fill row A from left to right. Each bay takes its row ladder, its tray and its brace (steps 4 to 6). Then
+   fit the jumper from the bay on its left (steps 7 and 8).
+3. Fill each further row in the same way, from the bottom up. Fit a row's jumpers before you put up the row
+   above it.
+4. Close the top of the rack: a cap strip on every top ladder, then a cap plate over each top bay (step 9).
+5. Fit the cameras, if you have any ([Add a camera](camera.md)), then the power box
+   ([Power box and charger](power-box.md)).
 
-A ladder has tray grooves on both faces and four square nuts in its rear edge, and a brace's holes sit at
-different heights on its left and on its right, so two neighbouring braces share a ladder: the middle one
-carries a tray on each face.
+Always build to the right. Power and the rack bus enter each row at its left end, and each node passes them on
+through its right edge.
 
-For one more bay in a one-row rack:
+For a rack of two columns and two rows, the order is:
 
-* a base ladder (`ladder_base`), a row ladder (`ladder_a`), a cap strip (`ladder_cap`), a floor plate, a cap
-  plate, a base brace (`brace_base`) and a row brace (`brace_a`), the nuts and inserts in
-  ([Inserts and square nuts](../print/inserts-and-nuts.md));
-* a tray from [Fit out a tray](fit-out-a-tray.md);
-* 8 M3 × 8, two bench screws, a jumper that was rung out ([Make the row cables](row-cables.md)) and two
-  cable ties of 2.5 × 100 mm.
+| Order | What you put up | Steps |
+|---|---|---|
+| 1 | Bay A1, without its cap | [Build the first bay](first-bay.md) |
+| 2 | The base of column 2: a base ladder, a floor plate, a base brace, two bench screws | 1 to 3 |
+| 3 | Bay A2: a row ladder (`ladder_a`), its tray and its brace, then the jumper from A1 | 4 to 8 |
+| 4 | Bay B1: two row ladders (`ladder_b`), its tray and its brace | 4 to 6 |
+| 5 | Bay B2: a row ladder (`ladder_b`), its tray and its brace, then the jumper from B1 | 4 to 8 |
+| 6 | The top: three cap strips, then two cap plates | 9 |
 
-Columns are added to the right: a row is fed at its left end, and each node passes the row on from its right
-edge.
+## What each new bay takes
 
-## The next column
+Two neighbouring bays share the ladder between them. Each bay after the first takes:
+
+* a fitted tray ([Fit out a tray](fit-out-a-tray.md));
+* its row's ladder (`ladder_a` in row A, `ladder_b` in row B), or two for the first bay of a row;
+* its row's brace (`brace_a` in row A, `brace_b` in row B) and four M3 × 8;
+* unless it is the first bay of its row, a jumper that you have rung out ([Make the row cables](row-cables.md))
+  and two cable ties of 2.5 × 100 mm.
+
+Each column after the first also takes a base ladder (`ladder_base`), a floor plate, a base brace
+(`brace_base`), four M3 × 8 and two bench screws. The top of the rack takes a cap strip (`ladder_cap`) on
+every top ladder and a cap plate over each top bay. [Parts to print](../print/parts-list.md) counts the printed
+parts for a rack of any size.
+
+## Put up the base of a column
 
 :::{build-step} 1
 :drawing: b1
@@ -35,7 +53,8 @@ edge.
 :parts: lb=1, fp=1
 :click:
 
-**Base ladder** (`ladder_base`) on the right; the **floor plate** slides in from the front, between it and the shared ladder.
+Stand a **base ladder** (`ladder_base`) to the right of the rack. Slide a **floor plate** in from the front,
+between the new ladder and the rack's right-hand ladder, which the two columns now share.
 :::
 
 :::{build-step} 2
@@ -45,106 +64,134 @@ edge.
 :parts: bb=1
 :hardware: m3x8=4
 
-**Base brace** (`brace_base`): four M3 × 8, into the free nuts of the shared ladder (its 1st and 3rd from the bottom) and
-into the 2nd and 4th of the new one.  Then this floor plate's two bench screws
-([Screw the rack to the bench](screw-the-rack-to-the-bench.md)).
+Screw on the **base brace** (`brace_base`) with four M3 × 8. Counting from the bottom, use the 1st and 3rd
+nuts of the shared ladder and the 2nd and 4th of the new one.
 :::
 
 :::{build-step} 3
+:hardware: Wood screw 3.5 × 16 pan head=2, M4 washer=2
+
+Screw the new floor plate to the bench with two **bench screws**
+([Screw the rack to the bench](screw-the-rack-to-the-bench.md)).
+:::
+
+## Add a bay to a row
+
+:::{build-step} 4
 :drawing: b3r
-:alt: A row ladder coming down onto the new base ladder
+:alt: A row ladder coming down onto the ladder below it
 :parts: la=1
 :click:
 
-**Row ladder** (`ladder_a`) onto the new base ladder, as for [the first bay](first-bay.md#the-row-ladders).
-:::
-
-:::{build-step} 4
-:drawing: b3t
-:alt: The second bay's fitted tray sliding into the grooves from the front
-:parts: tr=1
-:click:
-
-Its fitted **tray** slides in until both barbs click.
+Press a **row ladder** onto the ladder below, on the right of the new bay, until it clicks. The first bay of a
+row takes two, one on each side. Do it as for [the first bay](first-bay.md#add-the-row-ladders).
 :::
 
 :::{build-step} 5
-:drawing: b5a
-:alt: The second bay's row brace, cap strip and cap plate
-:parts: bb=1, lc=1, cp=1
-:hardware: m3x8=4
+:drawing: b3t
+:alt: The new bay's fitted tray sliding into the grooves from the front
+:parts: tr=1
 :click:
 
-**Row brace** (`brace_a`), four M3 × 8.  On the top row only: the cap strip (`ladder_cap`), then the cap
-plate.
+Slide the fitted **tray** in until both barbs click.
 :::
 
-## The jumper between two nodes
-
-A jumper is a row cable with 152 mm leads for 120 mm of route.  Its red housing marks the IN end and its
-black housing the OUT end; the cable works either way round, and the colours only make it readable.
-
 :::{build-step} 6
+:drawing: a6
+:alt: Rear view: a row brace and its four screws, above the brace of the row below
+:parts: bb=1
+:hardware: m3x8=4
+
+Screw on the **row brace** with four M3 × 8. Use the 1st and 3rd nuts of the ladder on the left and the 2nd
+and 4th of the one on the right, as in step 2.
+:::
+
+## Fit the jumper between two nodes
+
+The jumper is the short row cable that joins two neighbouring nodes. Fit it as soon as the trays on both sides
+are in. It works either way round, but the colours make it easier to follow: the black housing goes at the OUT
+end, the red one at the IN end.
+
+:::{build-step} 7
 :drawing: b4
 :alt: Top view of two neighbouring trays, drawers out: the jumper from the left node across the front of its tray to the right node
 :hardware: jumper=1, tie=2
 
-Both drawers out.  The **black** housing into the left node's ROW OUT (J2, on its right edge).  From there
-the jumper heads for the tray's front right and crosses that side within 9 mm of the tray's front: a cable tie
-through the tunnel of each of the two anchors on the floor there.
+Pull both drawers out. Plug the **black** housing into ROW OUT of the left node (J2, on its right edge). Run
+the jumper across the front right corner of the tray, no more than 9 mm from the front. Tie it through the
+two anchors on the floor there.
 :::
 
-:::{build-step} 7
-The jumper passes the windows in the tray's wall, in the shared ladder and in the next tray's wall, and turns
-back up inside the ladder to the right node's ROW IN (J1, on its left edge): the **red** housing, with no twist
-between its two plugs.
+:::{build-step} 8
+
+Pass the jumper through the windows in the tray's wall, in the shared ladder and in the next tray's wall. Turn
+it up inside the ladder. Plug the **red** housing into ROW IN of the right node (J1, on its left edge), with no
+twist in the cable.
 :::
 
-The drawing shows neither colour.  The ties are not optional: pulled right out, a drawer brings its chain foot
-to 12 mm from the front.
+Do not leave out the ties: a drawer pulled right out stops on a loose jumper.
 
 :::{warning}
-Nothing but a row cable goes into ROW OUT.  AUX (J5) is the same 6-pin socket, on the same edge of the node,
-22 mm away, and pin 6 of ROW OUT carries VRACK, the row's 20 or 28 V.  An AUX lead pushed into ROW OUT puts
-that voltage on its BOOT wire and into the board at its end.  A row cable pushed into AUX trips the row's eFuse.
+ROW OUT and AUX (J5) take the same plug, and they sit 22 mm apart on the same edge of the node. Plug nothing
+but a row cable into ROW OUT: its pin 6 carries the row's 20 V whenever the row is on. An AUX lead
+plugged into ROW OUT puts that voltage on your board's BOOT pin. A row cable plugged into AUX trips the row's
+eFuse. The last ROW OUT of each row stays empty and uncovered, so take most care there.
 :::
 
-## The next row
+## Close the top of the rack
 
-A row stacks on the one below as the first row stacked on the base: its ladders snap onto those under them,
-ridge into notch, then come its trays and its braces.  Take the files named for the row where the steps above
-say `ladder_a` and `brace_a`: `ladder_b` and `brace_b`, then `ladder_c` and `brace_c`.  Row C is 120 mm high
-and its ladder is shorter.  The tray above is the ceiling of the bay below, with the four inserts of a
-camera's mount.
+:::{build-step} 9
+:drawing: a7
+:alt: Two cap strips coming down onto the top ladders, the cap plate sliding into them from the front
+:parts: lc, cp
+:click:
 
-Jumpers stay inside a row: three for a row of four bays, nine for the default rack.  Each row has its own
-feed from the power box into its first bay, three feeds for the default rack, and its own eFuse in the hub
-([Power box and charger](power-box.md)).
+Once the last row is up, press a **cap strip** (`ladder_cap`) onto every top ladder until its hooks click.
+Then slide a **cap plate** into each top bay from the front. Its four inserts hold a camera for the bay below
+([Add a camera](camera.md)).
+:::
 
-## The last ROW OUT of each row
+## Grow a finished rack
 
-The last node of a row has nothing in ROW OUT, and the socket is live: its pin 6 carries VRACK whenever the
-row is on.  In the default rack those are A4, B4 and C4.  The
-[schematic review of 2026-10-25](../schematic-review-2026-10-25.md) asks for a blanking plug there until a
-next revision gives AUX another connector.  No such plug exists yet: no printed part, no line in the bill
-([Known issues, and what will not work](../reference/known-limitations.md)).  Nothing closes it, so the
-warning above matters most in those three bays, where a free ROW OUT sits 22 mm from AUX.
+A finished rack has its caps on. You can still add a column or a row. If the rack is running, read
+[Add bays to a running rack](#add-bays-to-a-running-rack) first.
 
-## The order for twelve bays
+### Add a column
 
-*Worked out from the steps of these pages; no source gives an order for a whole rack, and nobody has built
-one.*
+Put up its base (steps 1 to 3). Then, from row A upwards, add its bay in each row (steps 4 to 6) and fit that
+row's jumper (steps 7 and 8). Then fit its cap strip and its cap plate (step 9).
 
-1. All twelve trays at the bench ([Fit out a tray](fit-out-a-tray.md)).  Nothing in the frame is needed for
-   them, and their guide lips' screws are out of reach afterwards.
-2. The base, across: five base ladders, four floor plates, four base braces, from the left.  The two bench
-   screws of each floor plate go in as its brace goes on.
-3. Row A: five `ladder_a`, then each bay's tray and brace, then the row's three jumpers while nothing is above
-   the nodes.
-4. Row B, then row C, the same way.
-5. The caps last: five cap strips, four cap plates.
+### Add a row
 
-A camera pod goes under a ceiling once that ceiling is in place ([Add a camera](camera.md)).
+Add the row to `config/rack.yaml` first ([Choose your rack's size](../plan/choose-your-rack.md)). Each row has
+its own ladder and brace files to print: `ladder_b` and `brace_b` for row B.
+
+Take the caps off: push the barb of each hook back through its window. Fill the new row from left to right
+(steps 4 to 8), then close the top again (step 9).
+
+Each row has its own feed from [the power box](power-box.md), so make one for the new row
+([Make the row cables](row-cables.md)). The hub has four row outputs, so a rack has four rows at most.
+
+## Add bays to a running rack
+
+Switch the row off before you plug or unplug a row cable. A node plugged into a live row pulls down its
+neighbours' supply, and their DATA boards drop out. Switch the row off on [the rack's page](../use/rack-page.md),
+or in the hub's shell:
+
+```console
+uart:~$ hub row B off
+```
+
+Add the bay and plug in its jumper. Then switch the row back on and list the nodes:
+
+```console
+uart:~$ hub row B on
+uart:~$ hub nodes
+```
+
+The hub finds the new node by itself. To make it look again, run `hub enumerate`. The new bay is named after
+its place: the third bay of row B is B3, at `bay-b3.local`. Each bay you add to a row leaves a little less
+power for the others ([Power budget and queued ports](../use/power-budget.md)).
 
 ## Check before you go on
 
@@ -152,39 +199,5 @@ A camera pod goes under a ceiling once that ceiling is in place ([Add a camera](
 - [ ] Every jumper runs from a ROW OUT (J2, right edge) to the next node's ROW IN (J1, left edge).
 - [ ] Every jumper is tied to both anchors at its tray's front right, and a drawer pulled right out passes
       over it.
-- [ ] Nothing is plugged into a ROW OUT but a row cable, and each row's last ROW OUT is empty.
-
-The nodes answer only once the power box is in: [Bring the rack online](bring-the-rack-online.md) lists every
-bay by its place.
-
-## On a rack that is already running
-
-*Worked out from the hub's shell and from the [PCB review of 2026-11-09](../pcb-review-2026-11-09.md)
-(in French), where the rule below is a calculation; nobody has done it yet.*
-
-Switch the row off at the hub before a row cable is plugged or unplugged.  A node plugged into a live row
-shares its neighbours' charge: by the review's figures a 20 V row falls to about 10 V with one node already
-on it, 13.3 V with two and 15 V with three; with one or two already on it, the neighbours' DATA boards drop
-out.  From the rack's page
-([Rows and the rack's page](../use/rack-page.md)), or on the hub's console:
-
-```console
-uart:~$ hub row B off
-```
-
-Add the column as above, plug the jumper, then:
-
-```console
-uart:~$ hub row B on
-uart:~$ hub nodes
-```
-
-A node that asks for an address makes the hub enumerate the whole rack again; `hub enumerate` asks for it by
-hand.  The new bay takes its name from its place: the third bay of row B is B3, `bay-b3.local`, with nothing
-to type on the node.  One more bay on a row also shares the row's 1.6 A with its neighbours
-([Choose a size, change the layout](../plan/choose-your-rack.md)).
-
-A new row needs its entry in `config/rack.yaml`, its own printed ladders and braces, a free row output on
-the hub, which has four, and a feed.  The caps come off first: release each hook by pushing its barb through the window.
-
-A step that is wrong: [report it](../reference/known-limitations.md#report-a-finding).
+- [ ] Nothing but a row cable is plugged into a ROW OUT, and each row's last ROW OUT is empty.
+- [ ] Both hooks of every cap strip are in their windows.

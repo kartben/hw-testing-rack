@@ -1,138 +1,130 @@
-# Measure before you print
+# Print the parts
 
-Of the default rack's 243 printed parts, 207 print from the committed files today. The other 36 (the trays,
-the two printed ends of each drag chain and the camera pods) are drawn round a bought part whose size the
-model only assumes: they wait until that part is in your hands.
+Every printed part of a BitBunk rack prints in PETG, without supports, on a bed of 250 × 210 mm or larger.
+Print one tray and one ladder first to check your settings. Measure the drag chain and the camera before you
+print the parts that hold them.
 
-:::{status} designed
-The drag chain's outer size, bend radius and end pieces, the camera's case, the display's depth and the PD
-module's size are assumed values: no bought part has been measured. Nothing has been printed.
-[What exists today](../plan/status.md#status-bay).
-:::
+## Print one tray and one ladder first
 
-## What you can print today
+The ladders are the printed side walls of the rack. Each bay has a tray that slides into grooves in two
+ladders and carries the drawer. The tray fits those grooves closely and has a long bridge. These two parts
+show whether your printer and settings are right.
 
-Everything whose source reads no bought part's size:
+Print a `tray` and a `ladder_a` with the [slicer settings](printer-and-settings.md#slicer-settings)
+([Get the STL files](stl-files.md)). The last two checks also need a `ladder_base` and a `drawer`. To see
+where each feature is before you print, turn the parts in [the 3D model](/viewer/?bay=A1&openbay=1&view=bay).
 
-- the frame: the ladders, the braces, the floor plates and the cap plates;
-- the drawers (`drawer`, and a sled bay's `drawer_sled` and `drawer_block`), the DATA board's cradle
-  and its strip (`x4_cradle`, `x4_strip`). The drawer's groove for the chain foot follows `chain.moving_x`
-  and `chain.foot_y`, the model's own placement and not measurements;
-- the board plates and the slot bins, and the pegs once the layout tool has said which ones your boards
-  take ([Put a board in a bay](../use/mount-a-board.md));
-- the bay labels, the power box, the camera's diffuser.
+Then check them:
 
-Print the [test tray and the test ladder](#what-to-check-on-a-test-tray-and-a-test-ladder) first; the order
-of the rest of the run is on [Parts and quantities](parts-list.md#in-what-order-to-print).
+- [ ] Neither part needed supports. Nothing has drooped under the tray's runners, the rails along the
+      outside of its side walls.
+- [ ] The runners slide into the ladder's grooves from the front, all the way to the closed end. They have
+      0.15 mm of play above and below.
+- [ ] Near the middle of each side wall, an arm cut between two slots carries a barb. The barb clicks into
+      the window in the ladder's groove. When you press the arm inwards, the tray slides out.
+- [ ] The left ledge is the shelf inside the tray's left wall that the drawer rides on. Where it crosses the
+      window for the row cable, it bridges 38 mm. That bridge sags less than 1.5 mm, so it clears capacitor
+      C1 on the bay node (the bay's PCB). The top of the ledge is flat.
+- [ ] An M3 heat-set insert goes into one of the bay node's four standoffs on the tray without splitting it.
+- [ ] An M3 square nut pushed into a pocket by the ladder's rear edge stays there when the ladder stands up.
+- [ ] Stand the `ladder_a` on the `ladder_base`. The ridge along the top of the base ladder goes into the
+      notch along the bottom of the row ladder, and the row ladder's two hooks click. A hook lets go when
+      you push its barb back through its window.
+- [ ] Put the `drawer` on the tray and close it. It stays closed: a bump on a spring tab in the left ledge,
+      near the back, drops into a notch under the drawer.
 
-## What waits, and for which bought part
+```{figure} ../img/notice/hook.svg
+:class: bb-lineart
+:alt: A hook at the bottom edge of a row ladder going down into its slot in the base ladder below
+:width: 240px
 
-| Bought part | Where its size is entered | Prints that wait |
-|---|---|---|
-| ![A length of drag chain with an end piece at each end](../img/notice/card_dc.svg){.bb-lineart width=48px}<br>Drag chain, 7 × 7 mm inside (Olimex DRAG-CHAIN-7X7) | [`config/rack.yaml`](../reference/rack-yaml.md) › `chain`: `outer`, `radius`, `end_holes`, `end_length` | `tray` (12 in the default rack), `chain_anchor` (11), `chain_foot` (11) |
-| ![The camera: a square case, the lens holder under it, the lens](../img/notice/card_km.svg){.bb-lineart width=48px}<br>Camera, Arducam Mega 3MP with an M12 lens (B0434) | `MEGA_CASE`, `MEGA_HOLDER` and `MEGA_XH` at the top of [mechanical/parts/camera_pod.scad](../../mechanical/parts/camera_pod.scad); they are not keys of `rack.yaml` | `camera_pod` (2) |
+Each hook at the bottom of the row ladder clicks into a window in the ladder below.
+```
 
-Two more bought parts have an assumed size; neither holds up the default rack.
+If the runners bind or an insert splits its boss, check the elephant-foot and hole compensation in
+[Slicer settings](printer-and-settings.md#slicer-settings).
 
-The display in the drawer front, a Waveshare 1.9inch Touch LCD (31122): its depth (`drawer.display.seat`,
-8.6 mm) and its holes (`drawer.display.screw`, for M2) are assumed. The bay node v1.0 has no connector for a
-display, and the bill lists the display's screws but not the module: do not buy one, and print
-`drawer_front` as committed, its window empty.
+If the spring tab does not hold the drawer closed, use magnets instead. Set `drawer.detent: magnet` in
+`config/rack.yaml` and rebuild the tray and the drawer. Each then takes a 6 × 3 mm magnet, glued in.
 
-The PD trigger module of [one bay on a desk](../build/one-bay-on-a-desk.md): `standalone.pd_module` holds
-the largest board the seller's photos allow, 30 × 21 × 1.6 mm; a smaller one fits the committed
-`standalone_solo_base` and `standalone_quad_base` as they are.
+If your drag chain has the sizes the files assume (see below), keep the test tray: it is one of your trays.
 
-The leads' pinout, the wire's gauge and the camera's header are checked when the parcels are opened:
-[Shopping list and tools](../plan/shopping-list.md).
+## Parts to measure before you print
+
+A few printed parts fit closely around a part you buy. The files assume a size for that bought part.
+Measure yours when it arrives, and rebuild the printed parts if it differs. Every other part prints from the
+files as they are.
+
+| Bought part | Printed parts that fit around it |
+|---|---|
+| ![A length of drag chain with an end piece at each end](../img/notice/card_dc.svg){.bb-lineart width=48px}<br>Drag chain, 7 × 7 mm inside (Olimex DRAG-CHAIN-7X7) | `tray`, `chain_anchor`, `chain_foot` |
+| ![The camera: a square case, the lens holder under it, the lens](../img/notice/card_km.svg){.bb-lineart width=48px}<br>Camera, Arducam Mega 3MP with an M12 lens (B0434) | `camera_pod` |
+| USB-C PD trigger module, for [one bay on a desk](../build/one-bay-on-a-desk.md) only | `standalone_quad_base` |
+
+`standalone_quad_base` takes a PD module of up to 30 × 21 × 1.6 mm. For a larger one, see
+[Set up the PD trigger module](../build/one-bay-on-a-desk.md#set-up-the-pd-trigger-module).
 
 ## Enter your measurements
 
-This sequence is worked out from `config/rack.yaml`, `tools/build.py` and the three `assert` lines of
-`mechanical/lib/carrier.scad`; nobody has done it yet. It needs a checkout and OpenSCAD:
-[Get a checkout and install what they need](../reference/tools.md#get-a-checkout-and-install-what-they-need).
+You rebuild the files with `tools/build.py`. [Rebuild them](stl-files.md#rebuild-them) says what it needs.
 
-1. Measure four things on the chain and its end pieces (the rigid link with a two-hole tab at each end of
-   the chain), and write them over the assumed values:
+1. Measure the drag chain and one of its end pieces. An end piece is the rigid link with a two-hole tab at
+   each end of the chain. Its mouth is the open end, away from the chain.
 
    | Key | What to measure | Assumed |
    |---|---|---|
-   | `outer` | the link's outside: across its two side plates, then the other way, in the plane the chain bends in | 13.5, 10.2 mm |
-   | `radius` | lay the chain on a side plate and bend it into its tightest U; measure across the outside of the two runs, subtract the second `outer` figure and halve | 18 mm |
-   | `end_holes` | on an end piece's tab: from one hole's centre to the other's, then from the mouth to the nearer hole's centre | 8, 4 mm |
+   | `outer` | the outside of a link: across its two side plates, then the other way, in the plane the chain bends in | 13.5, 10.2 mm |
+   | `radius` | bend the chain into its tightest U. Measure across the outside of the two runs, subtract the second `outer` figure, then halve the result | 18 mm |
+   | `end_holes` | on the tab of an end piece: from one hole's centre to the other's, then from the mouth to the nearer hole's centre | 8, 4 mm |
    | `end_length` | an end piece, from its mouth to its pivot on the chain | 26 mm |
 
-   ```{literalinclude} ../../config/rack.yaml
-   :language: yaml
-   :caption: config/rack.yaml
-   :start-at: "chain:"
-   :end-before: "  fixed:"
-   ```
+2. Write your figures over the assumed ones, under `chain:` in `config/rack.yaml`. Leave the other keys of
+   `chain` as they are: they place the chain in the tray.
 
-   Leave `inner` and `pitch` as they are, and the keys after `end_length` in the file, `fixed` to `bend_y`:
-   they place the chain in the tray.
-
-2. Render the three parts that read those keys:
+3. Rebuild the three parts that use them:
 
    ```console
    $ python tools/build.py stl --only tray chain_anchor chain_foot
    ```
 
-3. If the three lines read `ok`, the three files in `mechanical/stl/` now fit your chain: print them. A
-   line `FAIL` carries one of three messages, and OpenSCAD then writes no file: the one in the folder is
-   still drawn for the assumed chain.
+4. The command prints `ok` or `FAIL` for each part. If all three say `ok`, the files in `mechanical/stl/`
+   now fit your chain: print them.
 
-   | Message | The model requires | With the assumed values |
+   A `FAIL` means the chain does not fit in the tray. The old file stays in the folder: do not print it.
+   The message says what is wrong:
+
+   - An end piece reaches the bend: `end_length` is too long.
+   - The U bend reaches the rear wall: `radius` or `outer` is too large.
+
+   The assumed chain already uses all the room. An end piece longer than 26 mm fails, and so does a bend
+   radius of 19 mm. If your chain fails, [report it](../reference/known-limitations.md#report-a-problem)
+   with your measurements.
+
+5. Measure the camera. Write your figures over `MEGA_CASE`, `MEGA_HOLDER` and `MEGA_XH` at the top of
+   [mechanical/parts/camera_pod.scad](../../mechanical/parts/camera_pod.scad):
+
+   | Value | What to measure | Assumed, mm |
    |---|---|---|
-   | `chain: the moving end piece reaches the bend (drawer closed)` | `bend_y` − `moving_y` ≥ `end_length` | 183 − 157 = 26: no margin |
-   | `chain: the fixed end piece reaches the bend (drawer open)` | `bend_y` − half of `drawer.travel` − `fixed[1]` ≥ `end_length` | 183 − 70 − 87 = 26: no margin |
-   | `chain: the U bend reaches the tray's rear wall` | `bend_y` + `radius` + half of `outer[1]` ≤ `bay.depth` − `bay.carrier.wall` − 1 | 206.1 against 207: 0.9 mm |
+   | `MEGA_CASE` | the case: width, depth, height | 34, 34, 12 |
+   | `MEGA_HOLDER` | the lens holder under the case: its side, its height | 14, 6 |
+   | `MEGA_XH` | the white XH connector on the side of the case: its length along the side, how far it stands out, its height | 15, 6, 7 |
 
-   An end piece longer than 26 mm, or a bend radius of 19 mm, therefore stops the build before a part that
-   would clash is printed. No source says what to move then. `fixed`, `moving_x`, `moving_y`, `foot_y` and
-   `bend_y` place the chain; the two runs stay 36 mm apart (`fixed` at x 100, `moving_x` 136) whatever
-   `radius` says; `moving_x` and `foot_y` also place the foot's groove under the drawer. A chain that fails
-   is a finding to [report](../reference/known-limitations.md#report-a-finding).
-
-4. For the camera, measure its case, the lens holder under it and the white XH connector on its side
-   (how long, how far out, how high), write them over `MEGA_CASE`, `MEGA_HOLDER` and `MEGA_XH`, each marked
-   `PLACEHOLDER` in the source, and render the pod:
+   Then rebuild the pod:
 
    ```console
    $ python tools/build.py stl --only camera_pod
    ```
 
-   The model's case is 34 × 34 × 12 mm; Arducam gives 33 × 33 mm, 35 mm overall with the stock lens, and
-   no drawing.
+## Print the rest in this order
 
-## What to check on a test tray and a test ladder
+1. The frame: the ladders, the floor and cap plates, the braces. They do not depend on any bought part.
+2. The parts of each bay, once you have measured the drag chain.
+3. The power box.
+4. The board plates and the pegs for your boards. The layout tool tells you which pegs each bay takes
+   ([Put a board in a bay](../use/mount-a-board.md)).
+5. The camera pod and its diffuser, once you have measured the camera.
+6. The rear-bay covers (`cover_box4`), if you want them. Print each one once its bay works.
 
-Print one `tray` and one `ladder_a` before the rest. The slicer review of 2026-10-21 asks for it twice: the
-tray's runner has 0.15 mm in the ladder's groove, "the tight end of what FDM holds in plane", and the tray
-carries a 38 mm bridge that the review accepts with a test print to follow. The values below are the
-design's; nobody has measured a print.
-
-- [ ] Neither part needed a support, and nothing under the tray's runners or lips has drooped.
-- [ ] The tray's runners slide into the ladder's grooves from the front, to the closed end of the groove:
-      0.15 mm of play above and below each runner.
-- [ ] The latch arm in the tray's wall (32 mm long, a 1.2 mm barb) clicks into the groove's window. Pressed
-      inwards, it lets the tray slide out.
-- [ ] The tray's left ledge bridges 38 mm from the fascia to its first gusset, over the row cable's window.
-      The review expects 0.3 to 0.8 mm of sag at mid-span on the first bridged layer; the bay node's
-      capacitor C1 stands 1.5 mm under that ledge. The ledge's top, which the drawer rides on, is flat.
-- [ ] An M3 × 5.7 insert seats in the Ø4.0 hole of a node standoff without splitting its boss. The four
-      insert holes under the tray open towards the bed: they show whether the slicer's hole and
-      elephant-foot compensations are right.
-- [ ] An M3 square nut pushed into a pocket of the ladder's rear edge passes the 0.4 mm rib and stays
-      there when the ladder stands up.
-- [ ] With a `ladder_base` under the `ladder_a`: ridge into notch, and both hooks click (a 1.0 mm barb
-      each). A hook lets go when its barb is pushed back through the window.
-- [ ] With a `drawer` on the tray: the detent, a 0.6 mm bump on a spring tab of the left ledge, holds the
-      closed drawer (about 3 N by calculation).
-
-If the detent's tab does not suit, `drawer.detent: magnet` in `config/rack.yaml` brings back a pair of
-6 × 3 mm magnets, and changes the tray and the drawer. The runner's 0.15 mm has no such key: it is
-`GROOVE_Z` in [mechanical/lib/panels.scad](../../mechanical/lib/panels.scad).
-
-The test tray carries the assumed chain. Nothing in this list depends on it, and if your chain measures as
-assumed, the test tray is the first of the twelve.
+How many of each part you print depends on the size you chose for your rack:
+[Parts to print](parts-list.md) gives the counts. Fit the inserts into each part before you assemble
+anything onto it ([Fit the inserts and nuts](inserts-and-nuts.md)).

@@ -1,42 +1,29 @@
-# A board that is not in the library
+# Add a board to the library
 
-A board the library does not know takes one entry in
-[mechanical/boards/boards.yaml](../../mechanical/boards/boards.yaml): its outline, its mounting holes, where
-its USB socket is and how high it stands over the plate. From that entry the layout tool places the board,
-the build makes its pegs, and the bay's page suggests its Zephyr target.
-
-:::{status} designed
-Each of the 20 boards of the library is such an entry, and the layout tool's tests run in CI on the boards of
-the example rack. No board has been held by pegs, in or out of the library. [What exists today](../plan/status.md#status-plate).
-:::
-
-The steps below are worked out from the header of `boards.yaml` and from
-[tools/plate_layout.py](../../tools/plate_layout.py); no source holds them and nobody has followed them yet.
+To use a board that the [board library](../reference/board-library.md) does not list, give it an entry in
+[mechanical/boards/boards.yaml](../../mechanical/boards/boards.yaml). The layout tool reads this entry to place
+the board and its pegs. The bay's page reads it to suggest the board's Zephyr target.
 
 ## Measure the board
 
-Check first that the board fits a bay at all:
-[What fits in a bay](../reference/board-library.md#what-fits-in-a-bay). Then work from the vendor's mechanical
-drawing or Gerber files, or from the board and a calliper. Every position is in millimetres from the bottom-left corner of the
-outline, as the drawing shows the board.
+First check that the board fits a bay ([What fits in a bay](../reference/board-library.md#what-fits-in-a-bay)).
+Then measure it from the vendor's mechanical drawing or Gerber files, or with a calliper. Give every position in
+millimetres from the bottom-left corner of the outline, with the board turned as in the vendor's drawing.
 
-| Measure | It becomes | Why it matters |
-|---|---|---|
-| The outline, width and length | `size` | the pegs touch the edges: an outline that is 1 mm out puts every peg in the wrong place |
-| Each mounting hole and its diameter | `holes`, `hole_d` | a board with headers along its edges is held by a pin through a hole |
-| The edge its debug USB socket is on, the socket's centre along that edge, its type | `usb` | the board is turned so that this socket faces the port wall, and its plug's way is kept clear of pegs |
-| The gap the board needs under it: the longest pin or part under the PCB | `standoff` | it is the height of its pegs. A Nucleo's morpho pins take 12 mm |
-| The tallest part over the PCB | `height` | the 3D model draws it, and a slot bin counts it when `on_edge` is not given |
-| The stretches of each edge a peg must not touch: a header or a connector at the edge, pins under it | `pegs.keepout` | the tool places no stop and no cam there |
-| For a slot bin, how far the board reaches under its PCB and over it, a plug in its USB socket included | `on_edge` | the two add up to the thickness a lane must take, 19.8 mm at most |
+| Measure | Field |
+|---|---|
+| The outline, width and length. An error of 1 mm puts every peg in the wrong place. | `size` |
+| Each mounting hole, and their diameter | `holes`, `hole_d` |
+| The edge the debug USB socket is on, the socket's centre along that edge, and its type | `usb` |
+| The longest pin or part under the PCB. A Nucleo's morpho pins need 12 mm. | `standoff` |
+| The tallest part on top of the PCB | `height` |
+| The stretches of each edge that no peg may touch: headers, connectors, pins under the edge | `pegs.keepout` |
+| For a slot bin: how far the board reaches under its PCB and over it, a plug in its USB included | `on_edge` |
 
-No source states how tall a board on a plate may be. The cables' arches stay under about 105 mm above the row,
-and a camera pod hangs down to 120 mm.
+## Write its entry
 
-## Write its entry in boards.yaml
-
-An entry is a key, the id that `config/rack.yaml` will name, and its fields. The micro:bit's is among the
-shortest:
+An entry starts with the board's id, the name you will use in `config/rack.yaml`. Here is the micro:bit's
+entry, one of the shortest:
 
 ```{literalinclude} ../../mechanical/boards/boards.yaml
 :language: yaml
@@ -46,88 +33,87 @@ shortest:
 :dedent: 2
 ```
 
-`name` and `size` are required; `usb` defaults to the middle of the top edge and `standoff` to 6 mm. Add
-`orient: side` for a small board, so that its USB faces the drawer's right wall and a straight cable lies flat
-into it. Set `verified: true` once the outline and the holes are measured or come from the vendor's own
-drawing or Gerbers. Every field: [The fields of boards.yaml](../reference/board-library.md#the-fields-of-boards-yaml).
+- `name` and `size` are required. `usb` defaults to the middle of the top edge, and `standoff` to 6 mm.
+- Add `orient: side` for a small board. Its USB then faces the drawer's right wall, and a straight cable lies
+  flat into it.
+- Set `verified: true` once you have measured the outline and the holes, or taken them from the vendor's
+  drawing.
 
-Eight boards of the library still have approximate outlines
-([Unverified outlines](../reference/board-library.md#unverified-outlines)): a measured entry for one of them, or
-for a board the library lacks, is worth proposing ([Contribute](../engineering/contribute.md)).
+Every field is on [Board library](../reference/board-library.md#the-fields-of-boards-yaml). If you measured a
+board, send its entry in a pull request so that others can use it ([CONTRIBUTING.md](../../CONTRIBUTING.md)).
 
-## Put it in a bay and run the layout tool
+## Run the layout tool
 
-Name the board in a bay's entry of `config/rack.yaml` ([Put a board in a bay](mount-a-board.md)), then:
+Name the board in a bay's entry of `config/rack.yaml` ([Put a board in a bay](mount-a-board.md)). Then run the
+layout tool and its tests:
 
 ```console
 $ python tools/plate_layout.py A2
-```
-
-The lines it prints are the pegs, and a `note:` at the end says when the board leans on the drawer or the pegs
-do not hold it fully. To check the new entry the way CI does, run the layout tool's tests:
-
-```console
 $ python -m unittest discover -s tools/tests -p "test_plate_layout.py"
 ```
 
-They fail when a board of the configured rack is left with `no peg fits`, with fewer than two pegs, or with
-neither a cam nor a pin.
+The tests fail when a board of your rack is left with `no peg fits`, with fewer than two pegs, or with neither a
+cam nor a pin. If a cam lands on a part of your board, add that stretch of the edge to `pegs.keepout` and run
+the tool again.
 
 ## What the notes mean
 
-Read from `realise()`, `pin_layout()` and `solve()` in `tools/plate_layout.py`:
+| Note | The board |
+|---|---|
+| `against the drawer's left wall`, `right wall` or `front panel` | leans on the drawer on that side. A side wall can hold only a board whose `standoff` is 6.4 mm or less. |
+| `no cam on its B edge` (or `L`, `R`, `F`) | sits against stops, with no cam to push it onto them |
+| `one cam only` | sits on a pin, with one cam where the tool looks for two |
+| `held along one axis by friction only` | has nothing to hold it along one axis |
+| `no peg fits: placed at its hint, unheld` | is not held at all |
 
-| Note | The board | In the code |
-|---|---|---|
-| `against the drawer's left wall`, `right wall`, `front panel` | leans on the drawer on that side and takes no stops there. The side walls only serve a board whose `standoff` is 6.4 mm or less | a full layout |
-| `no cam on its B edge` (or `L`, `R`, `F`) | sits against stops on the opposite edge, and no cam pushes it onto them | accepted, ranked below a layout with the cam |
-| `one cam only` | is on a pin with one cam where the tool looks for two | accepted, ranked below |
-| `held along one axis by friction only` | has neither stop, cam nor wall along one axis | what is left when nothing fits on that axis |
-| `no peg fits: placed at its hint, unheld` | is not held | no layout |
+The tool accepts the first three: several boards of the example rack have them. The last two mean the board needs
+[another way to be held](#if-pegs-cannot-hold-it).
 
-The example rack lives with the two middle notes: B1 and B3 carry them, on their Pico 2s, XIAOs and Nano
-Matter. Nobody has tried whether a board with such a note stays put when its cable is pulled. The last two
-are failures: the board needs [another way to be held](#if-pegs-cannot-hold-it).
+## Make pegs for a new height
 
-A layout moves when the entry moves. If a cam lands on a part of your board, add that stretch of the edge to
-`pegs.keepout` and run the tool again.
+The STL files in the repository have pegs for these heights:
 
-## A peg height that does not exist yet
+- stops and cam bases: 5, 6, 9, 10, 11 and 12 mm;
+- pins for 2.1 mm holes: 9 mm;
+- pins for 3.2 mm holes: 6 and 12 mm.
 
-The build makes one stop and one cam base for each `standoff` of the library, and one pin for each pair of
-hole diameter and `standoff` among the boards that have holes. The committed files cover standoffs of 5, 6, 9,
-10, 11 and 12 mm, and pins for 2.1 mm holes at 9 mm and 3.2 mm holes at 6 and 12 mm. A board with another
-standoff or another hole needs its own; for a standoff of 8 mm:
+For another height, build the pegs it needs. For 8 mm:
 
 ```console
 $ python tools/build.py stl --only peg_stop_h8 peg_base_h8
 ```
 
-A pin's file is named for the hole, in tenths of a millimetre:
-`peg_pin_d25_h8` for a 2.5 mm hole. The build needs OpenSCAD or Docker
-([Get the STL files](../print/stl-files.md#rebuild-them)).
+A pin's file is named after the hole, in tenths of a millimetre: `peg_pin_d25_h8` for a 2.5 mm hole. The build
+needs OpenSCAD or Docker ([Get the STL files](../print/stl-files.md)).
 
 ## If pegs cannot hold it
 
-Four boards of the library get no peg layout when the tool is run on each alone in a bay. The two ESP32
-DevKitC boards have headers along both long edges, both USB sockets on a short one and no hole: they are held
-by friction only. The F746G-DISCO, 154 mm long, cannot clear what hangs over the plate's front (the display's
-frame and the front's joints), and the MIMXRT1170-EVKB is 165 mm wide: for both, `no peg fits`. The example
-rack stands its DevKitC boards in slot bins.
+Some boards get no peg layout. The ESP32 DevKitC boards have headers along both long edges and no hole, so
+nothing but friction holds them. The F746G-DISCO (154 mm long) and the MIMXRT1170-EVKB (165 mm wide) get
+`no peg fits`.
 
-| Way out | When | What to do |
-|---|---|---|
-| A lane of a slot bin | the board is at most 19.8 mm thick, 86.5 mm long and 82 mm tall, and needs no wires | [On edge in a slot bin](mount-a-board.md#on-edge-in-a-slot-bin-with-a-data-6) |
-| Its own plate | it fits the plate but no peg layout holds it | say `plate: boards` in the bay's entry and run `python tools/build.py stl`: it renders `plate_<board>.stl` (a bay of several boards: `plate_bay_<bay>.stl`), with heat-set inserts under the board's holes or, for a board without holes or with `fence: true` in its entry, corner fences and support pads. B2 of the example holds its GIGA R1 and display this way, the shield hiding the GIGA's edges |
-| None | it is wider than the drawer, as the MIMXRT1170-EVKB is | it would take a double-width bay, which is not designed |
+| What to do | When |
+|---|---|
+| Use a lane of a slot bin ([Stand boards on edge in a slot bin](mount-a-board.md#on-edge-in-a-slot-bin-with-a-data-6)) | The board is at most 19.8 mm thick, 86.5 mm long and 82 mm tall, and needs no wires. The example rack holds its DevKitC boards this way. |
+| Print a plate made for the board | It fits on the plate, but no peg layout holds it. |
+| Nothing | It is wider than the drawer. |
 
-The own plate is the earlier way of holding boards, kept for these cases.
+For a plate made for the board, set `plate: boards` in the bay's entry and run `python tools/build.py stl`. It
+makes `plate_<board>.stl`, or `plate_bay_<bay>.stl` for a bay of several boards. The plate has heat-set inserts
+under the board's holes. For a board without holes, or with `fence: true`, it has corner fences instead.
 
-## Tell twister what it is
+## Give it a Zephyr target
 
-The `zephyr` field of the entry carries the board's defaults for CI: its target as twister names it
-(`platform`, or `choices` for a family), its west `runner`, its `console` and the USB ids (`usb`) its debug
-socket shows. `bayctl` takes the runner from it, and the bay's page suggests the target when a device with
-one of those ids is on a port. The page's list is compiled into the node's firmware: a new entry shows there
-after the firmware is built and updated again. Until then, type the target on the page
+The `zephyr` field holds the board's defaults for CI:
+
+| Key | Holds |
+|---|---|
+| `platform`, or `choices` for a family of boards | its target, as twister names it |
+| `runner` | its west runner |
+| `console` | where twister reads its console |
+| `usb` | the USB ids of its debug socket |
+
+The bay's page suggests the target when a device with one of those USB ids is on a port. These suggestions are
+built into the node's firmware. A new entry shows there only after you rebuild the firmware and update the
+nodes ([Update the firmware](update-firmware.md)). Until then, type the target in the board target dialog
 ([Board targets](board-targets.md#set-it-on-the-bays-page)).

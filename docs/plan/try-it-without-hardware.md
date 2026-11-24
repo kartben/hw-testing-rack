@@ -13,73 +13,52 @@ myst:
 
 # Try it without hardware
 
-The 3D model, a simulated bay with its real web page, and `bayctl` run today on a machine with Python and a
-browser, with no rack, no PCB and no printer.
+You can try BitBunk on your own computer before you build anything. Look at a rack in the 3D model, then
+open the web page of a simulated bay and drive it with `bayctl`, the rack's command-line tool. You need
+a browser and Python.
 
-:::{status} simulated
-Every command below was run on 2026-11-24, and what it printed is shown as it came. The simulated bay and
-the simulated hub are models in Python that serve the real pages and answer the real API: they do not run
-the firmware ([What exists today](status.md#status-bayctl)).
-:::
+## Explore the 3D model
 
-## Walk round the rack in the 3D model
+[The 3D model](/viewer/) opens in your browser, with nothing to install. It loads about 20 MB.
 
-[The 3D model](/viewer/) opens in a browser, with nothing to install, and loads about 20 MB. It is generated
-from `config/rack.yaml` and is the only current picture of the 12-bay rack.
+Drag to turn the rack, scroll to zoom, and click a bay. The bay's panel shows its boards, their cables
+and the `usbip attach` command for each. The *Controls* panel pulls the drawers out, spreads the parts apart
+and hides the side walls, so that you can see the bay nodes and the drag chains. It also shows or hides each
+kind of part. *Camera preview* shows what bay B2's camera sees.
 
-Drag to orbit, scroll to zoom, click a bay. A click selects the bay and opens a panel with its boards, their
-cables and its `usbip attach` command. In the *Controls* panel:
-
-- *Drawers* pulls every drawer out along the slope, and *Explode* spreads the parts of the rack apart;
-- *Inside view* hides the ladders, so that the bay nodes and the drag chains under the drawers show;
-- *Camera preview* opens what the camera of B2 sees, the only bay of the example rack that has one;
-- *Layers* switches each kind of part on and off: trays, drawers, board plates, row cables.
-
-Four parameters in the address open the model on a chosen view; the links of this site use them:
-
-| Parameter | Does |
-|---|---|
-| `bay=B3` | selects a bay and opens its panel. The name is exact: `b3` or a bay that does not exist stops the model from loading |
-| `openbay=1` | with `bay`: pulls that bay's drawer out |
-| `view=bay` | where the camera starts: `iso`, `front`, `side`, `rear`, `bay` for the selected bay, `camera` to look into a bay that has one |
-| `hideui` | hides the panels |
-
-So [`/viewer/?bay=B3&openbay=1&view=bay`](/viewer/?bay=B3&openbay=1&view=bay) is bay B3 with its drawer
-out, and [`/viewer/?bay=B2&view=camera&camlight=1&preview=B2`](/viewer/?bay=B2&view=camera&camlight=1&preview=B2)
-looks into B2 with its light on and its camera's picture beside it. Every parameter:
-[Regenerate the site, the viewer, the renders, the drawings](../engineering/tools.md).
+The address can name a bay: [`/viewer/?bay=B3&openbay=1&view=bay`](/viewer/?bay=B3&openbay=1&view=bay)
+opens the model on bay B3, with its drawer out.
 
 ## Start a simulated bay
 
-It takes Python 3.10 or later and a checkout of the repository. The simulator needs PyYAML alone, installed
-here in a virtual environment, since Homebrew's and Debian's Python refuse a plain `pip install`:
+You need Python 3.10 or later and a copy of the repository. The simulator needs only PyYAML. Install it in a
+virtual environment:
 
 {{ clone | replace("REPO_URL", repo_url) | replace("REPO_DIR", repo_url.split("/")[-1]) }}
 
-Start a bay with a DATA ×4 and leave it running in its terminal:
+Start a bay with a DATA ×4, the DATA board with four ports. Leave it running in its terminal:
 
 ```console
 $ python firmware/bay-node/web/dev_server.py --ports 4
 bay node mock on http://localhost:8766 (camera on port 8767), 4 ports
 ```
 
-Open <http://localhost:8766>: it is the page a bay node serves, here for bay B3. The simulator puts four
-made-up boards on its ports, B3.1 to B3.4, and every button acts on them. They enumerate a moment after the
-server starts: a command typed at once still finds the ports without a USB device. If 8766 is taken, give another
-port before `--ports`: `dev_server.py 8790 --ports 4` serves on 8790 with the camera on 8791, and the lab
-file below then says `http_port: 8790`.
+Open <http://localhost:8766>. You see the page that a bay node serves, here for bay B3. Four made-up boards
+sit on its ports, B3.1 to B3.4, and every button works on them.
+
+For a bay with a DATA ×6, use `--ports 6`. If port 8766 is taken, put another port number before `--ports`,
+such as `dev_server.py 8790 --ports 4`, and use that number in the lab file below.
 
 ```{figure} ../img/web-ui-ports.png
 :class: bb-screenshot
 :alt: The USB devices card of the simulated bay: four ports, one attached, one reserved, one queued
 
-Simulated node: the *USB devices* card, one row per port, some way into a session. B3.1 is attached, B3.3
-is reserved and B3.4 waits for power.
+Simulated node: the *USB devices* card has one row per port. Here B3.1 is attached, B3.3 is reserved and
+B3.4 waits for power.
 ```
 
-In a second terminal, tell `bayctl` where that bay is. Its lab file is `config/lab.yaml` unless
-`BAYCTL_LAB` names another; write this one as `sim-lab.yaml` at the top of the checkout, so that a lab file
-of your own stays as it is:
+`bayctl` finds the bays through a lab file. In a second terminal, write this one as `sim-lab.yaml` at the top
+of the repository. It also says which board sits on port 2:
 
 ```{code-block} yaml
 :caption: sim-lab.yaml
@@ -87,6 +66,9 @@ bays:
   B3: {host: 127.0.0.1, http_port: 8766}
   B3.2: {platform: rpi_pico2/rp2350a/m33_0}
 ```
+
+Activate the environment in this terminal too. Then point `bayctl` at the lab file and list the ports.
+`BAYCTL_HUB=none` stops it from looking for a power hub:
 
 ```console
 $ . .venv/bin/activate
@@ -98,57 +80,38 @@ B3.3   port 3  VBUS on 93 mA  2e8a:0003 RP2 Boot  busid 1-1.3
 B3.4   port 4  VBUS on 93 mA  1a86:7523 None  busid 1-1.4
 ```
 
-`BAYCTL_HUB=none` stops `bayctl` from looking for a power hub on the network. The currents move a little
-from one call to the next. The product names are the simulator's: firmware 0.5 sends only the VID, the PID
-and the busid in `/api/ports`, so on a real bay nothing stands between `1fc9:0143` and the busid. The `None`
-of B3.4 is the simulator's CH340, which has no product string. `bayctl status B3` lists every device with
-its name, from `/api/usb`. How
-`bayctl` finds a real rack, and what else a machine needs:
-[Set up bayctl and usbip](../use/set-up-your-machine.md).
+The currents change a little from one call to the next. On a real bay this list shows only the VID and PID,
+and `bayctl status B3` gives the product names. To point `bayctl` at a real rack, see
+[Set up your machine](../use/set-up-your-machine.md).
 
-`--ports 6` is a bay with a DATA ×6. Started without `--ports`, the simulator is a bay node with one board and
-the bay's serial console: a made-up Zephyr board that boots, logs in colour and answers a small shell. That
-form is the bench stand-ins'; a v1.0 rack has a DATA board in every bay.
+## Run a session on B3.2
 
-## A whole session on B3.2
+These steps follow [A first session with a bay](../use/first-session.md), on the simulated bay.
 
-The session of [A first session with a bay](../use/first-session.md), played on the simulated bay. Its
-port 2 holds a made-up USB serial bridge; the lab file above calls it a Pico 2, as in the example rack.
-
-Reserve the port, so that nobody else switches it meanwhile:
+Reserve the port, so that nobody else switches it while you work:
 
 ```console
 $ python tools/bayctl.py lease B3.2 --for 30m --note "first session"
 B3.2 reserved for 127.0.0.1, 1800 s
 ```
 
-Tell the bay which board it is. The lab file names the board; `import lab` writes that to the bay, where
-the page and every other machine see it (on the page, the *Set board…* button of the row):
+Tell the bay which board is on the port. `import lab` copies the board from the lab file to the bay. Its page
+and every other machine then see it:
 
 ```console
 $ python tools/bayctl.py import lab sim-lab.yaml B3.2
 B3.2: rpi_pico2/rp2350a/m33_0, pinned to 0403:6001 S/N A50285BI
-$ python tools/bayctl.py list
-B3.1  -                   (no target)                        -                    usb     127.0.0.1
-B3.2  rpi-pico2           rpi_pico2/rp2350a/m33_0            uf2                  usb     127.0.0.1
-B3.3  -                   (no target)                        -                    usb     127.0.0.1
-B3.4  -                   (no target)                        -                    usb     127.0.0.1
 ```
 
-Power-cycle it. The port goes off for two seconds, and the board is back on the bus a moment after the
+Power-cycle the board. The port switches off for two seconds. The board is back on the bus a moment after the
 command returns:
 
 ```console
 $ python tools/bayctl.py power B3.2 cycle --ms 2000
 B3.2   port 2  VBUS on 93 mA  no USB device
-$ python tools/bayctl.py ports B3
-B3.1   port 1  VBUS on 91 mA  1fc9:0143 MCU-LINK on-board (r0E7) CMSIS-DAP V3.172  busid 1-1.1
-B3.2   port 2  VBUS on 89 mA  0403:6001 FT232R USB UART  busid 1-1.2
-B3.3   port 3  VBUS on 129 mA  2e8a:0003 RP2 Boot  busid 1-1.3
-B3.4   port 4  VBUS on 84 mA  1a86:7523 None  busid 1-1.4
 ```
 
-Reset it, or put it into its bootloader, through the DATA ×4's two lines for that port:
+Reset the board, or put it into its bootloader. The DATA ×4 has a reset line and a boot line for each port:
 
 ```console
 $ python tools/bayctl.py reset B3.2
@@ -157,35 +120,29 @@ $ python tools/bayctl.py boot B3.2
 B3.2   port 2  VBUS on 86 mA  no USB device
 ```
 
-On a rack the next three steps are `bayctl attach B3.2`, `west flash` and the board's own serial port on
-your machine ([USB/IP and flashing](../use/usb-and-flashing.md)). The simulated bay serves HTTP only: nothing
-answers on TCP 3240, so `attach` and `prepare` fail and there is no device to flash or to read. A hook makes
-the page show what an attached port looks like, and the same address toggles the fake client off again:
+On a real rack you would now attach the board's USB with `bayctl attach B3.2` and flash it with `west flash`
+([USB/IP and flashing](../use/usb-and-flashing.md)). The simulated bay has no USB/IP server, so `attach`
+fails here. To see how an attached port looks on the page, call this test hook. Call it again to undo it:
 
 ```console
 $ curl -s "http://localhost:8766/dev/attach?port=2" > /dev/null
-$ python tools/bayctl.py ports B3
-B3.1   port 1  VBUS on 125 mA  1fc9:0143 MCU-LINK on-board (r0E7) CMSIS-DAP V3.172  busid 1-1.1
-B3.2   port 2  VBUS on 85 mA  0403:6001 FT232R USB UART  busid 1-1.2  USB/IP 192.168.1.41
-B3.3   port 3  VBUS on 91 mA  2e8a:0003 RP2 Boot  busid 1-1.3
-B3.4   port 4  VBUS on 89 mA  1a86:7523 None  busid 1-1.4
 ```
 
-Hand the port back:
+Hand the port back when you are done:
 
 ```console
 $ python tools/bayctl.py release B3.2
 B3.2 released
 ```
 
-Every subcommand and option: [bayctl](../reference/bayctl.md).
+Every subcommand and option is on [bayctl](../reference/bayctl.md).
 
-## Break things on purpose
+## Simulate a fault
 
-The simulator has hooks under `/dev/` that a real bay node does not have. Two of them show what a fault and
-a full power budget look like, on the page and from `bayctl`.
+The simulator has test hooks under `/dev/` that a real bay node does not have. Two of them cause a fault and
+fill the power budget.
 
-An over-current on port 2. The port is cut and stays off until someone switches it on again:
+Cause an over-current on port 2. The port switches off and stays off until you switch it on again:
 
 ```console
 $ curl -s "http://localhost:8766/dev/fault?port=2" > /dev/null
@@ -198,7 +155,8 @@ $ python tools/bayctl.py power B3.2 on
 B3.2   port 2  VBUS on 96 mA  no USB device
 ```
 
-A bay over its budget. Make the board on port 1 draw 900 mA, switch port 4 off, and ask for it again:
+Now push the bay over its power budget. Make the board on port 1 draw 900 mA, then switch port 4 off and on
+again. The bay refuses, and `--when available` queues the port instead:
 
 ```console
 $ curl -s "http://localhost:8766/dev/draw?port=1&ma=900" > /dev/null
@@ -210,45 +168,41 @@ $ python tools/bayctl.py power B3.4 on --when available
 B3.4: queued, on as soon as the bay's budget has room
 ```
 
-Give port 1 its usual draw back, and port 4 comes on by itself:
+Set port 1 back to its usual draw, and port 4 comes on by itself:
 
 ```console
 $ curl -s "http://localhost:8766/dev/draw?port=1&ma=0" > /dev/null
-$ python tools/bayctl.py ports B3
-B3.1   port 1  VBUS on 94 mA  1fc9:0143 MCU-LINK on-board (r0E7) CMSIS-DAP V3.172  busid 1-1.1
-B3.2   port 2  VBUS on 129 mA  0403:6001 FT232R USB UART  busid 1-1.2
-B3.3   port 3  VBUS on 82 mA  2e8a:0003 RP2 Boot  busid 1-1.3
-B3.4   port 4  VBUS on 84 mA  no USB device
 ```
 
-Why a port waits, and what the 5400 mW are: [Power budget and queued ports](../use/power-budget.md). The
-other hooks (another address, a firmware image to send, an update that rolls back, a camera unplugged) are
-listed at the top of [dev_server.py](../../firmware/bay-node/web/dev_server.py).
+Why a port waits:
+[Power budget and queued ports](../use/power-budget.md). The other test hooks are listed at the top of
+[dev_server.py](../../firmware/bay-node/web/dev_server.py).
 
-## The rack's page, simulated
+## Open the rack's page
 
-The simulated bay's camera sits on port 8767, which is also the simulated hub's default: give the hub
-another one.
+The power hub has a simulator too. Its default port, 8767, is taken by the simulated bay's camera. Start it
+on port 8770 in a third terminal, and leave it running:
 
 ```console
+$ . .venv/bin/activate
 $ python firmware/power-hub/web/dev_server.py 8770
 power hub mock on http://localhost:8770
 ```
 
-<http://localhost:8770> is the page the power hub serves: the contract with the charger, the rack bus, the
-rows with their bays, the events. This hub has eight made-up bays in rows A to C, and row D on with nothing
-on it.
+Open <http://localhost:8770>. This is the rack's page, served by the power hub. It shows the USB PD
+contract with the charger, each row with its bays, and the events. The simulated hub has eight made-up bays
+in rows A to C. Row D is empty.
 
 ```{figure} ../img/hub-ui-dark.png
 :class: bb-screenshot
-:alt: The rack's page: the USB-C contract, the rack bus, rows A to D with their bays, the events
+:alt: The rack's page: the USB-C contract, the rack bus, rows A to D with eight bays in rows A to C, the events
 :width: 80%
 
-Simulated hub: the rack's page. Reading it is open to anyone; its buttons ask for the hub to be claimed
-first, and on the simulator `/dev/boot` is the press on BOOT that confirms the claim.
+Simulated hub: the rack's page. Anyone can read it. Its buttons work only after you claim the hub. On the
+simulator, `/dev/boot` stands in for the press on BOOT that confirms the claim.
 ```
 
-`bayctl` reads it the same way, with the hub's address in place of `none`:
+`bayctl` reads the hub too. Give it the hub's address in `BAYCTL_HUB`:
 
 ```console
 $ BAYCTL_HUB=127.0.0.1:8770 python tools/bayctl.py hub
@@ -259,73 +213,31 @@ row C  ON        413 mA    8.3 W  C1(attached 184mA) C2(usbip 147mA)
 row D  ON          0 mA    0.0 W
 ```
 
-Make the charger renegotiate down to 20 V and 1.5 A (30 W), and the hub sheds a row to stay inside its
-grant:
+`curl -s http://localhost:8770/dev/drop` makes the charger drop to 30 W. The hub then switches a row off to
+stay within it. `/dev/restore` brings the charger back.
+
+The two simulators do not know about each other. Keep `BAYCTL_HUB=none` for the commands to the simulated
+bay. What the page shows: [The rack's page](../use/rack-page.md).
+
+(a-twister-hardware-map-without-a-rack)=
+## Make a twister hardware map
+
+`bayctl` writes a hardware map for Zephyr's twister from a lab file. Try it on the example lab file:
 
 ```console
-$ curl -s http://localhost:8770/dev/drop > /dev/null
-$ BAYCTL_HUB=127.0.0.1:8770 python tools/bayctl.py hub
-rack  192.168.1.40  PD 20.0 V / 1.50 A (used 21.3 W / 27.0 W budget)  SHED:C  CAN 6 nodes (0 lost)
-row A  ON        665 mA   13.3 W  A1(attached 162mA) A2(usbip 139mA) A3(attached 241mA)
-row B  ON        400 mA    8.0 W [faults:1]  B1(classic 127mA) B2(off 0mA) B3(enumerated 148mA)
-row C  SHED        0 mA    0.0 W
-row D  ON          0 mA    0.0 W
+$ BAYCTL_HUB=none python tools/bayctl.py --lab config/lab.example.yaml hwmap -o rack-map.yaml
 ```
 
-`/dev/restore` brings the first charger back. The other hooks (a row's eFuse tripped, a bay silenced, an
-image for **Update firmware…**, an update that rolls back) are listed at the top of
-[the hub's dev_server.py](../../firmware/power-hub/web/dev_server.py). The two simulators do not know each
-other: the hub's bays have made-up addresses, so keep `BAYCTL_HUB=none` for the commands that talk to the
-simulated bay. The page itself: [Rows and the rack's page](../use/rack-page.md).
+It warns about what the lab file leaves out, such as a board with no board target. Then it writes
+`rack-map.yaml`, and a pre-script for each board in `rack-scripts/`. To run twister with it, see
+[Run twister on the rack](../use/twister.md).
 
-## A twister hardware map without a rack
+(the-logic-analyzers-demo-capture)=
+## Try the logic analyzer
 
-The repository's CI builds a hardware map at every push, from the example lab file alone:
+[The analyzer page](/analyzer/) opens on a demo capture of made-up signals on 8 channels: a UART at 1 Mbd, an
+I²C read, an SPI flash ID read and three WS2812B LEDs. You can pan, zoom, decode and export to `.vcd` in any
+browser. To use a real analyzer over USB, you need Chrome or Edge.
 
-```console
-$ BAYCTL_HUB=none python tools/bayctl.py --lab config/lab.example.yaml hwmap -o rack-map.yaml --python python3
-```
-
-It prints eight warnings about what the example leaves open (A2 has no board target, A4 no console path,
-B3.2 no probe, so flashing it takes BOOTSEL), then says that it wrote
-`rack-map.yaml` with 7 boards and one pre-script per board in `rack-scripts/`. Git ignores both. The
-example lab file is older than the DATA boards: its A1 to A4, B2 and B4 hold one board on the node itself, a
-form a v1.0 rack does not have, where the first board would be A1.1
-([lab.yaml](../reference/lab-yaml.md)). The map's first board:
-
-```{code-block} yaml
-:caption: rack-map.yaml, its first board
-- connected: true
-  platform: nucleo_g474re
-  product: ST NUCLEO-64 (MB1136 / MB1367) (bay A1)
-  runner: stm32cubeprogrammer
-  id: 003A00283133510837363734
-  serial: /dev/serial/by-id/usb-STMicroelectronics_STLINK-V3_003A00283133510837363734-if02
-  baud: 115200
-```
-
-What twister does with it, and what a pre-script runs: [Zephyr twister](../use/twister.md).
-
-## The logic analyzer's demo capture
-
-[The analyzer page](/analyzer/) opens on a capture of made-up signals: a UART line at 1 Mbd and its answer,
-an I²C register read at 400 kHz, an SPI flash ID read at 4 MHz and three WS2812B LEDs, sampled at 20 MS/s on
-8 channels. Panning, zooming, decoders and the `.vcd` export work on the demo in any browser; a real
-analyzer on USB takes Chrome or Edge.
-
-The simulated DATA ×4 bay has the same analyzer behind its co-processor, with a UART on buses A and B. With
-Node 22 or later installed, `bayctl` captures and decodes it without a browser:
-
-```console
-$ python tools/bayctl.py capture B3 --ch A,B --rate 2M --duration 20ms --decode uart:rx=A,baud=115200 -o run1
-armed
-B3: 40,000 samples at 2 MS/s, 20.000 ms
-  UART 115200 Bd (A), 17: Hello from B3.2\r\n
-wrote run1.capture.json, run1.decoded.json
-```
-
-The bay's page opens `run1.capture.json` again in its *Logic analyzer* card:
+The simulated DATA ×4 bay has the same analyzer on its page, with a UART on its buses A and B:
 [Logic analyzer](../use/logic-analyzer.md).
-
-The step after the simulators is the firmware itself on a bought ESP32-S3 board, an M5Stack CoreS3 or a XIAO
-ESP32-S3, with a real board on its USB: [bench.md](../bench.md) says which of the two tests what.

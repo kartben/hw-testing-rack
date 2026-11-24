@@ -49,6 +49,10 @@ exclude_patterns = [
     # went, for links from outside; not a page of the site
     "architecture.md", "assembly.md", "bring-up.md", "cabling.md", "ci.md", "standalone.md",
 ]
+# The design documents and dated notes directly under docs/ stay in the repository for contributors; the site is
+# the user's manual and leaves them out.
+exclude_patterns += sorted(p.name for p in HERE.glob("*.md") if p.name != "index.md")
+exclude_patterns += ["dev"]          # contributor pages (docs/dev), read on GitHub
 templates_path = ["_templates"]
 nitpicky = False
 smartquotes = False          # options such as --help appear in running text

@@ -763,3 +763,14 @@ html.light .yue img.bb-pcb-render { mix-blend-mode: multiply; }
 .yue table img { max-width: none; }
 .yue figure.align-default { text-align: center; }
 .yue figure.align-default figcaption { text-align: left; max-width: 40rem; margin-inline: auto; }
+
+/* the landing page's headline on a phone: no word broken in the middle */
+.bb-lede { hyphens: manual; overflow-wrap: normal; }
+@media (max-width: 600px) { .bb-lede { font-size: 1.55rem; } .bb-hero-text > p:not(:first-child) { font-size: 1rem; } }
+
+/* the bill's tables on a phone: long part numbers and listings wrap instead of running off the screen */
+@media (max-width: 640px) {
+  .yue table.bb-bom td { overflow-wrap: anywhere; }
+  .yue table.bb-bom td:first-child { min-width: 0; }
+  .yue table.bb-printed-parts th, .yue table.bb-printed-parts td { padding-left: 0.3rem; padding-right: 0.3rem; }
+}

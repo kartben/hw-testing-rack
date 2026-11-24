@@ -1,128 +1,89 @@
-# Rows and the rack's page (the hub)
+# The rack's page
 
-The power hub serves the rack's page at `http://rack.local/`: the charger's contract, the rack bus, one shelf
-per row with a tile for every bay by its place, and the hub's last events. From it you switch a row, blink a
-bay's LED to find it, and act on a bay that is not on Wi-Fi.
+The power hub serves a page for the whole rack at `http://rack.local/`. Use it to switch rows of bays on and
+off, to find a bay, and to send a command to a bay that is not on Wi-Fi.
 
-:::{status} simulated
-The page and `bayctl` have run against the simulated hub, and the rack bus on native_sim with simulated nodes.
-The page also loads whole from a XIAO ESP32-S3 running the hub's firmware. No hub has been on a bench. See
-[What exists today](../plan/status.md#status-rack-page).
-:::
+If you gave the hub an id, the address is `rack-<id>.local` ([Bays, ports and addresses](names.md)). Anyone
+on the network can read the page. To switch a row or send a command, you need the hub's admin key
+([Control who can use the rack](access.md)).
 
-Needs: the hub on your network, at `rack.local` until it is given a rack id, `rack-<id>.local` after
-([Bays, ports and addresses](names.md)). Reading is open to anyone; switching and commands ask for the hub's
-admin key ([Access rules and security](access.md)).
-
-## The page, card by card
+## What the page shows
 
 ```{figure} ../img/hub-ui-light.png
 :class: bb-screenshot
 :alt: The rack's page: the header, the USB-C PD and rack bus cards, four rows of bays, the events
 
-The simulated hub: eight bays in rows A to C, row D on with nothing on it. A rack of the default layout shows
-twelve.
+A simulated hub with eight bays in rows A to C. Row D is on, with no bay on it.
 ```
 
-The header gives the hub's name, address and number of bays, and two pills on the right. The access pill reads
-`admin`, `read-only · unlock` or `unclaimed · claim`; click it to unlock or claim. The state pill reads `20 V`
-once the contract is final, else `contract settling`, `rows shed`, `row fault`, `no PD charger`, or `offline`
-when the page lost the hub ([what each means](../reference/states-and-messages.md#the-contracts-states)). A red
-banner under the header names a row in fault, a bay that stopped answering, or a rack bus that is not
-error-active.
+The **USB-C PD** card at the top shows what the rows draw from the charger. The **Rack bus** card counts the
+bays. Below them, each row has a shelf with a tile for each of its bays. The hub's last events come last.
 
-The **USB-C PD** card shows the volts, amps and watts the rows draw, the last two minutes of their power, and
-the charger's offers, the one in use highlighted. Its switch chooses between `20 V` and `28 V EPR when offered`;
-on a default build 28 V is locked out, so the switch changes nothing and the hub stays at 20 V
-([Power hub shell](../reference/hub-shell.md#notes)).
+A tile shows the bay's place (`B3`), its address and what it is doing: `device ready`, `USB/IP attached`,
+`DUT off` and so on. It also reads `<x> of <y> W`: the bay draws x watts, and the hub grants it y
+([Power budget and queued ports](power-budget.md)). A camera icon marks a bay with a camera. The icon turns red
+while someone watches. Every label is explained on
+[States and messages](../reference/states-and-messages.md#a-bays-states-on-the-racks-page).
 
-**Rack bus** counts the bays, the frames per second and the bus's error counters as they stand now, not a
-total. It says when the bus was last numbered and how many bays were lost, and holds **Re-enumerate** and, on a
-build with updates over the network, **Update firmware…** ([Update the firmware](update-firmware.md)).
-
-**Rows** draws what each row takes from the charger, with a mark at the budget, then one shelf per row: its
-letter, its state and current, its bays, and two buttons. A tile names the bay by its place (`B3`), its
-address, what it is doing (`USB/IP attached`, `device ready`, `no device`, `DUT off`, `no answer`…) and, on a
-v1.0 bay, `<x> of <y> W`: what its DATA lead draws against the hub's grant. A camera icon marks a bay with a
-camera, red while someone watches. Every label is on
-[States and error messages](../reference/states-and-messages.md#a-bays-states-on-the-racks-page).
-
-Under the rows come the last eight events, and **Show all** for the rest. The foot counts the faults and sheds
-since the hub started and links `/api/status` and `/metrics`. The page reads `/api/status` every 2 s and the
-events every 5 s.
+The pill at the top right reads `20 V` once the USB-C PD contract with the charger is settled. The rack always
+runs at 20 V: leave the `28 V EPR when offered` switch alone. A red banner under the pill names a row in fault
+or a bay that stopped answering.
 
 ## Switch or cycle a row
 
-Each shelf has **Cycle** and **Off** (**On** for a row that is off). The page asks before it switches off or
-cycles a row that is on, since every board of the row loses power. **Cycle** is greyed while the row is off. A
-cycle keeps the row off 2000 ms from the page, the hub's shell and the API without `ms`; `bayctl row` keeps it
-off 1000 ms unless given `--ms`.
+Each shelf has a **Cycle** and an **Off** button, or **On** when the row is off. The page asks you to confirm,
+because every board in the row loses power. **Cycle** keeps the row off for 2 s, then switches it back on.
 
-A row's on and off is saved and comes back after a restart of the hub; a cycle is not, and ends with the row
-on. Switching a row off drops its bays from the page. When a row comes on, the hub numbers every powered row
-again 2 s later, once the nodes have started, and the bays reappear at their places. What each bay and board
-goes through, and what it loses: [Power-cycle or reset a board](power-and-reset.md#after-a-power-cut-or-a-restart).
+The hub remembers which rows are on and which are off, and keeps them that way after a restart. When a row
+comes back on, its bays reappear in their places after a few seconds. This works even when the hub has no
+Wi-Fi.
 
-Power and the rack bus do not need the hub's Wi-Fi: the rows come on and the bays get their places with the hub
-off the network.
+What each board loses when its row goes off:
+[After a power cut or a restart](power-and-reset.md#after-a-power-cut-or-a-restart).
 
-## Act on a bay through the hub
+## Send a command to a bay
 
-Click a tile. Its menu shows the bay's place, its node id (`0x23` for C3), its address, MAC and firmware, and
-holds **Open the bay's page ↗**, **Camera: live view ↗** on a bay with a camera, and the commands below.
-Ctrl-click (Cmd-click on a Mac) opens the bay's page straight away.
+Click a tile to open its menu. It shows the bay's address, MAC and firmware version, a link to the bay's page,
+and the commands below. Ctrl-click (Cmd-click on a Mac) opens the bay's page directly.
 
-The commands travel on the rack bus, not over Wi-Fi, so they reach a bay that has no address. The page asks
-before **Power off**, **Power-cycle** and **Reboot**. On a v1.0 bay:
+The commands go over the rack bus, the wired bus between the hub and the bay nodes. They reach a bay even when
+it has no network address.
 
 | Command | What the bay does |
 |---|---|
-| Identify | its status LED blinks white and blue for 10 s ([the bay's LED](../reference/leds-and-buttons.md#the-bays-led)) |
-| Reset the board | pulses the node's AUX RESET line low for 100 ms |
-| Board into its bootloader | holds the node's AUX BOOT line across a RESET pulse, then releases it 200 ms later |
-| Power on, power off | switches the DATA lead: every board of the bay |
-| Power-cycle the board | the DATA lead off for 1 s, then on; the ports come back one at a time, 300 ms apart |
-| Reboot the bay node | restarts the node itself, 200 ms later; its USB/IP and console sessions drop |
+| Identify | its status LED blinks white and blue for 10 s |
+| Reset the board | pulls the node's AUX RESET line low for 100 ms |
+| Board into its bootloader | holds AUX BOOT low through a RESET pulse |
+| Power on, Power off | switches the DATA lead: the DATA board and every board on it |
+| Power-cycle the board | switches the DATA lead off for 1 s, then on |
+| Reboot the bay node | restarts the node; its USB/IP and console sessions drop |
 
-Reset and bootloader act on the node's AUX lines, not on a port of a DATA ×4: a port's reset is on the bay's
-own page ([Power-cycle or reset a board](power-and-reset.md#reset-and-bootloader)).
+Reset and bootloader use the RESET and BOOT lines of the node's AUX socket
+([Use the bay's AUX UART](serial-console.md#use-the-bays-aux-uart)). To reset a board on a port of a DATA ×4, use the bay's
+own page instead ([Reset and bootloader](power-and-reset.md#reset-and-bootloader)).
 
-The page only sends the command. The bay's answer comes as an event, `node B3: command 0x02 done`, or
-`refused`, or `no answer to command 0x02` after three tries 100 ms apart. A reserved bay refuses everything
-but Identify ([Reserve a bay](reserve-a-bay.md)). A power-on comes back `failed` when the DATA lead's checks
-keep the lead off; the bay's page then says why
-([States and error messages](../reference/states-and-messages.md#why-the-data-lead-stays-off)).
+The bay's answer appears in the events: `node B3: command 0x02 done`, `refused`, or `no answer to command
+0x02`. A reserved bay refuses every command except Identify ([Reserve a bay](reserve-a-bay.md)). A power-on
+comes back `failed` when the DATA lead's checks keep the lead off. The bay's page then says why
+([Why the DATA lead stays off](../reference/states-and-messages.md#why-the-data-lead-stays-off)).
 
 ## Read the events
 
-The hub keeps its last 32 events in RAM and loses them when it restarts. Each has a kind: `pd` for the charger
-and the contract, `row`, `fault`, `can` for the rack bus, `node` for a bay's answers, `firmware` for an update.
-The page turns each event's age into a time of day. The firmware's texts are listed on
-[States and error messages](../reference/states-and-messages.md#the-hubs-events).
+The hub keeps its last 32 events until it restarts. The page shows the last eight, and **Show all** shows the
+rest. [The hub's events](../reference/states-and-messages.md#the-hubs-events) lists every message.
 
 ```{figure} ../img/hub-ui-fault.png
 :class: bb-screenshot
 :alt: The rack's page with a red banner, row B in fault and bay B3 dashed, and the events under it
 
-The simulated hub with row B's eFuse in current limit and bay B3 silent: the banner and the dashed tile are as
-the firmware's page draws them, the event texts are the simulator's own.
+A simulated hub with row B in current limit and bay B3 not answering. Look at the red banner, the red shelf
+and the dashed tile.
 ```
 
 ## With bayctl
 
-`bayctl` finds the hub at `BAYCTL_HUB`, else at `hub:` in the lab file, else at `rack.local`
-([Set up bayctl and usbip](set-up-your-machine.md#how-it-finds-the-rack)). Reading needs nothing more; every
-other command needs the admin key in `BAYCTL_KEY`.
-
-```console
-$ python tools/bayctl.py hub
-$ python tools/bayctl.py row B cycle --ms 2000
-$ python tools/bayctl.py hub node B3 identify
-$ python tools/bayctl.py hub node B3 power-cycle
-$ python tools/bayctl.py hub events
-```
-
-`hub` prints the contract and the budget, then a line per row with its bays. Against the simulated hub:
+`bayctl` finds the hub as [Set up your machine](set-up-your-machine.md#how-it-finds-the-rack) describes. A
+command that changes something needs the admin key in `BAYCTL_KEY`.
 
 ```console
 $ python tools/bayctl.py hub
@@ -131,10 +92,13 @@ row A  ON        647 mA   12.9 W  A1(attached 165mA) A2(usbip 137mA) A3(attached
 row B  ON        404 mA    8.1 W [faults:1]  B1(classic 126mA) B2(off 0mA) B3(enumerated 153mA)
 row C  ON        409 mA    8.2 W  C1(attached 185mA) C2(usbip 142mA)
 row D  ON          0 mA    0.0 W
+$ python tools/bayctl.py row B cycle
+$ python tools/bayctl.py hub node B3 identify
+$ python tools/bayctl.py hub events
 ```
 
-`hub node` takes the menu's seven commands, `identify`, `reset`, `bootloader`, `power-on`, `power-off`,
-`power-cycle`, `reboot`, and a place (`B3`) or a node id (`0x13`). `row` prints the row's line. Every option:
+`bayctl row` keeps the row off for 1000 ms. `--ms` sets another time. `hub node` takes `identify`,
+`reset`, `bootloader`, `power-on`, `power-off`, `power-cycle` or `reboot`. Every option:
 [bayctl](../reference/bayctl.md#rows-and-the-hub).
 
 ## Over HTTP
@@ -144,14 +108,13 @@ $ curl -s rack.local/api/status
 $ curl -s rack.local/api/events
 ```
 
-Actions are signed requests: `POST /api/row` with `{"row": "B", "action": "cycle"}`, `POST /api/node` with the
-bay as a number, `{"id": 19, "action": "identify"}` for B3 (the row's index, A being 0, times 16, plus the
-place). How to sign them, and every field: [Power hub HTTP API](../reference/hub-api.md).
+To switch a row or send a command, sign a `POST` to `/api/row` or `/api/node`:
+[Power hub HTTP API](../reference/hub-api.md).
 
 ## In the hub's shell
 
-The shell is on the hub's console USB-C, in the power box's front wall, and nowhere else. It has five of the
-seven commands: `power-on` and `power-off` are not in it.
+The hub's shell is on its console USB-C port, in the front wall of the power box. It has every command above
+except `power-on` and `power-off`.
 
 ```console
 uart:~$ hub status
@@ -164,10 +127,10 @@ Every command: [Power hub shell](../reference/hub-shell.md).
 
 ## Row D says no node answered
 
-The hub has four row outputs and switches all four on; the default rack fills A to C. Row D is on, empty, and
-its shelf reads "no node answered". It costs nothing: the shedding passes over a row with no node that draws
-under 100 mA. `hub row D off` switches it off for good (the choice is saved), and the shelf then reads "row off".
+The hub always has four row outputs. If your rack has fewer than four rows, the spare rows are on with nothing
+on them, and their shelves read "no node answered". This does no harm. To switch a spare row off for good,
+run `hub row <letter> off` in the hub's shell, for example `hub row D off`.
 
-On a row that should have bays, the same words mean that none got an address: look at the row's feed, and at
-the first node, which stops the row there if it has no firmware. A node that asked and never confirmed its address shows as
-"no address", and the bays after it are missing. What to check: [Troubleshooting](troubleshooting.md).
+On a row that should have bays, "no node answered" means that none of its bays got an address on the rack
+bus. Check the row's feed, then its first node: a node with no firmware stops the row there. See
+[Troubleshooting](troubleshooting.md).

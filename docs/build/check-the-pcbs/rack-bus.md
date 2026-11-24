@@ -1,56 +1,49 @@
-# Rack bus checklist: a hub and two nodes
+# Check the rack bus
 
-The hub and two nodes on one row: the first time the row cable, the CAN bus and the position
-token work together.  Each PCB passed its own checklist first.
+The rack bus is the CAN bus and the position wire in the row cables. The hub uses it to find the nodes and give
+each one its position. Check it with the hub and two nodes on one row, once each has passed its own checklist.
+A single bay on a desk has no hub: skip this page.
 
-:::{status} simulated
-The rack bus runs on a simulated rack (native_sim): enumeration, restarts, dead and lost nodes.  No hub
-and node have shared a row cable: the CAN transceivers and the position wire have never been powered, and
-the expected values below are the design's.  [What exists today](../../plan/status.md#status-rack-bus).
-:::
+## 1. Wire two nodes to the hub
 
-## 1. Wire
+Take a feed and a jumper from [Make the row cables](../row-cables.md), both rung out. Run the feed from row A
+of the hub to J1 (ROW IN) on the first node. Run the jumper from J2 (ROW OUT) on the first node to J1 on the
+second. Plug nothing else into the nodes.
 
-Hub row A → node 1's J1 (ROW IN); node 1's J2 (ROW OUT) → node 2's J1.  Row cables are JST PH 6,
-"Same direction": a feed and a jumper of [Make the row cables](../row-cables.md), rung out there.
-Nothing else plugged into the nodes.
+With no power, measure between the CANH and CANL pads of the hub. It still reads about 56 Ω, because the nodes
+add no termination.
 
-With no power, at the hub: still ≈ 56 Ω between the CANH and CANL pads (the nodes add no
-termination).
+## 2. Power the row and list the nodes
 
-## 2. Power and enumerate
-
-PD charger on the hub.  On the hub's console:
+Plug the PD charger into the hub. Open the hub's console on J6 and run these checks:
 
 | Check | Expect |
 |---|---|
 | `hub status` | a 20 V contract, row A on |
-| Two seconds after the row comes on, `hub nodes` | two nodes, A1 and A2, each with its MAC, its IP address and its firmware |
-| `bay status` on each node | its position (A1, A2) and the hub's contract |
-| `http://bay-a1.local/`, `http://bay-a2.local/` | each node's page |
+| `hub nodes`, two seconds after the row comes on | two nodes, A1 and A2, each with its MAC, its IP address and its firmware |
+| `bay status` on each node | its position (A1 or A2) and the hub's contract |
+| `http://bay-a1.local/` and `http://bay-a2.local/` | the page of each node |
 
-## 3. Commands
+## 3. Send commands over the bus
 
 | Check | Expect |
 |---|---|
-| `hub node A2 identify`, then `hub events` | node 2 shows itself; the answer is in the events |
+| `hub node A2 identify`, then `hub events` | the LED of the second node blinks white and blue for 10 s, and its answer is in the events |
 | `hub row A cycle` | both nodes restart and come back as A1 and A2 |
-| Node 2's lead moved to row B, `hub enumerate` | it comes back as B1 |
-| `hub status` with both nodes running | the row's current, what two idle nodes draw: write it down |
+| The second node's cable moved to row B, then `hub enumerate` | it comes back as B1 |
+| `hub status` with both nodes running | the current on row A, which is what two idle nodes draw: write it down |
 
-Every `hub` command: [Power hub shell](../../reference/hub-shell.md).
+[Power hub shell](../../reference/hub-shell.md) lists every `hub` command.
 
 ## 4. If a node is missing from `hub nodes`
 
-- [ ] Its 5V pad: the node must be running (the buck starts above 13.5 V).
-- [ ] The lead: pin 1 of one end goes to pin 6 of the other on a "Same direction" lead.
-- [ ] CANH and CANL swapped or open on that lead: every node after it is missing too.
-- [ ] `hub enumerate` again once the node's page answers.
+- [ ] Its 5V pad: the node must be running. Its buck starts above 13.5 V.
+- [ ] The cable: on a "Same direction" cable, pin 1 of one end goes to pin 6 of the other.
+- [ ] CANH and CANL swapped or open on that cable: every node after it is missing too.
+- [ ] `hub enumerate` again, once the node's page answers.
 
-These checks want every pad in reach; for a bay missing from an assembled rack, see
-[Troubleshooting](../../use/troubleshooting.md).  How the bus works: [Rack bus on CAN](../../can.md) and
-[Rack bus protocol](../../rack-protocol.md).
+These checks need the pads within reach. For a bay missing from an assembled rack, see
+[Troubleshooting](../../use/troubleshooting.md).
 
-With both nodes listed at their places, the PCBs are ready for [their trays](../fit-out-a-tray.md); the
-whole rack is enumerated the same way on [Bring the rack online](../bring-the-rack-online.md).  A reading
-that does not match: [report it](../../reference/known-limitations.md#report-a-finding).
+When both nodes are listed in their places, the PCBs are ready for [their trays](../fit-out-a-tray.md).
+[Bring the rack online](../bring-the-rack-online.md) lists the nodes of the whole rack the same way.

@@ -9,8 +9,8 @@ description: BitBunk is a 3D-printed rack that puts your development boards on t
 ::::{div} bb-hero-text
 [A 3D-printed rack that puts your development boards on the network.]{.bb-lede}
 
-Each board sits in a drawer. Its bay switches it on and off, shares its USB over the network and shows its
-serial console in your browser.
+Each board sits in a drawer. Its bay switches it on and off and shares its USB over the network: you flash it
+and open its serial port from your own computer, as if it were plugged into it.
 
 Build one bay or many: you choose how many columns and rows your rack has, and you can add more later.
 ::::
@@ -30,7 +30,7 @@ Build one bay or many: you choose how many columns and rows your rack has, and y
 : Order the PCBs, print the parts, assemble the bays.
 
 [Use a rack](use/index.md)
-: Power, USB, serial console, wires and camera, from your browser or the command line.
+: Power, USB, wires between boards and the camera, from your browser or the command line.
 
 [Use it in CI](use/ci-host.md)
 : Run Zephyr's twister, labgrid or LAVA on the boards in the rack.
@@ -40,5 +40,5 @@ Build one bay or many: you choose how many columns and rows your rack has, and y
 ::::
 
 :::{div} bb-home-foot
-[Licences and credits](engineering/licences-and-credits.md) · [Source on GitHub](../)
+[Licences and credits](reference/licences-and-credits.md) · [Source on GitHub](../)
 :::

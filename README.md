@@ -29,7 +29,6 @@ Nobody has built a BitBunk yet.  On 2026-11-24:
 
 Every size, mass and print time comes from CAD or a slicer, every voltage and current from a schematic or a
 datasheet.  Board outlines marked `verified: false` in `mechanical/boards/boards.yaml` are approximate.
-How far each part has been taken, line by line: [What exists today](docs/plan/status.md).
 
 ## Documentation
 
@@ -37,17 +36,20 @@ The documentation is a website: **<https://kartben.github.io/hw-testing-rack/>**
 
 | Section | On the site | Source on GitHub |
 |---|---|---|
-| Plan: how it works, choose a size, cost, what to order | [plan/](https://kartben.github.io/hw-testing-rack/plan/index.html) | [docs/plan/index.md](docs/plan/index.md), [status.md](docs/plan/status.md), [stages.md](docs/plan/stages.md) |
+| Plan: how it works, choose a size, cost, what to order | [plan/](https://kartben.github.io/hw-testing-rack/plan/index.html) | [docs/plan/index.md](docs/plan/index.md), [stages.md](docs/plan/stages.md) |
 | Print: measure, print settings, the parts | [print/](https://kartben.github.io/hw-testing-rack/print/index.html) | [docs/print/index.md](docs/print/index.md) |
 | Build: the PCBs, a bay, the rack, flashing | [build/](https://kartben.github.io/hw-testing-rack/build/index.html) | [docs/build/index.md](docs/build/index.md) |
 | Use: power, USB/IP, console, wires, analyzer, camera, CI | [use/](https://kartben.github.io/hw-testing-rack/use/index.html) | [docs/use/index.md](docs/use/index.md) |
 | Reference: every action, the PCBs, cables, `bayctl`, the APIs | [reference/](https://kartben.github.io/hw-testing-rack/reference/index.html) | [docs/reference/index.md](docs/reference/index.md) |
-| Engineering: why it is built this way, the design notes | [engineering/](https://kartben.github.io/hw-testing-rack/engineering/index.html) | [docs/engineering/index.md](docs/engineering/index.md) |
 
 The [interactive 3D model](https://kartben.github.io/hw-testing-rack/viewer/) and the
 [logic analyzer page](https://kartben.github.io/hw-testing-rack/analyzer/) run in a browser.  With nothing
 on the desk, a simulated bay serves the firmware's page and API:
 [Try it without hardware](docs/plan/try-it-without-hardware.md).
+
+For contributors, outside the site: [CONTRIBUTING.md](CONTRIBUTING.md), [docs/dev/](docs/dev/) (working on the
+firmware and the PCBs, regenerating the outputs, why the rack is built the way it is) and the design notes
+directly under [docs/](docs/) ([docs/dev/notes.md](docs/dev/notes.md) lists them).
 
 ## Repository layout
 
